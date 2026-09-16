@@ -5,6 +5,7 @@ import type {
   PaginatedResponse,
   UpdateProfileRequest,
 } from '@glitch/shared-types';
+import { getAvatarUrl } from '@/lib/avatar';
 
 // ============================================================================
 // Users State
@@ -431,18 +432,7 @@ export function getUserAvatarUrl(userId: string, size: number = 40): string {
   const user = getUser(userId);
   const profile = getUserProfile(userId);
 
-  const userData = profile || user;
-  if (!userData) {
-    return `https://api.dicebear.com/7.x/initials/svg?seed=Anonymous&size=${size}`;
-  }
-
-  if (userData.avatar) {
-    return userData.avatar;
-  }
-
-  // Fallback to generated avatar based on username
-  const username = userData.username || 'Anonymous';
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(username)}&size=${size}`;
+  return getAvatarUrl(profile || user, size);
 }
 
 // ============================================================================

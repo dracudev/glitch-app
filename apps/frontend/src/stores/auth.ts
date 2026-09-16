@@ -1,5 +1,6 @@
 import { atom, computed } from 'nanostores';
 import type { AuthUser, UserRole } from '@glitch/shared-types';
+import { getAvatarUrl } from '@/lib/avatar';
 
 // ============================================================================
 // Core Authentication State
@@ -276,12 +277,5 @@ export function canModerate(): boolean {
  * Get user's avatar URL with fallback
  */
 export function getUserAvatarUrl(size: number = 40): string {
-  const user = $currentUser.get();
-  if (user?.avatar) {
-    return user.avatar;
-  }
-
-  // Fallback to generated avatar based on username
-  const username = user?.username || 'Anonymous';
-  return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(username)}&size=${size}`;
+  return getAvatarUrl($currentUser.get(), size);
 }

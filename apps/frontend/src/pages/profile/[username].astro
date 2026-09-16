@@ -5,6 +5,7 @@ import MainLayout from '@/layouts/MainLayout.astro';
 import ProfilePage from '@/components/profile/ProfilePage';
 import { apiClient } from '@/services/api';
 import { ssrCookieHeader } from '@/services/ssr-auth';
+import { getAvatarUrl } from '@/lib/avatar';
 import type { UserProfile } from '@glitch/shared-types';
 
 // ============================================================================
@@ -61,7 +62,7 @@ const pageDescription = profile.bio
   : `View ${displayName}'s gaming profile, reviews, and activity on Glitch. Follow to see their latest game reviews and recommendations.`;
 
 // Profile image for Open Graph
-const profileImage = profile.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(profile.username)}`;
+const profileImage = getAvatarUrl(profile, 512);
 
 // Canonical URL
 const canonicalURL = new URL(`/profile/${profile.username}`, Astro.site || Astro.url.origin).toString();

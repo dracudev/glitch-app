@@ -6,6 +6,8 @@ import type {
   PaginatedResponse,
 } from '@glitch/shared-types';
 import { apiClient } from './api';
+// Aliased: this module re-exports its own `getAvatarUrl` wrapper below.
+import { getAvatarUrl as resolveAvatarUrl } from '@/lib/avatar';
 
 // ============================================================================
 // Configuration
@@ -363,13 +365,7 @@ class UsersService {
    * ```
    */
   getAvatarUrl(user: UserResponse, size: number = 40): string {
-    if (user.avatar) {
-      return user.avatar;
-    }
-
-    // Fallback to generated avatar based on username
-    const username = user.username || 'Anonymous';
-    return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(username)}&size=${size}`;
+    return resolveAvatarUrl(user, size);
   }
 }
 
