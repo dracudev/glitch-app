@@ -20,9 +20,9 @@ const TONE_ICON: Record<NotificationTone, typeof Info> = {
 };
 
 const TONE_COLOR: Record<NotificationTone, string> = {
-  info: 'text-[var(--text-secondary)]',
-  success: 'text-[var(--state-success)]',
-  error: 'text-[var(--state-error)]',
+  info: 'text-foreground-secondary',
+  success: 'text-success',
+  error: 'text-error',
 };
 
 const DEFAULT_DURATION = 6000;
@@ -62,7 +62,7 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
 
   return (
     <li
-      className="pointer-events-auto flex items-start gap-3 rounded-lg border border-[var(--bg-tertiary)] bg-[var(--bg-secondary)] px-3.5 py-3 shadow-[0_2px_8px_-4px_var(--bg-tertiary)] transition-transform duration-200 motion-reduce:transition-none"
+      className="pointer-events-auto flex items-start gap-3 rounded-lg border border-border bg-card px-3.5 py-3 shadow-lg transition-transform duration-200 motion-reduce:transition-none"
       style={{ transform: settled ? 'translateY(0)' : 'translateY(-6px)' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -76,7 +76,7 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
         aria-hidden="true"
       />
 
-      <p className="min-w-0 flex-1 text-sm leading-5 text-[var(--text-primary)]">{title}</p>
+      <p className="min-w-0 flex-1 text-sm leading-5 text-foreground">{title}</p>
 
       {action && (
         <Button
@@ -85,7 +85,7 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
           size="sm"
           // The `secondary` fill IS the notice surface, so without this the button
           // has no presence of its own. Lift it one tonal step instead.
-          className="shrink-0 bg-[var(--bg-tertiary)] hover:bg-[var(--text-muted)]/20"
+          className="shrink-0 bg-muted hover:bg-secondary-hover"
         >
           <a href={action.href}>{action.label}</a>
         </Button>
@@ -95,7 +95,7 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
         type="button"
         onClick={() => dismissNotification(id)}
         aria-label="Dismiss notification"
-        className="-mr-1 -mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded text-[var(--text-muted)] transition-colors duration-200 hover:bg-[var(--bg-tertiary)] hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand-primary)]"
+        className="-mr-1 -mt-0.5 flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
       >
         <X size={14} strokeWidth={2} aria-hidden="true" />
       </button>
@@ -120,7 +120,7 @@ export default function Notifications() {
 
   return (
     <ul
-      className="pointer-events-none fixed top-20 right-4 z-[var(--z-toast)] flex w-[min(22rem,calc(100vw-2rem))] flex-col gap-2 sm:right-6"
+      className="pointer-events-none fixed top-20 right-4 z-toast flex w-[min(22rem,calc(100vw-2rem))] flex-col gap-2 sm:right-6"
       aria-live="polite"
       aria-label="Notifications"
     >

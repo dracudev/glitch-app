@@ -145,7 +145,7 @@ export default function ButtonExamples() {
         {/* Card Actions */}
         <div className="max-w-md p-6 bg-secondary rounded-lg space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Card Actions</h3>
-          <p className="text-secondary-foreground text-sm">This is a card with multiple action buttons</p>
+          <p className="text-foreground-secondary text-sm">This is a card with multiple action buttons</p>
           <div className="flex gap-2">
             <Button size="sm" leftIcon={<Plus />}>
               Add
@@ -162,7 +162,7 @@ export default function ButtonExamples() {
         {/* Dialog Actions */}
         <div className="max-w-md p-6 bg-secondary rounded-lg space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Dialog Actions</h3>
-          <p className="text-secondary-foreground text-sm">Are you sure you want to delete this item?</p>
+          <p className="text-foreground-secondary text-sm">Are you sure you want to delete this item?</p>
           <div className="flex gap-3 justify-end">
             <Button variant="outline">Cancel</Button>
             <Button variant="destructive" leftIcon={<Trash2 />}>
@@ -178,27 +178,27 @@ export default function ButtonExamples() {
         <div className="bg-secondary p-6 rounded-lg space-y-4 font-mono text-sm">
           <div>
             <p className="text-muted-foreground mb-2">// Basic usage</p>
-            <code className="text-brand-accent">{'<Button>Click me</Button>'}</code>
+            <code className="text-accent">{'<Button>Click me</Button>'}</code>
           </div>
           <div>
             <p className="text-muted-foreground mb-2">// With variants and sizes</p>
-            <code className="text-brand-accent">
+            <code className="text-accent">
               {'<Button variant="outline" size="lg">Large Outline</Button>'}
             </code>
           </div>
           <div>
             <p className="text-muted-foreground mb-2">// With icons</p>
-            <code className="text-brand-accent">
+            <code className="text-accent">
               {'<Button leftIcon={<Plus />}>Add Item</Button>'}
             </code>
           </div>
           <div>
             <p className="text-muted-foreground mb-2">// Loading state</p>
-            <code className="text-brand-accent">{'<Button isLoading>Submitting...</Button>'}</code>
+            <code className="text-accent">{'<Button isLoading>Submitting...</Button>'}</code>
           </div>
           <div>
             <p className="text-muted-foreground mb-2">// As a link (Radix Slot)</p>
-            <code className="text-brand-accent">
+            <code className="text-accent">
               {'<Button asChild><a href="/profile">Profile</a></Button>'}
             </code>
           </div>

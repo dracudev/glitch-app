@@ -1,66 +1,49 @@
 import { Moon, Sun } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import * as Switch from '@radix-ui/react-switch';
+import { useEffect, useState } from 'react';
+import { Button } from './Button';
 
 /**
- * Theme toggle component using Radix UI Switch
+ * ThemeToggle — a plain icon button, not a sliding sun/moon pill.
  *
- * Fully accessible theme switcher with proper keyboard navigation and
- * screen reader support. Persists theme preference to localStorage.
- *
- * @example
- * ```tsx
- * <ThemeToggle />
- * ```
+ * Dark is the product default, so an absent preference resolves to dark; light
+ * is opt-in. The `<html>` class is applied by the inline script in BaseLayout
+ * before first paint — this component only reads it back and flips it.
  */
 export default function ThemeToggle() {
-  const [theme, setTheme] = useState<string>('');
+  const [isLight, setIsLight] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    const stored = localStorage.getItem('theme');
-    if (stored) {
-      setTheme(stored);
-    } else {
-      setTheme(window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    }
+    setIsLight(document.documentElement.classList.contains('light'));
   }, []);
 
-  const handleThemeChange = (checked: boolean) => {
-    const newTheme = checked ? 'dark' : 'light';
-    setTheme(newTheme);
-    localStorage.setItem('theme', newTheme);
-
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-    } else {
-      document.documentElement.classList.add('light');
-      document.documentElement.classList.remove('dark');
+  const toggle = () => {
+    const next = !isLight;
+    setIsLight(next);
+    document.documentElement.classList.toggle('light', next);
+    document.documentElement.classList.toggle('dark', !next);
+    try {
+      localStorage.setItem('theme', next ? 'light' : 'dark');
+    } catch {
+      /* private mode — the theme simply won't persist */
     }
   };
 
+  // Keep the footprint stable before hydration so the header never shifts.
   if (!mounted) {
-    return <div className="w-11 h-6" />;
+    return <div className="size-10" aria-hidden="true" />;
   }
 
-  const isDarkTheme = theme === 'dark';
-
   return (
-    <Switch.Root
-      checked={isDarkTheme}
-      onCheckedChange={handleThemeChange}
-      className="w-11 h-6 bg-muted rounded-full relative data-[state=checked]:bg-primary cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent transition-colors"
-      aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} mode`}
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggle}
+      aria-label={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
+      title={isLight ? 'Switch to dark theme' : 'Switch to light theme'}
     >
-      <Switch.Thumb className="flex items-center justify-center w-5 h-5 bg-background rounded-full shadow-md transition-transform duration-100 translate-x-0.5 will-change-transform data-[state=checked]:translate-x-[22px]">
-        {isDarkTheme ? (
-          <Moon size={12} className="text-brand-accent" strokeWidth={2.5} />
-        ) : (
-          <Sun size={12} className="text-primary" strokeWidth={2.5} />
-        )}
-      </Switch.Thumb>
-    </Switch.Root>
+      {isLight ? <Moon className="size-5" /> : <Sun className="size-5" />}
+    </Button>
   );
 }

@@ -2,21 +2,31 @@ import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { Loader2 } from 'lucide-react';
 
+/**
+ * Button — the single action primitive.
+ *
+ * Hover is a tonal fill shift, never an opacity fade or a lift, so the button
+ * reads as the same object in a new state. Focus comes from the global
+ * `:focus-visible` rule in global.css — do not add ring utilities here, or the
+ * app ends up with two competing focus languages again.
+ */
 const variantStyles = {
-  primary: 'bg-primary text-primary-foreground hover:opacity-90 active:opacity-80',
-  secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-muted',
-  outline: 'border border-primary bg-transparent text-primary hover:bg-primary/10',
-  ghost: 'bg-transparent text-muted-foreground hover:bg-secondary',
-  destructive: 'bg-destructive text-destructive-foreground hover:opacity-90',
-  link: 'bg-transparent text-primary underline-offset-4 hover:underline p-0',
-};
+  primary: 'bg-primary text-primary-foreground hover:bg-primary-hover',
+  secondary:
+    'bg-secondary text-secondary-foreground border border-border hover:bg-secondary-hover hover:border-border-hover',
+  outline:
+    'border border-border-strong bg-transparent text-foreground hover:border-accent hover:text-accent',
+  ghost: 'bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground',
+  destructive: 'bg-destructive text-destructive-foreground hover:brightness-110',
+  link: 'bg-transparent text-accent underline-offset-4 hover:underline',
+} as const;
 
 const sizeStyles = {
-  sm: 'h-8 px-3 text-xs',
-  md: 'h-10 px-4 text-sm',
-  lg: 'h-12 px-6 text-base',
-  icon: 'h-10 w-10 p-0',
-};
+  sm: 'h-8 gap-1.5 px-3 text-xs',
+  md: 'h-10 gap-2 px-4 text-sm',
+  lg: 'h-12 gap-2.5 px-6 text-base',
+  icon: 'size-10 p-0',
+} as const;
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: keyof typeof variantStyles;
@@ -28,9 +38,6 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   fullWidth?: boolean;
 }
 
-/**
- * Button component built with Radix UI Slot for maximum flexibility
- */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
     {
@@ -51,34 +58,44 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : 'button';
     const isDisabled = disabled || isLoading;
 
-    const baseClasses =
-      'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 cursor-pointer';
-    const focusClasses =
-      'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2';
-    const disabledClasses =
-      'disabled:pointer-events-none disabled:opacity-50 disabled:cursor-not-allowed';
-    const variantClass = variantStyles[variant];
-    const sizeClass = sizeStyles[size];
-    const widthClass = fullWidth ? 'w-full' : '';
+    // `link` is inline text — it must not inherit a control height or padding.
+    const sizeClass = variant === 'link' ? '' : sizeStyles[size];
 
-    const buttonContent = (
-      <>
-        {isLoading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
-        {!isLoading && leftIcon && <span aria-hidden="true">{leftIcon}</span>}
-        {children}
-        {!isLoading && rightIcon && <span aria-hidden="true">{rightIcon}</span>}
-      </>
-    );
+    const classes = [
+      'inline-flex cursor-pointer items-center justify-center whitespace-nowrap rounded-md font-medium',
+      'transition-colors duration-150',
+      variantStyles[variant],
+      sizeClass,
+      fullWidth ? 'w-full' : '',
+      'disabled:pointer-events-none disabled:opacity-50',
+      className || '',
+    ]
+      .filter(Boolean)
+      .join(' ');
 
     return (
       <Comp
-        className={`${baseClasses} ${focusClasses} ${disabledClasses} ${variantClass} ${sizeClass} ${widthClass} ${className || ''}`.trim()}
+        className={classes}
         ref={ref}
         disabled={isDisabled}
-        aria-busy={isLoading}
+        aria-busy={isLoading || undefined}
         {...props}
       >
-        {buttonContent}
+        {isLoading ? (
+          <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden="true" />
+        ) : (
+          leftIcon && (
+            <span className="shrink-0" aria-hidden="true">
+              {leftIcon}
+            </span>
+          )
+        )}
+        {children}
+        {!isLoading && rightIcon && (
+          <span className="shrink-0" aria-hidden="true">
+            {rightIcon}
+          </span>
+        )}
       </Comp>
     );
   },
@@ -87,3 +104,5 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 Button.displayName = 'Button';
 
 export { Button };
+
+export default Button;

@@ -9,6 +9,14 @@ interface StarRatingProps {
   disabled?: boolean;
 }
 
+/**
+ * StarRating — the one rating control in the app.
+ *
+ * Filled stars use the brand primary so a rating reads the same colour
+ * everywhere (previously purple here, yellow in GameCard, green in ReviewCard).
+ * Unfilled stars use the strong border token so the track is visible without
+ * being mistaken for ink.
+ */
 export default function StarRating({
   value,
   onChange,
@@ -26,56 +34,58 @@ export default function StarRating({
 
   return (
     <div
-      className="flex items-center gap-1"
+      className="flex flex-wrap items-center gap-1"
       onMouseLeave={() => setHoverValue(null)}
+      role="group"
       aria-label={`Rating: ${value} out of ${max}`}
     >
       {Array.from({ length: max }, (_, i) => {
         const fillPercent = Math.min(100, Math.max(0, (effectiveValue - i) * 100));
 
         return (
-          <span key={i} className="relative inline-block" style={{ width: size, height: size }}>
-            {/* Left half click zone (0.5 step) */}
+          <span
+            key={i}
+            className="relative inline-block shrink-0"
+            style={{ width: size, height: size }}
+          >
+            {/* Left half = half step, right half = whole step */}
             <button
               type="button"
-              className="absolute inset-y-0 left-0 w-1/2 z-10 cursor-pointer"
-              style={disabled ? { cursor: 'not-allowed' } : undefined}
+              className="absolute inset-y-0 left-0 z-10 w-1/2 disabled:cursor-not-allowed"
               onClick={() => handleClick(i, true)}
               onMouseEnter={() => setHoverValue(i + 0.5)}
               disabled={disabled}
-              aria-label={`${i + 0.5} stars`}
+              aria-label={`${i + 0.5} out of ${max}`}
             />
-            {/* Right half click zone (1.0 step) */}
             <button
               type="button"
-              className="absolute inset-y-0 right-0 w-1/2 z-10 cursor-pointer"
-              style={disabled ? { cursor: 'not-allowed' } : undefined}
+              className="absolute inset-y-0 right-0 z-10 w-1/2 disabled:cursor-not-allowed"
               onClick={() => handleClick(i, false)}
               onMouseEnter={() => setHoverValue(i + 1)}
               disabled={disabled}
-              aria-label={`${i + 1} stars`}
+              aria-label={`${i + 1} out of ${max}`}
             />
 
-            {/* Star background (filled, so the unfilled part weighs the same as the
-                filled part — an outline here makes a half star read as two greys) */}
+            {/* Track: filled, so a partial star weighs the same as a whole one */}
             <Star
               size={size}
-              className="absolute inset-0 fill-[var(--bg-tertiary)] text-[var(--text-muted)] pointer-events-none"
+              className="pointer-events-none absolute inset-0 fill-border-strong text-border-strong"
             />
-            {/* Star fill overlay (clipped to percentage) */}
+            {/* Value overlay, clipped to a percentage. The star keeps its full
+                size and is cropped by the wrapper — `max-w-none` defeats the
+                base `svg { max-width: 100% }` rule, which would otherwise shrink
+                a half star to half size instead of showing half of a full one. */}
             <span
-              className="absolute inset-0 overflow-hidden pointer-events-none"
+              className="pointer-events-none absolute inset-0 overflow-hidden"
               style={{ width: `${fillPercent}%` }}
             >
-              <Star
-                size={size}
-                className="fill-[var(--brand-primary)] text-[var(--brand-primary)]"
-              />
+              <Star size={size} className="max-w-none fill-primary text-primary" />
             </span>
           </span>
         );
       })}
-      <span className="ml-2 text-sm font-medium text-[var(--text-secondary)]">
+
+      <span className="ml-2 font-mono text-sm text-muted-foreground">
         {hoverValue ?? value}/{max}
       </span>
     </div>
