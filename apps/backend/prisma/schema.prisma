@@ -59,132 +59,25 @@ enum UserRole {
   MODERATOR
 }
 
-// Game Catalog System
+//
 model Game {
   id        String   @id @default(cuid())
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
-  // Core Information
-  title       String
-  slug        String   @unique
-  description String?  @db.Text
-  summary     String?  @db.Text
+  igdbId     Int?    @unique
+  title      String
+  slug       String  @unique
+  coverImage String?
   
-  // Release Information
-  releaseDate DateTime?
-  status      GameStatus @default(RELEASED)
-  
-  // Media Assets
-  coverImage  String?
-  screenshots String[]
-  videos      String[]
-  
-  // External API Integration
-  rawgId      Int?     @unique
-  igdbId      Int?     @unique
-  steamId     Int?     @unique
-  metacriticId String?
-  
-  // Ratings and Metrics
-  averageRating Float?   @default(0)
-  reviewCount   Int      @default(0)
-  playCount     Int      @default(0)
+  averageRating Float? @default(0)
+  reviewCount   Int    @default(0)
   
   // Relations
-  developer     Developer?      @relation(fields: [developerId], references: [id])
-  developerId   String?
-  publisher     Publisher?      @relation(fields: [publisherId], references: [id])
-  publisherId   String?
-  genres        GameGenre[]
-  platforms     GamePlatform[]
-  reviews       Review[]
+  reviews         Review[]
   gameListEntries GameListEntry[]
   
   @@map("games")
-}
-
-enum GameStatus {
-  ANNOUNCED
-  IN_DEVELOPMENT
-  ALPHA
-  BETA
-  EARLY_ACCESS
-  RELEASED
-  CANCELLED
-}
-
-model Developer {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?  @db.Text
-  website     String?
-  logo        String?
-  country     String?
-  foundedYear Int?
-  
-  games       Game[]
-  
-  @@map("developers")
-}
-
-model Publisher {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?  @db.Text
-  website     String?
-  logo        String?
-  
-  games       Game[]
-  
-  @@map("publishers")
-}
-
-// Genre and Platform Systems
-model Genre {
-  id          String      @id @default(cuid())
-  name        String      @unique
-  slug        String      @unique
-  description String?
-  
-  games       GameGenre[]
-  
-  @@map("genres")
-}
-
-model Platform {
-  id           String         @id @default(cuid())
-  name         String         @unique
-  slug         String         @unique
-  abbreviation String?
-  
-  games        GamePlatform[]
-  
-  @@map("platforms")
-}
-
-model GameGenre {
-  gameId  String
-  genreId String
-  
-  game    Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  genre   Genre  @relation(fields: [genreId], references: [id], onDelete: Cascade)
-  
-  @@id([gameId, genreId])
-  @@map("game_genres")
-}
-
-model GamePlatform {
-  gameId     String
-  platformId String
-  
-  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  platform   Platform @relation(fields: [platformId], references: [id], onDelete: Cascade)
-  
-  @@id([gameId, platformId])
-  @@map("game_platforms")
 }
 
 // Review System

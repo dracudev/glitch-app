@@ -1,58 +1,37 @@
 import { IgdbGame } from './igdb.types';
 import { GameResponseDto, GameBasicDto } from '@/games/dto/game-response.dto';
 import { GameDetailDto } from '@/games/dto/game-detail.dto';
+import { gameStatusFromIgdb, GameStatusName } from '@/games/constants/games.constants';
 
 // IGDB image helper — ponytail: hardcoded sizes, change if design wants higher res
 const IGDB_IMAGE_BASE = 'https://images.igdb.com/igdb/image/upload';
 
-function coverUrl(imageId: string, size = 't_cover_big'): string {
+export function coverUrl(imageId: string, size = 't_cover_big'): string {
   return `${IGDB_IMAGE_BASE}/${size}/${imageId}.jpg`;
+}
+
+export function coverUrlFor(igdb: IgdbGame): string | null {
+  return igdb.cover?.image_id ? coverUrl(igdb.cover.image_id) : null;
 }
 
 function screenshotUrl(imageId: string, size = 't_screenshot_med'): string {
   return `${IGDB_IMAGE_BASE}/${size}/${imageId}.jpg`;
 }
 
-const STATUS_MAP: Record<number, string> = {
-  0: 'RELEASED',
-  2: 'ALPHA',
-  3: 'BETA',
-  4: 'EARLY_ACCESS',
-  5: 'ALPHA',
-  6: 'BETA',
-  7: 'RELEASED',
-  8: 'RELEASED',
-};
-
-export function mapIgdbStatus(igdbStatus?: number): string {
-  if (igdbStatus === undefined || igdbStatus === null) return 'RELEASED';
-  return STATUS_MAP[igdbStatus] || 'RELEASED';
+// IGDB omits `status` on a lot of catalogue entries; those are released games.
+export function mapIgdbStatus(igdbStatus?: number | null): GameStatusName {
+  return gameStatusFromIgdb(igdbStatus) ?? 'RELEASED';
 }
 
 export function toGameResponseDto(igdb: IgdbGame): GameResponseDto {
   const developerCompany = igdb.involved_companies?.find((ic) => ic.developer)?.company;
   const publisherCompany = igdb.involved_companies?.find((ic) => ic.publisher)?.company;
 
-  const genres = (igdb.genres || []).map((g) => ({
-    id: String(g.id),
-    name: g.name,
-    slug: g.slug,
-    games: [] as string[],
-  }));
-
-  const platforms = (igdb.platforms || []).map((p) => ({
-    id: String(p.id),
-    name: p.name,
-    slug: p.slug,
-    abbreviation: p.abbreviation,
-    games: [] as string[],
-  }));
-
   const gameBasic: GameBasicDto = {
     id: String(igdb.id),
     title: igdb.name,
     slug: igdb.slug,
-    coverImage: igdb.cover?.image_id ? coverUrl(igdb.cover.image_id) : undefined,
+    coverImage: coverUrlFor(igdb),
     releaseDate: igdb.first_release_date ? new Date(igdb.first_release_date * 1000) : undefined,
     status: mapIgdbStatus(igdb.status),
     averageRating: igdb.total_rating
@@ -67,46 +46,29 @@ export function toGameResponseDto(igdb: IgdbGame): GameResponseDto {
     game: gameBasic,
     description: igdb.storyline || igdb.summary,
     summary: igdb.summary,
-    screenshots: (igdb.screenshots || [])
-      .map((s) => screenshotUrl(s.image_id))
-      .slice(0, 8),
+    screenshots: (igdb.screenshots || []).map((s) => screenshotUrl(s.image_id)).slice(0, 8),
     videos: (igdb.videos || []).map((v) => `https://www.youtube.com/watch?v=${v.video_id}`),
-    playCount: 0,
     developer: developerCompany
-      ? {
-          id: String(developerCompany.id),
-          name: developerCompany.name,
-          slug: developerCompany.slug,
-          description: undefined,
-          logo: undefined,
-          country: undefined,
-        }
+      ? { id: developerCompany.id, name: developerCompany.name, slug: developerCompany.slug }
       : undefined,
     publisher: publisherCompany
-      ? {
-          id: String(publisherCompany.id),
-          name: publisherCompany.name,
-          slug: publisherCompany.slug,
-          description: undefined,
-          logo: undefined,
-          games: [] as string[],
-        }
+      ? { id: publisherCompany.id, name: publisherCompany.name, slug: publisherCompany.slug }
       : undefined,
-    genres,
-    platforms,
+    genres: (igdb.genres || []).map((g) => ({ id: g.id, name: g.name, slug: g.slug })),
+    platforms: (igdb.platforms || []).map((p) => ({
+      id: p.id,
+      name: p.name,
+      slug: p.slug,
+      abbreviation: p.abbreviation,
+    })),
     createdAt: igdb.first_release_date ? new Date(igdb.first_release_date * 1000) : new Date(),
     updatedAt: new Date(),
-    igdbId: igdb.id,
-    rawgId: undefined,
-    steamId: undefined,
-    metacriticId: undefined,
   };
 }
 
 export function toGameDetailDto(igdb: IgdbGame): GameDetailDto {
-  const base = toGameResponseDto(igdb);
   return {
-    ...base,
+    ...toGameResponseDto(igdb),
     recentReviews: [],
   };
 }

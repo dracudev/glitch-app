@@ -1,7 +1,7 @@
 import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IgdbAuthService } from './igdb-auth.service';
-import { IgdbGame } from './igdb.types';
+import { IgdbGame, IgdbGenre, IgdbPlatform } from './igdb.types';
 
 const IGDB_FIELDS = [
   'id',
@@ -34,6 +34,15 @@ const IGDB_FIELDS = [
   'category',
 ].join(',');
 
+const SORT_MAP: Record<string, string> = {
+  title: 'name',
+  releaseDate: 'first_release_date',
+  averageRating: 'total_rating',
+  rating: 'total_rating',
+  reviewCount: 'rating_count',
+  createdAt: 'first_release_date',
+};
+
 @Injectable()
 export class IgdbClientService {
   private readonly logger = new Logger(IgdbClientService.name);
@@ -64,39 +73,30 @@ export class IgdbClientService {
     return id;
   }
 
-  private async request<T>(endpoint: string, apicalypseQuery: string): Promise<T> {
+  private async requestRaw<T>(
+    endpoint: string,
+    apicalypseQuery: string,
+  ): Promise<{ data: T; count: number | null }> {
     await this.throttle();
-    const token = await this.authService.getAccessToken();
 
     const url = `${this.baseUrl}/${endpoint}`;
-    const res = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Client-ID': this.clientId,
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'text/plain',
-      },
-      body: apicalypseQuery,
-    });
-
-    if (res.status === 401) {
-      this.logger.warn('IGDB 401, clearing token cache and retrying once');
-      this.authService.clearCache();
-      const retryToken = await this.authService.getAccessToken();
-      const retryRes = await fetch(url, {
+    const send = (token: string) =>
+      fetch(url, {
         method: 'POST',
         headers: {
           'Client-ID': this.clientId,
-          Authorization: `Bearer ${retryToken}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'text/plain',
         },
         body: apicalypseQuery,
       });
-      if (!retryRes.ok) {
-        const text = await retryRes.text().catch(() => '');
-        throw new InternalServerErrorException(`IGDB request failed: ${retryRes.status} ${text}`);
-      }
-      return (await retryRes.json()) as T;
+
+    let res = await send(await this.authService.getAccessToken());
+
+    if (res.status === 401) {
+      this.logger.warn('IGDB 401, clearing token cache and retrying once');
+      this.authService.clearCache();
+      res = await send(await this.authService.getAccessToken());
     }
 
     if (!res.ok) {
@@ -105,10 +105,23 @@ export class IgdbClientService {
       throw new InternalServerErrorException(`IGDB request failed: ${res.status}`);
     }
 
-    return (await res.json()) as T;
+    const headerCount = res.headers.get('x-count');
+    return {
+      data: (await res.json()) as T,
+      count: headerCount === null ? null : Number(headerCount),
+    };
   }
 
-  // ---- Public API ----
+  private async request<T>(endpoint: string, apicalypseQuery: string): Promise<T> {
+    return (await this.requestRaw<T>(endpoint, apicalypseQuery)).data;
+  }
+
+  private buildWhere(igdbSort: string, extraWhere?: string): string {
+    const clauses = ['cover != null'];
+    if (igdbSort === 'total_rating') clauses.push('total_rating != null');
+    if (extraWhere) clauses.push(extraWhere);
+    return clauses.join(' & ');
+  }
 
   async searchGames(options: {
     search?: string;
@@ -117,65 +130,36 @@ export class IgdbClientService {
     sortBy?: string;
     sortOrder?: 'asc' | 'desc';
     where?: string;
-  }): Promise<IgdbGame[]> {
+  }): Promise<{ games: IgdbGame[]; count: number }> {
     const limit = Math.min(options.limit ?? 12, 100);
     const offset = options.offset ?? 0;
-
-    const sortMap: Record<string, string> = {
-      title: 'name',
-      releaseDate: 'first_release_date',
-      averageRating: 'total_rating',
-      rating: 'total_rating',
-      reviewCount: 'rating_count',
-      createdAt: 'first_release_date',
-    };
-    const igdbSort = sortMap[options.sortBy || ''] || 'total_rating';
+    const igdbSort = SORT_MAP[options.sortBy || ''] || 'total_rating';
     const order = options.sortOrder === 'asc' ? 'asc' : 'desc';
 
-    let query = `fields ${IGDB_FIELDS};`;
+    let query = `fields ${IGDB_FIELDS}; where ${this.buildWhere(igdbSort, options.where)};`;
 
-    if (options.search?.trim()) {
-      const term = options.search.trim().replace(/"/g, '\\"');
-      query += ` search "${term}";`;
-      // boost relevance but still sort
-      query += ` limit ${limit}; offset ${offset};`;
-      // IGDB search ignores sort, but we can attempt where + sort fallback if needed
+    const term = options.search?.trim();
+    if (term) {
+      query += ` search "${term.replace(/"/g, '\\"')}";`;
     } else {
-      // category = 0 returned empty in live test (IGDB enum changed), use broader filter
-      const whereClauses: string[] = ['cover != null'];
-      // When sorting by rating, require rating to exist so we return meaningful popular games
-      if (igdbSort === 'total_rating' || igdbSort === 'rating') {
-        whereClauses.push('total_rating != null');
-      }
-      if (options.where) whereClauses.push(options.where);
-      query += ` where ${whereClauses.join(' & ')};`;
       query += ` sort ${igdbSort} ${order};`;
-      query += ` limit ${limit}; offset ${offset};`;
     }
+    query += ` limit ${limit}; offset ${offset};`;
 
     this.logger.debug(`IGDB search query: ${query}`);
-    return this.request<IgdbGame[]>('games', query);
+    const { data, count } = await this.requestRaw<IgdbGame[]>('games', query);
+    return { games: data, count: count ?? data.length };
   }
 
-  async countGames(options: { search?: string; where?: string }): Promise<number> {
-    let query = '';
-    if (options.search?.trim()) {
-      const term = options.search.trim().replace(/"/g, '\\"');
-      query = `search "${term}";`;
-    } else {
-      const whereClauses: string[] = ['cover != null', 'total_rating != null'];
-      if (options.where) whereClauses.push(options.where);
-      query = `where ${whereClauses.join(' & ')};`;
-    }
-    try {
-      // IGDB count returns { count: N } (object), not array — handle both
-      const result: any = await this.request<any>('games/count', query);
-      if (result && typeof result.count === 'number') return result.count;
-      if (Array.isArray(result) && result[0]?.count !== undefined) return result[0].count;
-      return 500;
-    } catch {
-      return 500;
-    }
+  async getGenres(): Promise<IgdbGenre[]> {
+    return this.request<IgdbGenre[]>('genres', 'fields id,name,slug; sort name asc; limit 50;');
+  }
+
+  async getPlatforms(): Promise<IgdbPlatform[]> {
+    return this.request<IgdbPlatform[]>(
+      'platforms',
+      'fields id,name,slug,abbreviation; sort name asc; limit 500;',
+    );
   }
 
   async findBySlug(slug: string): Promise<IgdbGame | null> {
@@ -193,18 +177,19 @@ export class IgdbClientService {
   async getSimilarGames(gameId: number, limit = 6): Promise<IgdbGame[]> {
     const source = await this.findById(gameId);
     if (!source || !source.genres?.length) {
-      return this.searchGames({ limit, sortBy: 'total_rating', sortOrder: 'desc' });
+      return (await this.searchGames({ limit, sortBy: 'total_rating', sortOrder: 'desc' })).games;
     }
     const genreIds = source.genres.map((g) => g.id).join(',');
     const where = `genres = (${genreIds}) & id != ${gameId}`;
-    return this.searchGames({ limit, sortBy: 'total_rating', sortOrder: 'desc', where });
+    return (await this.searchGames({ limit, sortBy: 'total_rating', sortOrder: 'desc', where }))
+      .games;
   }
 
   async getPopularGames(limit = 12): Promise<IgdbGame[]> {
-    return this.searchGames({ limit, sortBy: 'total_rating', sortOrder: 'desc' });
+    return (await this.searchGames({ limit, sortBy: 'total_rating', sortOrder: 'desc' })).games;
   }
 
   async getRecentGames(limit = 12): Promise<IgdbGame[]> {
-    return this.searchGames({ limit, sortBy: 'first_release_date', sortOrder: 'desc' });
+    return (await this.searchGames({ limit, sortBy: 'first_release_date', sortOrder: 'desc' })).games;
   }
 }

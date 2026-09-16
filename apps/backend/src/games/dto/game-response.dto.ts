@@ -1,11 +1,46 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { DeveloperResponseDto } from '@/games/developers/dto/developer-response.dto';
-import { PublisherResponseDto } from '@/games/publishers/dto/publisher-response.dto';
-import { GenreResponseDto } from '@/games/genres/dto/genre-response.dto';
-import { PlatformResponseDto } from '@/games/platforms/dto/platform-response.dto';
+
+// These shapes mirror the IGDB taxonomy, so ids are the numeric IGDB ids — the same
+// values the /games filters accept, which lets the UI filter by what it renders.
+
+export class GameGenreDto {
+  @ApiProperty({ example: 12, description: 'IGDB genre id' })
+  id: number;
+
+  @ApiProperty({ example: 'Role-playing (RPG)' })
+  name: string;
+
+  @ApiProperty({ example: 'role-playing-rpg' })
+  slug: string;
+}
+
+export class GamePlatformDto {
+  @ApiProperty({ example: 6, description: 'IGDB platform id' })
+  id: number;
+
+  @ApiProperty({ example: 'PC (Microsoft Windows)' })
+  name: string;
+
+  @ApiProperty({ example: 'pc' })
+  slug: string;
+
+  @ApiPropertyOptional({ example: 'PC' })
+  abbreviation?: string;
+}
+
+export class GameCompanyDto {
+  @ApiProperty({ example: 1234, description: 'IGDB company id' })
+  id: number;
+
+  @ApiProperty({ example: 'CD Projekt RED' })
+  name: string;
+
+  @ApiProperty({ example: 'cd-projekt-red' })
+  slug: string;
+}
 
 export class GameBasicDto {
-  @ApiProperty({ example: 'cm2a3b4c5d6e7f8g9h0i' })
+  @ApiProperty({ example: '1942', description: 'IGDB game id' })
   id: string;
 
   @ApiProperty({ example: 'The Witcher 3: Wild Hunt' })
@@ -14,7 +49,7 @@ export class GameBasicDto {
   @ApiProperty({ example: 'the-witcher-3-wild-hunt' })
   slug: string;
 
-  @ApiPropertyOptional({ example: 'https://example.com/cover.jpg' })
+  @ApiPropertyOptional({ example: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co1wyy.jpg' })
   coverImage?: string;
 
   @ApiPropertyOptional({ example: '2015-05-19T00:00:00.000Z' })
@@ -40,42 +75,37 @@ export class GameResponseDto {
   @ApiPropertyOptional({ example: 'Award-winning RPG from CD Projekt RED' })
   summary?: string;
 
-  @ApiProperty({ example: ['https://example.com/screen1.jpg'] })
+  @ApiProperty({ example: ['https://images.igdb.com/igdb/image/upload/t_screenshot_med/abc.jpg'] })
   screenshots: string[];
 
-  @ApiProperty({ example: ['https://youtube.com/watch?v=abc123'] })
+  @ApiProperty({ example: ['https://www.youtube.com/watch?v=abc123'] })
   videos: string[];
 
-  @ApiProperty({ example: 5000 })
-  playCount: number;
+  @ApiPropertyOptional({ type: GameCompanyDto })
+  developer?: GameCompanyDto;
 
-  @ApiPropertyOptional({ type: DeveloperResponseDto })
-  developer?: DeveloperResponseDto;
+  @ApiPropertyOptional({ type: GameCompanyDto })
+  publisher?: GameCompanyDto;
 
-  @ApiPropertyOptional({ type: PublisherResponseDto })
-  publisher?: PublisherResponseDto;
+  @ApiProperty({ type: [GameGenreDto] })
+  genres: GameGenreDto[];
 
-  @ApiProperty({ type: [GenreResponseDto] })
-  genres: GenreResponseDto[];
-
-  @ApiProperty({ type: [PlatformResponseDto] })
-  platforms: PlatformResponseDto[];
+  @ApiProperty({ type: [GamePlatformDto] })
+  platforms: GamePlatformDto[];
 
   @ApiProperty({ example: '2024-01-15T10:30:00.000Z' })
   createdAt: Date;
 
   @ApiProperty({ example: '2024-01-16T15:45:00.000Z' })
   updatedAt: Date;
+}
 
-  @ApiPropertyOptional({ example: 3328 })
-  rawgId?: number;
+// Served by GET /games/filters so the UI can build its filter sidebar from the
+// live IGDB taxonomy instead of a local copy that drifts out of sync.
+export class GameFilterOptionsDto {
+  @ApiProperty({ type: [GameGenreDto] })
+  genres: GameGenreDto[];
 
-  @ApiPropertyOptional({ example: 1942 })
-  igdbId?: number;
-
-  @ApiPropertyOptional({ example: 292030 })
-  steamId?: number;
-
-  @ApiPropertyOptional({ example: 'the-witcher-3-wild-hunt' })
-  metacriticId?: string;
+  @ApiProperty({ type: [GamePlatformDto] })
+  platforms: GamePlatformDto[];
 }

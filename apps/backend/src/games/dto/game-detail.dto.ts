@@ -47,18 +47,6 @@ export class GameReviewDto {
 }
 
 export class GameDetailDto extends GameResponseDto {
-  @ApiPropertyOptional()
-  rawgId?: number;
-
-  @ApiPropertyOptional()
-  igdbId?: number;
-
-  @ApiPropertyOptional()
-  steamId?: number;
-
-  @ApiPropertyOptional()
-  metacriticId?: string;
-
   @ApiProperty({ type: [GameReviewDto] })
   recentReviews: GameReviewDto[];
 }

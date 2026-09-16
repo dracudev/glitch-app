@@ -1,36 +1,13 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-  UseGuards,
-  HttpCode,
-  HttpStatus,
-} from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { Controller, Get, Param, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { GamesService } from './games.service';
 import {
-  CreateGameDto,
-  UpdateGameDto,
-  GameResponseDto,
   GameDetailDto,
+  GameFilterOptionsDto,
+  GameResponseDto,
   PaginatedGamesResponseDto,
   GamesQueryDto,
 } from './dto';
-import { JwtAuthGuard } from '@/auth/guards';
-import { RolesGuard } from '@/auth/guards/roles.guard';
-import { Roles } from '@/auth/decorators/roles.decorator';
 import { Public } from '@/auth/decorators/public.decorator';
 
 @ApiTags('Games')
@@ -38,37 +15,15 @@ import { Public } from '@/auth/decorators/public.decorator';
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
-  @Post()
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'MODERATOR')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Create a new game (Admin/Moderator only)' })
-  @ApiResponse({
-    status: 201,
-    description: 'Game created successfully',
-    type: GameResponseDto,
-  })
-  @ApiResponse({ status: 400, description: 'Bad request - Invalid data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Admin/Moderator role required',
-  })
-  async create(@Body() createGameDto: CreateGameDto): Promise<GameResponseDto> {
-    return this.gamesService.create(createGameDto);
-  }
-
   @Get()
   @Public()
-  @ApiOperation({ summary: 'Get all games with filters and pagination' })
+  @ApiOperation({ summary: 'Get all games with filters and pagination (sourced from IGDB)' })
   @ApiResponse({ status: 200, description: 'Games retrieved successfully' })
   @ApiQuery({ name: 'page', required: false, type: Number })
   @ApiQuery({ name: 'limit', required: false, type: Number })
   @ApiQuery({ name: 'search', required: false, type: String })
-  @ApiQuery({ name: 'genreIds', required: false, type: [String] })
-  @ApiQuery({ name: 'platformIds', required: false, type: [String] })
-  @ApiQuery({ name: 'developerId', required: false, type: String })
-  @ApiQuery({ name: 'publisherId', required: false, type: String })
+  @ApiQuery({ name: 'genreIds', required: false, type: [Number] })
+  @ApiQuery({ name: 'platformIds', required: false, type: [Number] })
   @ApiQuery({ name: 'status', required: false, type: String })
   @ApiQuery({ name: 'minRating', required: false, type: Number })
   @ApiQuery({ name: 'maxRating', required: false, type: Number })
@@ -76,6 +31,19 @@ export class GamesController {
   @ApiQuery({ name: 'sortOrder', required: false, type: String })
   async findAll(@Query() query: GamesQueryDto): Promise<PaginatedGamesResponseDto> {
     return this.gamesService.findAll(query);
+  }
+
+  // Keep above ':slug'.
+  @Get('filters')
+  @Public()
+  @ApiOperation({ summary: 'Get the IGDB genre and platform options for the filter UI' })
+  @ApiResponse({
+    status: 200,
+    description: 'Filter options retrieved successfully',
+    type: GameFilterOptionsDto,
+  })
+  async getFilterOptions(): Promise<GameFilterOptionsDto> {
+    return this.gamesService.getFilterOptions();
   }
 
   @Get(':slug')
@@ -112,45 +80,5 @@ export class GamesController {
     @Query('limit') limit?: number,
   ): Promise<GameResponseDto[]> {
     return this.gamesService.getSimilarGames(id, limit);
-  }
-
-  @Patch(':id')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'MODERATOR')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update game (Admin/Moderator only)' })
-  @ApiParam({ name: 'id', description: 'Game ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Game updated successfully',
-    type: GameResponseDto,
-  })
-  @ApiResponse({ status: 400, description: 'Bad request - Invalid data' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - Admin/Moderator role required',
-  })
-  @ApiResponse({ status: 404, description: 'Game not found' })
-  async update(
-    @Param('id') id: string,
-    @Body() updateGameDto: UpdateGameDto,
-  ): Promise<GameResponseDto> {
-    return this.gamesService.update(id, updateGameDto);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete game (Admin only)' })
-  @ApiParam({ name: 'id', description: 'Game ID' })
-  @ApiResponse({ status: 204, description: 'Game deleted successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
-  @ApiResponse({ status: 404, description: 'Game not found' })
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.gamesService.remove(id);
   }
 }

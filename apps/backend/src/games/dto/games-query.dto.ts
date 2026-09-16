@@ -1,41 +1,42 @@
-import { ApiPropertyOptional, ApiExtraModels } from '@nestjs/swagger';
-import { IsOptional, IsArray, IsEnum, IsNumber, Min, Max, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsArray, IsEnum, IsNumber, IsIn, Min, Max } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { PaginationQueryDto } from '@/common/dto/pagination-query.dto';
-import { GameFiltersDto } from './game-filters.dto';
-import { GameStatus } from '@prisma/client';
-import { SORT_FIELDS, SORT_ORDERS } from '../constants/games.constants';
+import {
+  SORT_FIELDS,
+  SORT_ORDERS,
+  GAME_STATUS_NAMES,
+  GameStatusName,
+} from '../constants/games.constants';
 
-@ApiExtraModels(PaginationQueryDto, GameFiltersDto)
-export class GamesQueryDto extends PaginationQueryDto implements GameFiltersDto {
-  @ApiPropertyOptional({ example: ['cm2a3b4c5d6e7f8g9h0i'] })
+const toIgdbIds = ({ value }: { value: unknown }): number[] | undefined => {
+  const raw = Array.isArray(value) ? value : [value];
+  const ids = raw
+    .flatMap((entry) => String(entry).split(','))
+    .map((entry) => Number(entry.trim()))
+    .filter((id) => Number.isInteger(id) && id > 0);
+  return ids.length > 0 ? ids : undefined;
+};
+
+export class GamesQueryDto extends PaginationQueryDto {
+  @ApiPropertyOptional({ example: [12], description: 'IGDB genre ids' })
   @IsOptional()
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toIgdbIds)
   @IsArray()
-  @IsString({ each: true })
-  genreIds?: string[];
+  @IsNumber({}, { each: true })
+  genreIds?: number[];
 
-  @ApiPropertyOptional({ example: ['cm2a3b4c5d6e7f8g9h0i'] })
+  @ApiPropertyOptional({ example: [6], description: 'IGDB platform ids' })
   @IsOptional()
-  @Transform(({ value }) => (Array.isArray(value) ? value : [value]))
+  @Transform(toIgdbIds)
   @IsArray()
-  @IsString({ each: true })
-  platformIds?: string[];
+  @IsNumber({}, { each: true })
+  platformIds?: number[];
 
-  @ApiPropertyOptional({ example: 'cm2a3b4c5d6e7f8g9h0i' })
+  @ApiPropertyOptional({ enum: GAME_STATUS_NAMES })
   @IsOptional()
-  @IsString()
-  developerId?: string;
-
-  @ApiPropertyOptional({ example: 'cm2a3b4c5d6e7f8g9h0i' })
-  @IsOptional()
-  @IsString()
-  publisherId?: string;
-
-  @ApiPropertyOptional({ enum: GameStatus })
-  @IsOptional()
-  @IsEnum(GameStatus)
-  status?: GameStatus;
+  @IsIn(GAME_STATUS_NAMES)
+  status?: GameStatusName;
 
   @ApiPropertyOptional({ example: 7.0, minimum: 0, maximum: 10 })
   @IsOptional()
@@ -53,10 +54,7 @@ export class GamesQueryDto extends PaginationQueryDto implements GameFiltersDto 
   @Max(10)
   maxRating?: number;
 
-  @ApiPropertyOptional({
-    enum: SORT_FIELDS,
-    default: 'createdAt',
-  })
+  @ApiPropertyOptional({ enum: SORT_FIELDS, default: 'averageRating' })
   @IsOptional()
   @IsEnum(SORT_FIELDS)
   sortBy?: string;

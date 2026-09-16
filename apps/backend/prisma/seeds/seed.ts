@@ -1,12 +1,14 @@
-import { PrismaClient, UserRole, GameStatus } from '@prisma/client';
+import { PrismaClient, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
+const cover = (imageId: string) =>
+  `https://images.igdb.com/igdb/image/upload/t_cover_big/${imageId}.jpg`;
+
 async function main() {
   console.log('🌱 Starting database seed...');
 
-  // Clean existing data in development
   if (process.env.NODE_ENV === 'development') {
     console.log('🧹 Cleaning existing data...');
     await prisma.userAchievement.deleteMany();
@@ -19,240 +21,10 @@ async function main() {
     await prisma.like.deleteMany();
     await prisma.review.deleteMany();
     await prisma.follow.deleteMany();
-    await prisma.gameGenre.deleteMany();
-    await prisma.gamePlatform.deleteMany();
     await prisma.game.deleteMany();
-    await prisma.publisher.deleteMany();
-    await prisma.developer.deleteMany();
-    await prisma.genre.deleteMany();
-    await prisma.platform.deleteMany();
     await prisma.user.deleteMany();
   }
 
-  // Create Genres
-  console.log('🎯 Creating genres...');
-  const genres = await Promise.all([
-    prisma.genre.create({
-      data: {
-        name: 'Action',
-        slug: 'action',
-        description: 'Fast-paced games with physical challenges',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Adventure',
-        slug: 'adventure',
-        description: 'Exploration and puzzle-solving games',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Role-Playing',
-        slug: 'rpg',
-        description: 'Character development and story-driven games',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Strategy',
-        slug: 'strategy',
-        description: 'Tactical and strategic thinking games',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Simulation',
-        slug: 'simulation',
-        description: 'Real-world activity simulation games',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Puzzle',
-        slug: 'puzzle',
-        description: 'Logic and problem-solving games',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Sports',
-        slug: 'sports',
-        description: 'Athletic competition simulation games',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Racing',
-        slug: 'racing',
-        description: 'Vehicle racing and driving games',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Shooter',
-        slug: 'shooter',
-        description: 'Combat games focusing on ranged weapons',
-      },
-    }),
-    prisma.genre.create({
-      data: {
-        name: 'Indie',
-        slug: 'indie',
-        description: 'Independent developer games',
-      },
-    }),
-  ]);
-
-  // Create Platforms
-  console.log('🎮 Creating platforms...');
-  const platforms = await Promise.all([
-    prisma.platform.create({
-      data: {
-        name: 'PC',
-        slug: 'pc',
-        abbreviation: 'PC',
-      },
-    }),
-    prisma.platform.create({
-      data: {
-        name: 'PlayStation 5',
-        slug: 'playstation-5',
-        abbreviation: 'PS5',
-      },
-    }),
-    prisma.platform.create({
-      data: {
-        name: 'Xbox Series X/S',
-        slug: 'xbox-series-x-s',
-        abbreviation: 'XBOX',
-      },
-    }),
-    prisma.platform.create({
-      data: {
-        name: 'Nintendo Switch',
-        slug: 'nintendo-switch',
-        abbreviation: 'NSW',
-      },
-    }),
-    prisma.platform.create({
-      data: {
-        name: 'PlayStation 4',
-        slug: 'playstation-4',
-        abbreviation: 'PS4',
-      },
-    }),
-    prisma.platform.create({
-      data: {
-        name: 'Xbox One',
-        slug: 'xbox-one',
-        abbreviation: 'XONE',
-      },
-    }),
-    prisma.platform.create({
-      data: {
-        name: 'iOS',
-        slug: 'ios',
-        abbreviation: 'iOS',
-      },
-    }),
-    prisma.platform.create({
-      data: {
-        name: 'Android',
-        slug: 'android',
-        abbreviation: 'AND',
-      },
-    }),
-  ]);
-
-  // Create Developers
-  console.log('👨‍💻 Creating developers...');
-  const developers = await Promise.all([
-    prisma.developer.create({
-      data: {
-        name: 'CD Projekt RED',
-        slug: 'cd-projekt-red',
-        description: 'Polish video game developer known for The Witcher series and Cyberpunk 2077',
-        country: 'Poland',
-        foundedYear: 1994,
-        website: 'https://www.cdprojektred.com',
-      },
-    }),
-    prisma.developer.create({
-      data: {
-        name: 'FromSoftware',
-        slug: 'fromsoftware',
-        description: 'Japanese developer known for challenging action RPGs',
-        country: 'Japan',
-        foundedYear: 1986,
-        website: 'https://www.fromsoftware.jp',
-      },
-    }),
-    prisma.developer.create({
-      data: {
-        name: 'Naughty Dog',
-        slug: 'naughty-dog',
-        description: 'American developer known for cinematic action-adventure games',
-        country: 'United States',
-        foundedYear: 1984,
-        website: 'https://www.naughtydog.com',
-      },
-    }),
-    prisma.developer.create({
-      data: {
-        name: 'Nintendo EPD',
-        slug: 'nintendo-epd',
-        description: "Nintendo's internal development division",
-        country: 'Japan',
-        foundedYear: 2015,
-        website: 'https://www.nintendo.com',
-      },
-    }),
-    prisma.developer.create({
-      data: {
-        name: 'Indie Studio',
-        slug: 'indie-studio',
-        description: 'Sample indie game developer for showcase features',
-        country: 'Various',
-        foundedYear: 2020,
-      },
-    }),
-  ]);
-
-  // Create Publishers
-  console.log('🏢 Creating publishers...');
-  const publishers = await Promise.all([
-    prisma.publisher.create({
-      data: {
-        name: 'CD Projekt',
-        slug: 'cd-projekt',
-        description: 'Polish video game publisher and distributor',
-      },
-    }),
-    prisma.publisher.create({
-      data: {
-        name: 'Bandai Namco Entertainment',
-        slug: 'bandai-namco',
-        description: 'Japanese multinational video game publisher',
-      },
-    }),
-    prisma.publisher.create({
-      data: {
-        name: 'Sony Interactive Entertainment',
-        slug: 'sony-interactive',
-        description: "Sony's video game division",
-      },
-    }),
-    prisma.publisher.create({
-      data: {
-        name: 'Nintendo',
-        slug: 'nintendo',
-        description: 'Japanese multinational video game company',
-      },
-    }),
-  ]);
-
-  // Create Sample Users
   console.log('👤 Creating users...');
   const hashedPassword = await bcrypt.hash('password123', 12);
 
@@ -299,160 +71,42 @@ async function main() {
     }),
   ]);
 
-  // Create Sample Games
-  console.log('🎮 Creating games...');
+  console.log('🎮 Creating game anchors...');
   const games = await Promise.all([
     prisma.game.create({
       data: {
+        igdbId: 1942,
         title: 'The Witcher 3: Wild Hunt',
         slug: 'the-witcher-3-wild-hunt',
-        description:
-          'The Witcher 3: Wild Hunt is a story-driven, next-generation open world role-playing game set in a visually stunning fantasy universe full of meaningful choices and impactful consequences.',
-        summary:
-          'An epic open-world RPG following Geralt of Rivia on his quest to find his adopted daughter.',
-        releaseDate: new Date('2015-05-19'),
-        status: GameStatus.RELEASED,
-        developerId: developers[0].id,
-        publisherId: publishers[0].id,
-        averageRating: 9.2,
-        reviewCount: 3,
-        rawgId: 3328,
-        steamId: 292030,
-        genres: {
-          create: [
-            { genreId: genres.find((g) => g.slug === 'rpg')!.id },
-            { genreId: genres.find((g) => g.slug === 'adventure')!.id },
-            { genreId: genres.find((g) => g.slug === 'action')!.id },
-          ],
-        },
-        platforms: {
-          create: [
-            { platformId: platforms.find((p) => p.slug === 'pc')!.id },
-            { platformId: platforms.find((p) => p.slug === 'playstation-4')!.id },
-            { platformId: platforms.find((p) => p.slug === 'xbox-one')!.id },
-            { platformId: platforms.find((p) => p.slug === 'nintendo-switch')!.id },
-          ],
-        },
+        coverImage: cover('coaarl'),
       },
     }),
     prisma.game.create({
       data: {
+        igdbId: 119133,
         title: 'Elden Ring',
         slug: 'elden-ring',
-        description:
-          'THE NEW FANTASY ACTION RPG. Rise, Tarnished, and be guided by grace to brandish the power of the Elden Ring and become an Elden Lord in the Lands Between.',
-        summary:
-          "FromSoftware's largest and most ambitious game yet, featuring an open world created in collaboration with George R.R. Martin.",
-        releaseDate: new Date('2022-02-25'),
-        status: GameStatus.RELEASED,
-        developerId: developers[1].id,
-        publisherId: publishers[1].id,
-        averageRating: 9.5,
-        reviewCount: 2,
-        rawgId: 326243,
-        steamId: 1245620,
-        genres: {
-          create: [
-            { genreId: genres.find((g) => g.slug === 'rpg')!.id },
-            { genreId: genres.find((g) => g.slug === 'action')!.id },
-            { genreId: genres.find((g) => g.slug === 'adventure')!.id },
-          ],
-        },
-        platforms: {
-          create: [
-            { platformId: platforms.find((p) => p.slug === 'pc')!.id },
-            { platformId: platforms.find((p) => p.slug === 'playstation-5')!.id },
-            { platformId: platforms.find((p) => p.slug === 'xbox-series-x-s')!.id },
-            { platformId: platforms.find((p) => p.slug === 'playstation-4')!.id },
-          ],
-        },
+        coverImage: cover('co4jni'),
       },
     }),
     prisma.game.create({
       data: {
+        igdbId: 26192,
         title: 'The Last of Us Part II',
         slug: 'the-last-of-us-part-ii',
-        description:
-          'Five years after their dangerous journey across the post-pandemic United States, Ellie and Joel have settled down in Jackson, Wyoming.',
-        summary:
-          "A gripping post-apocalyptic adventure focusing on Ellie's journey of revenge and redemption.",
-        releaseDate: new Date('2020-06-19'),
-        status: GameStatus.RELEASED,
-        developerId: developers[2].id,
-        publisherId: publishers[2].id,
-        averageRating: 8.8,
-        reviewCount: 1,
-        steamId: 1888930,
-        genres: {
-          create: [
-            { genreId: genres.find((g) => g.slug === 'action')!.id },
-            { genreId: genres.find((g) => g.slug === 'adventure')!.id },
-          ],
-        },
-        platforms: {
-          create: [
-            { platformId: platforms.find((p) => p.slug === 'playstation-4')!.id },
-            { platformId: platforms.find((p) => p.slug === 'playstation-5')!.id },
-            { platformId: platforms.find((p) => p.slug === 'pc')!.id },
-          ],
-        },
+        coverImage: cover('co5ziw'),
       },
     }),
     prisma.game.create({
       data: {
+        igdbId: 26758,
         title: 'Super Mario Odyssey',
         slug: 'super-mario-odyssey',
-        description:
-          'Explore incredible places far from the Mushroom Kingdom as you join Mario and his new ally Cappy on a massive, globe-trotting 3D adventure.',
-        summary:
-          "Mario's latest 3D platforming adventure featuring innovative cap-throwing mechanics.",
-        releaseDate: new Date('2017-10-27'),
-        status: GameStatus.RELEASED,
-        developerId: developers[3].id,
-        publisherId: publishers[3].id,
-        averageRating: 9.0,
-        reviewCount: 1,
-        genres: {
-          create: [
-            { genreId: genres.find((g) => g.slug === 'adventure')!.id },
-            { genreId: genres.find((g) => g.slug === 'action')!.id },
-          ],
-        },
-        platforms: {
-          create: [{ platformId: platforms.find((p) => p.slug === 'nintendo-switch')!.id }],
-        },
-      },
-    }),
-    prisma.game.create({
-      data: {
-        title: 'Indie Puzzle Adventure',
-        slug: 'indie-puzzle-adventure',
-        description:
-          'A charming indie puzzle adventure game showcasing innovative gameplay mechanics and beautiful hand-drawn art.',
-        summary: 'Perfect example of indie game creativity and innovation.',
-        releaseDate: new Date('2023-03-15'),
-        status: GameStatus.RELEASED,
-        developerId: developers[4].id,
-        averageRating: 7.8,
-        reviewCount: 0,
-        genres: {
-          create: [
-            { genreId: genres.find((g) => g.slug === 'puzzle')!.id },
-            { genreId: genres.find((g) => g.slug === 'indie')!.id },
-            { genreId: genres.find((g) => g.slug === 'adventure')!.id },
-          ],
-        },
-        platforms: {
-          create: [
-            { platformId: platforms.find((p) => p.slug === 'pc')!.id },
-            { platformId: platforms.find((p) => p.slug === 'nintendo-switch')!.id },
-          ],
-        },
+        coverImage: cover('co1mxf'),
       },
     }),
   ]);
 
-  // Create Sample Reviews
   console.log('📝 Creating reviews...');
   const reviews = await Promise.all([
     prisma.review.create({
@@ -534,71 +188,39 @@ async function main() {
     }),
   ]);
 
-  // Create Some Follows
+  console.log('⭐ Recalculating game ratings...');
+  for (const game of games) {
+    const aggregate = await prisma.review.aggregate({
+      where: { gameId: game.id, isPublished: true },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+    await prisma.game.update({
+      where: { id: game.id },
+      data: {
+        averageRating: aggregate._avg.rating ?? 0,
+        reviewCount: aggregate._count.rating,
+      },
+    });
+  }
+
   console.log('🤝 Creating follows...');
   await Promise.all([
-    prisma.follow.create({
-      data: {
-        followerId: users[1].id,
-        followingId: users[2].id,
-      },
-    }),
-    prisma.follow.create({
-      data: {
-        followerId: users[1].id,
-        followingId: users[3].id,
-      },
-    }),
-    prisma.follow.create({
-      data: {
-        followerId: users[2].id,
-        followingId: users[1].id,
-      },
-    }),
-    prisma.follow.create({
-      data: {
-        followerId: users[2].id,
-        followingId: users[3].id,
-      },
-    }),
-    prisma.follow.create({
-      data: {
-        followerId: users[3].id,
-        followingId: users[1].id,
-      },
-    }),
+    prisma.follow.create({ data: { followerId: users[1].id, followingId: users[2].id } }),
+    prisma.follow.create({ data: { followerId: users[1].id, followingId: users[3].id } }),
+    prisma.follow.create({ data: { followerId: users[2].id, followingId: users[1].id } }),
+    prisma.follow.create({ data: { followerId: users[2].id, followingId: users[3].id } }),
+    prisma.follow.create({ data: { followerId: users[3].id, followingId: users[1].id } }),
   ]);
 
-  // Create Some Likes
   console.log('❤️ Creating likes...');
   await Promise.all([
-    prisma.like.create({
-      data: {
-        userId: users[2].id,
-        reviewId: reviews[0].id,
-      },
-    }),
-    prisma.like.create({
-      data: {
-        userId: users[3].id,
-        reviewId: reviews[0].id,
-      },
-    }),
-    prisma.like.create({
-      data: {
-        userId: users[1].id,
-        reviewId: reviews[1].id,
-      },
-    }),
-    prisma.like.create({
-      data: {
-        userId: users[3].id,
-        reviewId: reviews[3].id,
-      },
-    }),
+    prisma.like.create({ data: { userId: users[2].id, reviewId: reviews[0].id } }),
+    prisma.like.create({ data: { userId: users[3].id, reviewId: reviews[0].id } }),
+    prisma.like.create({ data: { userId: users[1].id, reviewId: reviews[1].id } }),
+    prisma.like.create({ data: { userId: users[3].id, reviewId: reviews[3].id } }),
   ]);
 
-  // Create Some Comments
   console.log('💬 Creating comments...');
   await Promise.all([
     prisma.comment.create({
@@ -625,7 +247,6 @@ async function main() {
     }),
   ]);
 
-  // Create Some Game Lists
   console.log('📋 Creating game lists...');
   const gameLists = await Promise.all([
     prisma.gameList.create({
@@ -654,7 +275,6 @@ async function main() {
     }),
   ]);
 
-  // Create Game List Entries
   console.log('📝 Creating game list entries...');
   await Promise.all([
     prisma.gameListEntry.create({
@@ -691,7 +311,6 @@ async function main() {
     }),
   ]);
 
-  // Create Sample Achievements (for future features)
   console.log('🏆 Creating achievements...');
   const achievements = await Promise.all([
     prisma.achievement.create({
@@ -736,32 +355,19 @@ async function main() {
     }),
   ]);
 
-  // Award some achievements to users
   console.log('🎖️ Awarding achievements...');
   await Promise.all([
     prisma.userAchievement.create({
-      data: {
-        userId: users[1].id,
-        achievementId: achievements[0].id,
-      },
+      data: { userId: users[1].id, achievementId: achievements[0].id },
     }),
     prisma.userAchievement.create({
-      data: {
-        userId: users[1].id,
-        achievementId: achievements[3].id,
-      },
+      data: { userId: users[1].id, achievementId: achievements[3].id },
     }),
     prisma.userAchievement.create({
-      data: {
-        userId: users[2].id,
-        achievementId: achievements[0].id,
-      },
+      data: { userId: users[2].id, achievementId: achievements[0].id },
     }),
     prisma.userAchievement.create({
-      data: {
-        userId: users[3].id,
-        achievementId: achievements[0].id,
-      },
+      data: { userId: users[3].id, achievementId: achievements[0].id },
     }),
   ]);
 
@@ -770,10 +376,6 @@ async function main() {
   console.log(`- Users: ${users.length}`);
   console.log(`- Games: ${games.length}`);
   console.log(`- Reviews: ${reviews.length}`);
-  console.log(`- Genres: ${genres.length}`);
-  console.log(`- Platforms: ${platforms.length}`);
-  console.log(`- Developers: ${developers.length}`);
-  console.log(`- Publishers: ${publishers.length}`);
   console.log(`- Achievements: ${achievements.length}`);
   console.log(`- Game Lists: ${gameLists.length}`);
 
