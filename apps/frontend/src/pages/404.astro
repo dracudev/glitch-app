@@ -1,0 +1,52 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+
+const destinations = [
+  { href: '/', label: 'Home', copy: 'Start again from the top.' },
+  { href: '/games', label: 'Games', copy: 'Browse the full catalogue.' },
+  { href: '/reviews', label: 'Reviews', copy: 'Read what players actually thought.' },
+  { href: '/feed', label: 'Your feed', copy: 'See what the people you follow are playing.' },
+];
+---
+
+<MainLayout
+  title="Page not found"
+  description="We could not find that page on Glitch."
+  noIndex
+>
+  <div class="shell py-20 lg:py-28">
+    <p class="font-mono text-xs uppercase tracking-widest text-muted-foreground">Error 404</p>
+
+    <h1 class="mt-4 max-w-3xl text-4xl leading-[1.05] tracking-tight sm:text-5xl">
+      We could not find that page.
+      <span class="block text-muted-foreground">It may have moved, or never existed.</span>
+    </h1>
+
+    <p class="mt-6 max-w-xl text-base text-foreground-secondary">
+      Everything on Glitch lives in one of four places. Pick the one you were after.
+    </p>
+
+    <ul class="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+      {
+        destinations.map((destination) => (
+          <li class="bg-background">
+            <a
+              href={destination.href}
+              class="group flex h-full flex-col p-5 transition-colors hover:bg-card"
+            >
+              <span class="text-base font-medium text-foreground transition-colors group-hover:text-primary">
+                {destination.label}
+              </span>
+              <span class="mt-1 text-sm text-muted-foreground">{destination.copy}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <p class="mt-10 text-sm text-muted-foreground">
+      Landed here from a link inside Glitch? That link is a placeholder for something we have not
+      built yet.
+    </p>
+  </div>
+</MainLayout>
