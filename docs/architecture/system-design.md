@@ -16,85 +16,47 @@ A modern, gaming-focused design system built for performance, accessibility, and
 
 ## Design Tokens
 
-All design tokens use industry-standard naming conventions and are organized by category:
+> **Superseded.** The token layer was rebuilt as a single dark-first design system. The
+> authoritative values now live in [`apps/frontend/src/styles/global.css`](../../apps/frontend/src/styles/global.css),
+> and the full reference — palette, typography, layout, shape, motion, z-index and the
+> component contracts — is in [`docs/design/DESIGN-SYSTEM.md`](../design/DESIGN-SYSTEM.md).
+> The high-level direction and rebrand rationale are in [`DESIGN.md`](../../DESIGN.md).
+>
+> Do not restate token values here; they drift. Read them from `global.css`.
 
-### Colors
+The system was previously a set of flat CSS variables named `--brand-*`, `--text-*`, `--bg-*`
+and `--state-*`. It is now a Tailwind v4 `@theme` block that maps semantic `--color-*` tokens
+onto brand variables, with `:root` as the dark default and `:root.light` overriding the same
+variable names for the light theme.
 
-```css
-/* Brand */
---brand-primary: #7f5af0; /* Primary CTA, links, focus states */
---brand-secondary: #94a1b2; /* Secondary elements, muted text */
---brand-accent: #2cb67d; /* Success, notifications, highlights */
+Two consequences worth knowing when reading older documents:
 
-/* Text */
---text-primary: #fffffe; /* Headings, high-emphasis text */
---text-secondary: #cbd5e0; /* Body text, readable on dark */
---text-muted: #a3b1c2; /* Placeholders, meta info */
---text-inverse: #1f2937; /* Light background text (rare) */
+- **There is no `prefers-color-scheme` token resolution any more.** Dark is the product default
+  and light is opt-in via a `.light` class on `<html>`. The old media-query fallback made one
+  token resolve to two different values depending on the operating system setting.
+- **Components use token utilities only.** Raw hex values, arbitrary `bg-[var(--x)]` classes and
+  inline `style` objects are not part of the system. Components never name a brand colour directly.
 
-/* Backgrounds */
---bg-primary: #16161a; /* Main app background */
---bg-secondary: #242629; /* Cards, panels, elevated content */
---bg-tertiary: #3b3e45; /* Borders, dividers, input borders */
+### Themes
 
-/* States */
---state-error: #ef4444; /* Error messages, destructive actions */
---state-warning: #f59e0b; /* Warnings, caution */
---state-success: #2cb67d; /* Success messages, positive feedback */
---state-info: #7f5af0; /* Info messages, neutral feedback */
-```
+| Theme | How it is selected | Brand primary | Brand accent |
+|---|---|---|---|
+| Dark (default) | no class, or `.dark` on `<html>` | radioactive acid green | ultraviolet violet |
+| Light | `.light` on `<html>` | deep green | deep violet |
 
 ### Typography
 
-Single font family with responsive scaling:
-
-```css
---font-family-base: "Inter", system-ui, sans-serif;
-
-/* Fixed Sizes */
---font-size-xs: 0.75rem; /* 12px - Fine print */
---font-size-sm: 0.875rem; /* 14px - Small text, captions */
---font-size-base: 1rem; /* 16px - Body text */
---font-size-lg: 1.125rem; /* 18px - Large body text */
---font-size-xl: 1.25rem; /* 20px - Small headings */
-
-/* Responsive Headings */
---font-size-h1: clamp(2.25rem, 5vw + 1rem, 3.75rem);
---font-size-h2: clamp(1.875rem, 4vw + 1rem, 3rem);
---font-size-h3: clamp(1.5rem, 3vw + 1rem, 2.25rem);
-```
+Three faces, each with one job: a display grotesque for headings, a neutral sans for body and UI
+text, and a mono reserved for real data (counts, ratings, dates). `@layer base` applies the
+display face, weight and colour to every `h1`-`h6`, so headings declare only size and tracking.
 
 ### Spacing
 
-8px-based spacing scale for consistent layouts:
+Spacing uses Tailwind's default 0.25rem scale — there is no custom `--space-*` family. The only
+layout constants are the `shell` utility (the page rail that guarantees the navbar, the footer
+and page content share one gutter) and `--nav-height`, which drives the `top-nav` helper for
+anything that must sit below the sticky header.
 
-```css
---space-1: 0.25rem; /* 4px */
---space-2: 0.5rem; /* 8px */
---space-3: 0.75rem; /* 12px */
---space-4: 1rem; /* 16px */
---space-6: 1.5rem; /* 24px */
---space-8: 2rem; /* 32px */
---space-12: 3rem; /* 48px */
---space-16: 4rem; /* 64px */
-```
-
-### Shadows & Effects
-
-Subtle depth for dark theme interfaces:
-
-```css
---shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.15);
---shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.25);
---shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35);
-
---radius-sm: 0.25rem; /* Small components */
---radius-md: 0.375rem; /* Buttons, inputs */
---radius-lg: 0.5rem; /* Cards, panels */
-
---transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
---transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-```
 
 ## Component Patterns
 

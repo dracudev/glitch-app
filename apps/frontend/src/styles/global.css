@@ -1,185 +1,446 @@
 @import 'tailwindcss';
 
-/* Tailwind v4 Theme Configuration */
+/* ============================================================================
+   GLITCH — DESIGN SYSTEM
+   ----------------------------------------------------------------------------
+   Spec: docs/design/DESIGN-SYSTEM.md
+   Contract: /DESIGN.md
+
+   Architecture
+   ------------
+   1. @theme    — registers design decisions as Tailwind utilities.
+   2. :root     — DARK is the default theme (the brand is dark).
+   3. :root.light — light theme overrides the same variable names.
+   4. @layer base — element defaults, deliberately in a layer so utilities win.
+
+   Rules
+   -----
+   - Components use TOKEN utilities (bg-card, text-muted-foreground, ...).
+     Never raw hex, never var(--...) inside class names.
+   - Dark is the default. Light is the `.light` class on <html>.
+   - Z-index only through the semantic z-* utilities below.
+   - Radius: controls = rounded-md, surfaces = rounded-lg, panels = rounded-xl,
+     pills = rounded-full.
+   ============================================================================ */
+
+/* `dark:` follows the class, not the OS. Dark is our default, so this variant
+   exists for the rare component that must differ when light is explicitly set. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ---------------------------------------------------------------------------
+   1. THEME — every token here becomes a Tailwind utility.
+   --------------------------------------------------------------------------- */
 @theme {
-  /* Color tokens for Tailwind */
+  /* --- Brand hue: radioactive green (actions, active state, filled controls) */
   --color-primary: var(--brand-primary);
-  --color-primary-foreground: #ffffff;
-  --color-secondary: var(--bg-secondary);
-  --color-secondary-foreground: var(--text-primary);
-  --color-muted: var(--bg-tertiary);
-  --color-muted-foreground: var(--text-muted);
+  --color-primary-hover: var(--brand-primary-hover);
+  --color-primary-foreground: var(--brand-primary-foreground);
+
+  /* --- Identity hue: ultraviolet (links, focus, selection, interactive edges) */
   --color-accent: var(--brand-accent);
-  --color-accent-foreground: #ffffff;
-  --color-destructive: var(--state-error);
-  --color-destructive-foreground: #ffffff;
-  --color-border: var(--bg-tertiary);
-  --color-input: var(--bg-secondary);
-  --color-ring: var(--brand-primary);
-  --color-background: var(--bg-primary);
-  --color-foreground: var(--text-primary);
-  --color-card: var(--bg-secondary);
-  --color-card-foreground: var(--text-primary);
-  --color-popover: var(--bg-secondary);
-  --color-popover-foreground: var(--text-primary);
+  --color-accent-hover: var(--brand-accent-hover);
+  --color-accent-foreground: var(--brand-accent-foreground);
+
+  /* --- Muted surface + its ink (secondary buttons, quiet chips) */
+  --color-secondary: var(--brand-secondary);
+  --color-secondary-hover: var(--brand-secondary-hover);
+  --color-secondary-foreground: var(--brand-secondary-foreground);
+
+  /* --- Surfaces */
+  --color-background: var(--surface-base);
+  --color-card: var(--surface-raised);
+  --color-card-foreground: var(--ink-primary);
+  --color-popover: var(--surface-overlay);
+  --color-popover-foreground: var(--ink-primary);
+  --color-muted: var(--surface-muted);
+  --color-muted-foreground: var(--ink-muted);
+  --color-input: var(--surface-sunken);
+
+  /* --- Ink */
+  --color-foreground: var(--ink-primary);
+  --color-foreground-secondary: var(--ink-secondary);
+
+  /* --- Lines */
+  --color-border: var(--border-default);
+  --color-border-strong: var(--border-strong);
+  --color-border-hover: var(--border-hover);
+  --color-ring: var(--brand-accent);
+  --color-ring-offset: var(--surface-base);
+
+  /* --- States. `-foreground` is ink ON the state colour as a fill;
+         the bare token is the state colour AS ink or as an /opacity tint. */
+  --color-error: var(--state-error);
+  --color-error-foreground: var(--state-error-foreground);
+  --color-success: var(--state-success);
+  --color-success-foreground: var(--state-success-foreground);
+  --color-warning: var(--state-warning);
+  --color-warning-foreground: var(--state-warning-foreground);
+  --color-destructive: var(--state-destructive);
+  --color-destructive-foreground: var(--state-destructive-foreground);
+
+  /* --- Typefaces */
+  --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Bricolage Grotesque', 'Instrument Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'DM Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  /* --- Type scale. Display steps carry negative tracking so large type stays
+         composed instead of loose. */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.4;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.5;
+  --text-base: 1rem;
+  --text-base--line-height: 1.6;
+  --text-lg: 1.125rem;
+  --text-lg--line-height: 1.55;
+  --text-xl: 1.375rem;
+  --text-xl--line-height: 1.4;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 1.25;
+  --text-2xl--letter-spacing: -0.015em;
+  --text-3xl: 2.125rem;
+  --text-3xl--line-height: 1.15;
+  --text-3xl--letter-spacing: -0.02em;
+  --text-4xl: 2.75rem;
+  --text-4xl--line-height: 1.08;
+  --text-4xl--letter-spacing: -0.025em;
+  --text-5xl: 3.5rem;
+  --text-5xl--line-height: 1.03;
+  --text-5xl--letter-spacing: -0.03em;
+  --text-6xl: 4.5rem;
+  --text-6xl--line-height: 1;
+  --text-6xl--letter-spacing: -0.035em;
+
+  /* --- Radius. Tailwind's names are remapped so existing rounded-* classes
+         inherit the system without touching every call site. */
+  --radius-xs: 0.25rem;   /*  4px — micro chips */
+  --radius-sm: 0.4375rem; /*  7px — small controls */
+  --radius-md: 0.625rem;  /* 10px — default control */
+  --radius-lg: 0.875rem;  /* 14px — surfaces / cards */
+  --radius-xl: 1.125rem;  /* 18px — panels, modals */
+  --radius-2xl: 1.5rem;   /* 24px — sheets */
+  --radius-3xl: 2rem;
+
+  /* --- Elevation. Directional and tinted, never a symmetric black bloom. */
+  --shadow-xs: var(--elevation-xs);
+  --shadow-sm: var(--elevation-sm);
+  --shadow-md: var(--elevation-md);
+  --shadow-lg: var(--elevation-lg);
+  --shadow-xl: var(--elevation-xl);
+
+  /* --- Motion */
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-in-out-quart: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* --- Overlay / panel entrances. Keyframes animate the standalone `opacity`,
+         `scale` and `translate` properties so they compose with the transform
+         already used to centre a dialog instead of overwriting it. */
+  --animate-overlay-in: overlay-in 160ms var(--ease-out-quart) both;
+  --animate-overlay-out: overlay-out 120ms var(--ease-in-out-quart) both;
+  --animate-panel-in: panel-in 200ms var(--ease-out-quart) both;
+  --animate-panel-out: panel-out 140ms var(--ease-in-out-quart) both;
+  --animate-sheet-in: sheet-in 240ms var(--ease-out-quart) both;
+  --animate-drawer-in: drawer-in 240ms var(--ease-out-quart) both;
+  --animate-rise: rise 320ms var(--ease-out-quart) both;
 }
 
+/* ---------------------------------------------------------------------------
+   Keyframes
+   --------------------------------------------------------------------------- */
+@keyframes overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes overlay-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+@keyframes panel-in {
+  from { opacity: 0; scale: 0.97; }
+  to   { opacity: 1; scale: 1; }
+}
+@keyframes panel-out {
+  from { opacity: 1; scale: 1; }
+  to   { opacity: 0; scale: 0.97; }
+}
+@keyframes sheet-in {
+  from { opacity: 0; translate: 0 6%; }
+  to   { opacity: 1; translate: 0 0; }
+}
+@keyframes drawer-in {
+  from { opacity: 0; translate: 100% 0; }
+  to   { opacity: 1; translate: 0 0; }
+}
+@keyframes rise {
+  from { opacity: 0; translate: 0 8px; }
+  to   { opacity: 1; translate: 0 0; }
+}
+
+/* ---------------------------------------------------------------------------
+   2. DARK THEME — the default. Warm-green charcoal, never literal black.
+   --------------------------------------------------------------------------- */
 :root {
-  /* Brand Colors */
-  --brand-primary: #7f5af0;
-  --brand-secondary: #94a1b2;
-  --brand-accent: #2cb67d;
+  color-scheme: dark;
 
-  /* State Colors */
-  --state-error: #ef4444;
-  --state-warning: #f59e0b;
-  --state-success: #2cb67d;
-  --state-info: #7f5af0;
+  /* Brand */
+  --brand-primary: #a6f53a;
+  --brand-primary-hover: #baff5e;
+  --brand-primary-foreground: #0c1105;
 
-  /* Typography */
-  --font-family-base: 'Inter', system-ui, sans-serif;
-  --font-size-base: 1rem;
-  --font-size-xs: 0.75rem;
-  --font-size-sm: 0.875rem;
-  --font-size-lg: 1.125rem;
-  --font-size-xl: 1.25rem;
-  --font-size-2xl: 1.5rem;
-  --font-size-3xl: 1.875rem;
-  --font-size-4xl: 2.25rem;
-  --font-size-5xl: 3rem;
+  --brand-accent: #a6f53a;
+  --brand-accent-hover: #baff5e;
+  --brand-accent-foreground: #0c1105;
 
-  /* Headings */
-  --font-size-h1: clamp(2.25rem, 5vw + 1rem, 3.75rem);
-  --font-size-h2: clamp(1.875rem, 4vw + 1rem, 3rem);
-  --font-size-h3: clamp(1.5rem, 3vw + 1rem, 2.25rem);
-  --font-size-h4: clamp(1.25rem, 2vw + 1rem, 1.875rem);
-  --font-size-h5: clamp(1.125rem, 1.5vw + 1rem, 1.5rem);
-  --font-size-h6: clamp(1rem, 1vw + 1rem, 1.25rem);
+  --brand-secondary: #22281c;
+  --brand-secondary-hover: #2b3223;
+  --brand-secondary-foreground: #eef3e6;
 
-  /* Spacing */
-  --space-1: 0.25rem;
-  --space-2: 0.5rem;
-  --space-3: 0.75rem;
-  --space-4: 1rem;
-  --space-5: 1.25rem;
-  --space-6: 1.5rem;
-  --space-8: 2rem;
-  --space-10: 2.5rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-20: 5rem;
-  --space-24: 6rem;
+  /* Surfaces, darkest to lightest */
+  --surface-sunken: #0a0c07;
+  --surface-base: #0e1009;
+  --surface-raised: #161a11;
+  --surface-overlay: #1d2317;
+  --surface-muted: #22281c;
 
-  /* Border Radius */
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
-  --radius-xl: 0.75rem;
+  /* Lines */
+  --border-default: #2c3324;
+  --border-strong: #414a34;
+  --border-hover: #55603f;
 
-  /* Transitions */
-  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-normal: 300ms cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* Ink */
+  --ink-primary: #f2f6ec;
+  --ink-secondary: #b7c0aa;
+  --ink-muted: #87917c;
+  --ink-inverse: #0e1009;
 
-  /* Z-Index Scale */
-  --z-dropdown: 1000;
-  --z-sticky: 1020;
-  --z-fixed: 1030;
-  --z-modal-backdrop: 1040;
-  --z-modal: 1050;
-  --z-popover: 1060;
-  --z-tooltip: 1070;
-  --z-toast: 1080;
+  /* States */
+  --state-error: #ff7d8d;
+  --state-error-foreground: #2a0509;
+  --state-success: #a6f53a;
+  --state-success-foreground: #0c1105;
+  --state-warning: #ffc44d;
+  --state-warning-foreground: #2b1a00;
+  --state-destructive: #e5484d;
+  --state-destructive-foreground: #ffffff;
 
-  /* Light Theme Colors (default) */
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-  --text-muted: #6b7280;
-  --text-inverse: #ffffff;
+  /* Elevation */
+  --elevation-xs: 0 1px 2px 0 rgb(0 0 0 / 0.34);
+  --elevation-sm: 0 1px 2px 0 rgb(0 0 0 / 0.38), 0 2px 4px -1px rgb(0 0 0 / 0.26);
+  --elevation-md: 0 4px 8px -2px rgb(0 0 0 / 0.42), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  --elevation-lg: 0 12px 24px -6px rgb(0 0 0 / 0.5), 0 4px 8px -4px rgb(0 0 0 / 0.34);
+  --elevation-xl: 0 24px 48px -12px rgb(0 0 0 / 0.58), 0 8px 16px -8px rgb(0 0 0 / 0.38);
 
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-tertiary: #e5e7eb;
-
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Chrome */
+  --nav-height: 4rem;
 }
 
-/* Dark Theme */
-:root.dark {
-  --text-primary: #fffffe;
-  --text-secondary: #cbd5e0;
-  --text-muted: #a3b1c2;
-  --text-inverse: #1f2937;
+/* ---------------------------------------------------------------------------
+   3. LIGHT THEME — explicit opt-in, same variable names, no second source of
+   truth. Because both themes set the SAME names, a token can never disagree
+   with itself depending on how the theme was reached.
+   --------------------------------------------------------------------------- */
+:root.light {
+  color-scheme: light;
 
-  --bg-primary: #16161a;
-  --bg-secondary: #242629;
-  --bg-tertiary: #45413b;
+  --brand-primary: #457f07;
+  --brand-primary-hover: #3a6b05;
+  --brand-primary-foreground: #ffffff;
 
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.15);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.25), 0 2px 4px -2px rgb(0 0 0 / 0.15);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.25);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  --brand-accent: #457f07;
+  --brand-accent-hover: #3a6b05;
+  --brand-accent-foreground: #ffffff;
+
+  --brand-secondary: #eef1e8;
+  --brand-secondary-hover: #e2e7d8;
+  --brand-secondary-foreground: #1a2010;
+
+  --surface-sunken: #ffffff;
+  --surface-base: #f7f9f4;
+  --surface-raised: #ffffff;
+  --surface-overlay: #ffffff;
+  --surface-muted: #edf1e6;
+
+  --border-default: #dfe5d5;
+  --border-strong: #c3ccb4;
+  --border-hover: #9aa886;
+
+  --ink-primary: #14180f;
+  --ink-secondary: #454d3c;
+  --ink-muted: #5f6852;
+  --ink-inverse: #ffffff;
+
+  --state-error: #b3243c;
+  --state-error-foreground: #ffffff;
+  --state-success: #3f7a00;
+  --state-success-foreground: #ffffff;
+  --state-warning: #8a5a00;
+  --state-warning-foreground: #ffffff;
+  --state-destructive: #c81e3c;
+  --state-destructive-foreground: #ffffff;
+
+  --elevation-xs: 0 1px 2px 0 rgb(20 24 15 / 0.05);
+  --elevation-sm: 0 1px 2px 0 rgb(20 24 15 / 0.07), 0 2px 4px -1px rgb(20 24 15 / 0.05);
+  --elevation-md: 0 4px 8px -2px rgb(20 24 15 / 0.1), 0 2px 4px -2px rgb(20 24 15 / 0.06);
+  --elevation-lg: 0 12px 24px -6px rgb(20 24 15 / 0.13), 0 4px 8px -4px rgb(20 24 15 / 0.07);
+  --elevation-xl: 0 24px 48px -12px rgb(20 24 15 / 0.17), 0 8px 16px -8px rgb(20 24 15 / 0.09);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root:not(.light) {
-    --text-primary: #fffffe;
-    --text-secondary: #cbd5e0;
-    --text-muted: #a3b1c2;
-    --text-inverse: #1f2937;
+/* ---------------------------------------------------------------------------
+   4. BASE — layered, so utilities always win. (Previously these rules were
+   unlayered, which made them silently outrank every Tailwind utility.)
+   --------------------------------------------------------------------------- */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    /* Bare `border` picks up the token instead of currentColor. */
+    border-color: var(--color-border);
+    /* Ring gaps use the page colour, not white. */
+    --tw-ring-offset-color: var(--surface-base);
+  }
 
-    --bg-primary: #16161a;
-    --bg-secondary: #242629;
-    --bg-tertiary: #3b3e45;
+  html {
+    height: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
 
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.15);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.25), 0 2px 4px -2px rgb(0 0 0 / 0.15);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.35), 0 4px 6px -4px rgb(0 0 0 / 0.25);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+  body {
+    margin: 0;
+    min-height: 100%;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--color-foreground-secondary);
+    background-color: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Display type is a different voice from body type. */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    color: var(--color-foreground);
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  img, svg, video, canvas {
+    display: block;
+    max-width: 100%;
+  }
+
+  /* One focus language for the whole app. */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: inherit;
+  }
+
+  ::selection {
+    background-color: color-mix(in oklab, var(--brand-primary) 35%, transparent);
+    color: var(--color-foreground);
+  }
+
+  ::placeholder {
+    color: var(--ink-muted);
+  }
+
+  hr {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
   }
 }
 
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
+/* ---------------------------------------------------------------------------
+   5. UTILITIES
+   --------------------------------------------------------------------------- */
+
+/* THE page shell. One class governs every gutter and the content rail, so the
+   navbar, the footer and every page align by construction.
+   Usage: <div class="shell">…</div>
+   Narrow reading pages nest <div class="mx-auto max-w-3xl"> inside it. */
+@utility shell {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 80rem; /* 1280px content rail */
+  padding-inline: 1rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  font-family: var(--font-family-base);
-  color: var(--text-secondary);
-  background-color: var(--bg-primary);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* Full-bleed variant for marketing surfaces that still need aligned gutters. */
+@utility shell-wide {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 96rem;
+  padding-inline: 1rem;
+
+  @media (width >= 40rem) {
+    padding-inline: 1.5rem;
+  }
+
+  @media (width >= 64rem) {
+    padding-inline: 2rem;
+  }
 }
 
-/* Utility classes */
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+/* Semantic z-index scale. Never use a bare number again. */
+@utility z-sticky { z-index: 30; }
+@utility z-nav { z-index: 40; }
+@utility z-overlay { z-index: 50; }
+@utility z-modal { z-index: 60; }
+@utility z-popover { z-index: 70; }
+@utility z-toast { z-index: 80; }
+
+/* Sit directly beneath the fixed nav. */
+@utility top-nav {
+  top: var(--nav-height);
 }
 
-.focus-visible-only:not(:focus-visible) {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+/* Card that lifts on hover without moving: a border + tone shift, no scale. */
+@utility interactive-surface {
+  transition:
+    background-color 160ms var(--ease-out-quart),
+    border-color 160ms var(--ease-out-quart);
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Long-form measure, for review and article bodies. */
+@utility prose-body {
+  font-size: var(--text-lg);
+  line-height: 1.75;
+  color: var(--color-foreground-secondary);
+
+  & > * + * {
+    margin-block-start: 1em;
+  }
 }
