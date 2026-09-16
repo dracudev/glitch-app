@@ -31,7 +31,6 @@ export default function StarRating({
       aria-label={`Rating: ${value} out of ${max}`}
     >
       {Array.from({ length: max }, (_, i) => {
-        const starValue = i + 1; // 1 to max
         const fillPercent = Math.min(100, Math.max(0, (effectiveValue - i) * 100));
 
         return (

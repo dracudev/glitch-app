@@ -2,11 +2,6 @@ import * as React from 'react';
 import { Slot } from '@radix-ui/react-slot';
 import { Loader2 } from 'lucide-react';
 
-// Helper to merge classNames
-function cn(...classes: (string | undefined | null | false)[]) {
-  return classes.filter(Boolean).join(' ');
-}
-
 const variantStyles = {
   primary: 'bg-primary text-primary-foreground hover:opacity-90 active:opacity-80',
   secondary: 'bg-secondary text-secondary-foreground border border-border hover:bg-muted',

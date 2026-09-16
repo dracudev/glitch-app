@@ -3,78 +3,46 @@ export const prerender = false;
 
 import MainLayout from '@/layouts/MainLayout.astro';
 import ExplorePage from '@/components/games/ExplorePage';
-import type {
-  GamesQuery,
-  PaginatedGamesResponse,
-  GenreResponse,
-  PlatformResponse,
-  DeveloperResponse,
-  PublisherResponse,
-} from '@glitch/shared-types';
+import type { GamesQuery, GameStatus, GameFilterOptions } from '@glitch/shared-types';
 
-import { getAllGames } from '@/services/games';
-import { getAllGenres } from '@/services/genres';
-import { getAllPlatforms } from '@/services/platforms';
-import { getDevelopers } from '@/services/developers';
-import { getAllPublishers } from '@/services/publishers';
+import { getAllGames, getFilterOptions } from '@/services/games';
 
-// Parse URL query params for SSR
 const url = new URL(Astro.request.url);
 const searchParams = url.searchParams;
 
-// Build initial query from URL
+const parseIds = (value: string | null): number[] =>
+  (value || '')
+    .split(',')
+    .map((entry) => Number(entry.trim()))
+    .filter((id) => Number.isInteger(id) && id > 0);
+
 const initialQuery: GamesQuery = {
   page: parseInt(searchParams.get('page') || '1', 10),
   limit: parseInt(searchParams.get('limit') || '20', 10),
-  sortBy: (searchParams.get('sortBy') as any) || 'averageRating',
-  sortOrder: (searchParams.get('sortOrder') as any) || 'desc',
-  genreIds: searchParams.get('genreIds')?.split(',').filter(Boolean) || [],
-  platformIds: searchParams.get('platformIds')?.split(',').filter(Boolean) || [],
-  // Accept either developerId or developerIds (comma list) — pick the first
-  developerId:
-    searchParams.get('developerId') || searchParams.get('developerIds')?.split(',').filter(Boolean)?.[0] || undefined,
-  // Accept either publisherId or publisherIds
-  publisherId:
-    searchParams.get('publisherId') || searchParams.get('publisherIds')?.split(',').filter(Boolean)?.[0] || undefined,
+  sortBy: (searchParams.get('sortBy') as GamesQuery['sortBy']) || 'averageRating',
+  sortOrder: searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc',
+  genreIds: parseIds(searchParams.get('genreIds')),
+  platformIds: parseIds(searchParams.get('platformIds')),
   search: searchParams.get('search') || '',
-  status: (searchParams.get('status') as any) || undefined,
+  status: (searchParams.get('status') as GameStatus) || undefined,
 };
 
-let initialGamesData: PaginatedGamesResponse | null = null;
-let filterOptions: {
-  genres: GenreResponse[];
-  platforms: PlatformResponse[];
-  developers: DeveloperResponse[];
-  publishers: PublisherResponse[];
-} | null = null;
+let initialGamesData = null;
+let filterOptions: GameFilterOptions | null = null;
 let error: string | null = null;
 
 try {
-  // Fetch initial games with URL query params and filter option lists
-  const [gamesResponse, genresRes, platformsRes, developersRes, publishersRes] =
-    await Promise.all([
-      getAllGames(initialQuery),
-      getAllGenres(),
-      getAllPlatforms(),
-      getDevelopers(),
-      getAllPublishers(),
-    ]);
-
+  const [gamesResponse, filters] = await Promise.all([
+    getAllGames(initialQuery),
+    getFilterOptions().catch(() => null),
+  ]);
   initialGamesData = gamesResponse;
-
-  // Normalize services responses (some return { data } vs { items })
-  const genres = (genresRes as any).data || (genresRes as any).items || [];
-  const platforms = (platformsRes as any).data || (platformsRes as any).items || [];
-  const developers = (developersRes as any).items || (developersRes as any).data || [];
-  const publishers = (publishersRes as any).data || (publishersRes as any).items || [];
-
-  filterOptions = { genres, platforms, developers, publishers };
+  filterOptions = filters;
 } catch (err: any) {
   console.error('Error loading explore page:', err);
   error = err?.message || 'Failed to load games';
 }
 
-// SEO metadata
 const title = initialQuery.search
   ? `Search: "${initialQuery.search}" | Glitch`
   : 'Explore | Glitch';

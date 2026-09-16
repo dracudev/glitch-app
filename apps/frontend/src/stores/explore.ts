@@ -1,25 +1,30 @@
-// Explore Page Filter State Store with URL Sync
 import { atom, computed } from 'nanostores';
-import type {
-  GenreResponse,
-  PlatformResponse,
-  DeveloperResponse,
-  PublisherResponse,
-  GamesQuery,
-} from '@glitch/shared-types';
-import { getAllGenres } from '../services/genres';
-import { getAllPlatforms } from '../services/platforms';
-import { getDevelopers } from '../services/developers';
-import { getAllPublishers } from '../services/publishers';
+import type { GameFilterOptions, GameStatus, GamesQuery } from '@glitch/shared-types';
+import { getFilterOptions } from '../services/games';
 
-// 1. Filter Options State (Sidebar Data)
-export const $filterOptions = atom<{
-  genres: GenreResponse[];
-  platforms: PlatformResponse[];
-  developers: DeveloperResponse[];
-  publishers: PublisherResponse[];
-} | null>(null);
+const GAME_STATUSES: GameStatus[] = [
+  'RELEASED',
+  'ALPHA',
+  'BETA',
+  'EARLY_ACCESS',
+  'OFFLINE',
+  'CANCELLED',
+  'RUMORED',
+  'DELISTED',
+];
 
+const DEFAULT_FILTERS: GamesQuery = {
+  page: 1,
+  limit: 20,
+  sortBy: 'averageRating',
+  sortOrder: 'desc',
+  genreIds: [],
+  platformIds: [],
+  search: '',
+  status: undefined,
+};
+
+export const $filterOptions = atom<GameFilterOptions | null>(null);
 export const $filterOptionsLoading = atom<boolean>(false);
 export const $filterOptionsError = atom<string | null>(null);
 
@@ -28,40 +33,15 @@ export const loadFilterOptions = async () => {
   $filterOptionsLoading.set(true);
   $filterOptionsError.set(null);
   try {
-    const [genresRes, platformsRes, developersRes, publishersRes] = await Promise.all([
-      getAllGenres(),
-      getAllPlatforms(),
-      getDevelopers(),
-      getAllPublishers(),
-    ]);
-
-    $filterOptions.set({
-      genres: genresRes.data,
-      platforms: platformsRes.data,
-      developers: developersRes.items,
-      publishers: publishersRes.data,
-    });
+    $filterOptions.set(await getFilterOptions());
   } catch (error: any) {
     $filterOptionsError.set(error.message || 'Failed to load filter options');
-    console.error('Filter options error:', error);
   } finally {
     $filterOptionsLoading.set(false);
   }
 };
 
-// 2. Selected Filters State (User Query)
-export const $selectedFilters = atom<GamesQuery>({
-  page: 1,
-  limit: 20,
-  sortBy: 'averageRating',
-  sortOrder: 'desc',
-  genreIds: [],
-  platformIds: [],
-  developerId: undefined,
-  publisherId: undefined,
-  search: '',
-  status: undefined,
-});
+export const $selectedFilters = atom<GamesQuery>({ ...DEFAULT_FILTERS });
 
 export const $filterUrlParams = computed($selectedFilters, (filters) => {
   const params = new URLSearchParams();
@@ -77,7 +57,6 @@ export const $filterUrlParams = computed($selectedFilters, (filters) => {
   return params.toString();
 });
 
-// 3. Filter Actions with Debouncing
 let debounceTimer: ReturnType<typeof setTimeout>;
 
 export const setFilter = (key: keyof GamesQuery, value: any) => {
@@ -92,28 +71,15 @@ export const setFilter = (key: keyof GamesQuery, value: any) => {
   }
 };
 
-export const toggleArrayFilter = (key: 'genreIds' | 'platformIds', id: string) => {
+export const toggleArrayFilter = (key: 'genreIds' | 'platformIds', id: number) => {
   const current = $selectedFilters.get();
-  const array: string[] = (current[key] as string[]) || [];
-  const newArray = array.includes(id)
-    ? array.filter((item: string) => item !== id)
-    : [...array, id];
+  const array: number[] = (current[key] as number[]) || [];
+  const newArray = array.includes(id) ? array.filter((item) => item !== id) : [...array, id];
   setFilter(key, newArray);
 };
 
 export const clearFilters = () => {
-  $selectedFilters.set({
-    page: 1,
-    limit: 20,
-    sortBy: 'averageRating',
-    sortOrder: 'desc',
-    genreIds: [],
-    platformIds: [],
-    developerId: undefined,
-    publisherId: undefined,
-    search: '',
-    status: undefined,
-  });
+  $selectedFilters.set({ ...DEFAULT_FILTERS });
   updateUrl();
 };
 
@@ -127,17 +93,54 @@ const updateUrl = () => {
   window.history.replaceState({}, '', newUrl);
 };
 
+const parseIds = (value: string): number[] =>
+  value
+    .split(',')
+    .map((entry) => Number(entry.trim()))
+    .filter((id) => Number.isInteger(id) && id > 0);
+
 export const initializeFromUrl = () => {
   const params = new URLSearchParams(window.location.search);
-  const filters: Partial<GamesQuery> = {};
+  const filters: GamesQuery = { ...DEFAULT_FILTERS };
+
   params.forEach((value, key) => {
-    if (key === 'genreIds' || key === 'platformIds') {
-      filters[key] = value.split(',');
-    } else if (key === 'page' || key === 'limit') {
-      filters[key] = parseInt(value, 10);
-    } else if (key === 'developerId' || key === 'publisherId') {
-      filters[key] = value !== '' ? value : undefined;
+    switch (key) {
+      case 'genreIds':
+      case 'platformIds': {
+        const ids = parseIds(value);
+        if (ids.length > 0) filters[key] = ids;
+        break;
+      }
+      case 'page':
+      case 'limit': {
+        const parsed = parseInt(value, 10);
+        if (Number.isInteger(parsed) && parsed > 0) filters[key] = parsed;
+        break;
+      }
+      case 'minRating':
+      case 'maxRating': {
+        const parsed = Number(value);
+        if (!Number.isNaN(parsed)) filters[key] = parsed;
+        break;
+      }
+      case 'status':
+        if (GAME_STATUSES.includes(value as GameStatus)) {
+          filters.status = value as GameStatus;
+        }
+        break;
+      case 'sortBy':
+        filters.sortBy = value as GamesQuery['sortBy'];
+        break;
+      case 'sortOrder':
+        if (value === 'asc' || value === 'desc') filters.sortOrder = value;
+        break;
+      case 'search':
+        filters.search = value;
+        break;
+      default:
+        break;
     }
   });
-  $selectedFilters.set({ ...$selectedFilters.get(), ...filters });
+
+  $selectedFilters.set(filters);
 };

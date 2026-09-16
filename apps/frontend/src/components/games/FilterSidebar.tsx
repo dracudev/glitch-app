@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useStore } from '@nanostores/react';
 import * as Dialog from '@radix-ui/react-dialog';
 import * as Collapsible from '@radix-ui/react-collapsible';
@@ -14,6 +15,17 @@ import {
   clearFilters,
 } from '@/stores/explore';
 
+const STATUS_OPTIONS: { value: string; label: string }[] = [
+  { value: 'RELEASED', label: 'Released' },
+  { value: 'EARLY_ACCESS', label: 'Early Access' },
+  { value: 'ALPHA', label: 'Alpha' },
+  { value: 'BETA', label: 'Beta' },
+  { value: 'RUMORED', label: 'Rumored' },
+  { value: 'OFFLINE', label: 'Offline' },
+  { value: 'CANCELLED', label: 'Cancelled' },
+  { value: 'DELISTED', label: 'Delisted' },
+];
+
 interface FilterSidebarProps {
   isMobile?: boolean;
   onClose?: () => void;
@@ -23,6 +35,12 @@ export default function FilterSidebar({ isMobile = false, onClose }: FilterSideb
   const filterOptions = useStore($filterOptions);
   const loading = useStore($filterOptionsLoading);
   const selectedFilters = useStore($selectedFilters);
+  const [platformSearch, setPlatformSearch] = useState('');
+
+  const platformQuery = platformSearch.trim().toLowerCase();
+  const visiblePlatforms = (filterOptions?.platforms ?? []).filter(
+    (platform) => !platformQuery || platform.name.toLowerCase().includes(platformQuery),
+  );
 
   const content = (
     <div className="space-y-6">
@@ -128,13 +146,11 @@ export default function FilterSidebar({ isMobile = false, onClose }: FilterSideb
                   <Select.Content className="z-[60] rounded-lg border border-border bg-card shadow-lg">
                     <Select.Viewport className="p-1">
                       <SelectItem value="all">All Games</SelectItem>
-                      <SelectItem value="ANNOUNCED">Announced</SelectItem>
-                      <SelectItem value="IN_DEVELOPMENT">In Development</SelectItem>
-                      <SelectItem value="ALPHA">Alpha</SelectItem>
-                      <SelectItem value="BETA">Beta</SelectItem>
-                      <SelectItem value="EARLY_ACCESS">Early Access</SelectItem>
-                      <SelectItem value="RELEASED">Released</SelectItem>
-                      <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                      {STATUS_OPTIONS.map((option) => (
+                        <SelectItem key={option.value} value={option.value}>
+                          {option.label}
+                        </SelectItem>
+                      ))}
                     </Select.Viewport>
                   </Select.Content>
                 </Select.Portal>
@@ -152,7 +168,7 @@ export default function FilterSidebar({ isMobile = false, onClose }: FilterSideb
                 {filterOptions.genres.map((genre) => (
                   <CheckboxItem
                     key={genre.id}
-                    id={genre.id}
+                    id={`genre-${genre.id}`}
                     label={genre.name}
                     checked={selectedFilters.genreIds?.includes(genre.id) || false}
                     onCheckedChange={() => toggleArrayFilter('genreIds', genre.id)}
@@ -165,60 +181,27 @@ export default function FilterSidebar({ isMobile = false, onClose }: FilterSideb
           {/* Platforms */}
           {filterOptions?.platforms && filterOptions.platforms.length > 0 && (
             <CollapsibleSection title="Platforms" count={selectedFilters.platformIds?.length}>
+              <input
+                type="text"
+                value={platformSearch}
+                onChange={(e) => setPlatformSearch(e.target.value)}
+                placeholder="Filter platforms..."
+                className="mb-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                aria-label="Filter platforms"
+              />
               <div className="space-y-2 max-h-64 overflow-y-auto overflow-x-hidden pr-1">
-                {filterOptions.platforms.map((platform) => (
+                {visiblePlatforms.map((platform) => (
                   <CheckboxItem
                     key={platform.id}
-                    id={platform.id}
+                    id={`platform-${platform.id}`}
                     label={platform.name}
                     checked={selectedFilters.platformIds?.includes(platform.id) || false}
                     onCheckedChange={() => toggleArrayFilter('platformIds', platform.id)}
                   />
                 ))}
-              </div>
-            </CollapsibleSection>
-          )}
-
-          {/* Developers */}
-          {filterOptions?.developers && filterOptions.developers.length > 0 && (
-            <CollapsibleSection title="Developers" count={selectedFilters.developerId ? 1 : 0}>
-              <div className="space-y-2 max-h-64 overflow-y-auto overflow-x-hidden pr-1">
-                {filterOptions.developers.map((developer) => (
-                  <CheckboxItem
-                    key={developer.id}
-                    id={developer.id}
-                    label={developer.name}
-                    checked={selectedFilters.developerId === developer.id}
-                    onCheckedChange={() =>
-                      setFilter(
-                        'developerId',
-                        selectedFilters.developerId === developer.id ? undefined : developer.id,
-                      )
-                    }
-                  />
-                ))}
-              </div>
-            </CollapsibleSection>
-          )}
-
-          {/* Publishers */}
-          {filterOptions?.publishers && filterOptions.publishers.length > 0 && (
-            <CollapsibleSection title="Publishers" count={selectedFilters.publisherId ? 1 : 0}>
-              <div className="space-y-2 max-h-64 overflow-y-auto overflow-x-hidden pr-1">
-                {filterOptions.publishers.map((publisher) => (
-                  <CheckboxItem
-                    key={publisher.id}
-                    id={publisher.id}
-                    label={publisher.name}
-                    checked={selectedFilters.publisherId === publisher.id}
-                    onCheckedChange={() =>
-                      setFilter(
-                        'publisherId',
-                        selectedFilters.publisherId === publisher.id ? undefined : publisher.id,
-                      )
-                    }
-                  />
-                ))}
+                {visiblePlatforms.length === 0 && (
+                  <p className="text-sm text-muted-foreground">No platforms match</p>
+                )}
               </div>
             </CollapsibleSection>
           )}
@@ -361,8 +344,6 @@ function isDefaultFilters(filters: any): boolean {
     filters.sortOrder === 'desc' &&
     (!filters.genreIds || filters.genreIds.length === 0) &&
     (!filters.platformIds || filters.platformIds.length === 0) &&
-    !filters.developerId &&
-    !filters.publisherId &&
     !filters.search &&
     !filters.status
   );

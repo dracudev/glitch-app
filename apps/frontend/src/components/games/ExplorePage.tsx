@@ -11,22 +11,14 @@ import {
   initializeFromUrl,
 } from '@/stores/explore';
 import type {
+  GameFilterOptions,
   PaginatedGamesResponse,
-  GenreResponse,
-  PlatformResponse,
-  DeveloperResponse,
-  PublisherResponse,
   GamesQuery,
 } from '@glitch/shared-types';
 
 interface ExplorePageProps {
   initialGames: PaginatedGamesResponse | null;
-  filterOptions: {
-    genres: GenreResponse[];
-    platforms: PlatformResponse[];
-    developers: DeveloperResponse[];
-    publishers: PublisherResponse[];
-  } | null;
+  filterOptions: GameFilterOptions | null;
   initialQuery: GamesQuery;
 }
 
@@ -111,8 +103,6 @@ function getActiveFilterCount(filters: GamesQuery): number {
   if (filters.search) count++;
   if (filters.genreIds?.length) count += filters.genreIds.length;
   if (filters.platformIds?.length) count += filters.platformIds.length;
-  if (filters.developerId) count++;
-  if (filters.publisherId) count++;
   if (filters.status) count++;
   return count;
 }

@@ -41,17 +41,16 @@ interface UseGamesReturn {
 
   // Actions
   fetchGames: (query?: GamesQuery) => Promise<PaginatedGamesResponse>;
-  loadMoreGames: (query?: GamesQuery) => Promise<PaginatedGamesResponse>;
   searchGames: (
     searchTerm: string,
     options?: Omit<GamesQuery, 'search'>,
   ) => Promise<PaginatedGamesResponse>;
   getGamesByGenre: (
-    genreIds: string[],
+    genreIds: number[],
     options?: Omit<GamesQuery, 'genreIds'>,
   ) => Promise<PaginatedGamesResponse>;
   getGamesByPlatform: (
-    platformIds: string[],
+    platformIds: number[],
     options?: Omit<GamesQuery, 'platformIds'>,
   ) => Promise<PaginatedGamesResponse>;
   getTopRatedGames: (options?: GamesQuery) => Promise<PaginatedGamesResponse>;
@@ -167,48 +166,6 @@ export function useGames(): UseGamesReturn {
     [],
   );
 
-  /**
-   * Fetch next page and append results for infinite scroll
-   */
-  const loadMoreGames = useCallback(
-    async (query: GamesQuery = {}): Promise<PaginatedGamesResponse> => {
-      // Use current data to determine next page
-      const currentData = $gamesData.get();
-      const nextPage = (currentData?.page ?? 1) + 1;
-      const mergedQuery = { ...query, page: nextPage };
-      setGamesLoading(true);
-      setGamesError(null);
-      try {
-        const response = await gamesService.getAllGames(mergedQuery);
-        // Append new results to existing data
-        if (currentData && response) {
-          const mergedData: PaginatedGamesResponse = {
-            ...response,
-            data: [...currentData.data, ...response.data],
-            page: response.page,
-            limit: response.limit,
-            total: response.total,
-            totalPages: response.totalPages,
-            hasNextPage: response.hasNextPage,
-            hasPreviousPage: response.hasPreviousPage,
-          };
-          setGamesData(mergedData);
-          return mergedData;
-        } else {
-          setGamesData(response);
-          return response;
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load more games';
-        setGamesError(errorMessage);
-        throw error;
-      } finally {
-        setGamesLoading(false);
-      }
-    },
-    [],
-  );
-
   const searchGames = useCallback(
     async (
       searchTerm: string,
@@ -234,7 +191,7 @@ export function useGames(): UseGamesReturn {
 
   const getGamesByGenre = useCallback(
     async (
-      genreIds: string[],
+      genreIds: number[],
       options: Omit<GamesQuery, 'genreIds'> = {},
     ): Promise<PaginatedGamesResponse> => {
       setGamesLoading(true);
@@ -258,7 +215,7 @@ export function useGames(): UseGamesReturn {
 
   const getGamesByPlatform = useCallback(
     async (
-      platformIds: string[],
+      platformIds: number[],
       options: Omit<GamesQuery, 'platformIds'> = {},
     ): Promise<PaginatedGamesResponse> => {
       setGamesLoading(true);
@@ -371,7 +328,6 @@ export function useGames(): UseGamesReturn {
 
     // Actions
     fetchGames,
-    loadMoreGames,
     searchGames,
     getGamesByGenre,
     getGamesByPlatform,

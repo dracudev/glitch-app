@@ -1,57 +1,19 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect } from 'react';
 import { useStore } from '@nanostores/react';
 import { useGames } from '@/hooks/useGames';
-import { $selectedFilters, clearFilters } from '@/stores/explore';
+import { $selectedFilters, setPage, clearFilters } from '@/stores/explore';
 import GameCard from './GameCard.tsx';
-import { Loader2, AlertCircle } from 'lucide-react';
+import { AlertCircle, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import type { GameResponse } from '@glitch/shared-types';
 
 export default function GameResultsList() {
   const selectedFilters = useStore($selectedFilters);
-  const { data, isLoading, error, fetchGames, loadMoreGames } = useGames();
+  const { data, isLoading, error, fetchGames } = useGames();
 
-  const observerTarget = useRef<HTMLDivElement>(null);
-  const isLoadingMore = useRef(false);
-
-  // Fetch games when filters change
   useEffect(() => {
     fetchGames(selectedFilters);
   }, [selectedFilters, fetchGames]);
-
-  // Infinite scroll implementation
-  const handleIntersection = useCallback(
-    (entries: IntersectionObserverEntry[]) => {
-      const [entry] = entries;
-
-      if (entry.isIntersecting && data?.hasNextPage && !isLoading && !isLoadingMore.current) {
-        isLoadingMore.current = true;
-        loadMoreGames(selectedFilters).finally(() => {
-          isLoadingMore.current = false;
-        });
-      }
-    },
-    [data?.hasNextPage, isLoading, loadMoreGames, selectedFilters],
-  );
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(handleIntersection, {
-      root: null,
-      rootMargin: '200px', // Start loading 200px before reaching the bottom
-      threshold: 0.1,
-    });
-
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    };
-  }, [handleIntersection]);
 
   // Loading state (initial load)
   if (isLoading && !data?.data.length) {
@@ -88,17 +50,7 @@ export default function GameResultsList() {
         <p className="text-sm text-muted-foreground mb-6">
           Try adjusting your filters or search terms
         </p>
-        <Button
-          onClick={() => {
-            clearFilters();
-            setTimeout(() => {
-              fetchGames($selectedFilters.get()).catch(() => {
-                fetchGames().catch(() => {});
-              });
-            }, 0);
-          }}
-          size="sm"
-        >
+        <Button onClick={clearFilters} size="sm">
           Clear All Filters
         </Button>
       </div>
@@ -116,22 +68,7 @@ export default function GameResultsList() {
         ))}
       </div>
 
-      {/* Infinite Scroll Trigger & Loading Indicator */}
-      <div ref={observerTarget} className="mt-8 flex justify-center">
-        {data.hasNextPage && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            <span>Loading more games...</span>
-          </div>
-        )}
-      </div>
-
-      {/* End of results message */}
-      {!data.hasNextPage && data.data.length > 0 && (
-        <div className="mt-8 text-center text-sm text-muted">
-          You've reached the end of the results
-        </div>
-      )}
+      <Pagination page={data.page} totalPages={data.totalPages} />
     </div>
   );
 }
@@ -171,46 +108,37 @@ function ResultsHeader({
           </>
         )}
       </p>
-
-      {/* Optional: Quick pagination */}
-      {totalPages && totalPages > 1 && (
-        <div className="flex items-center gap-2">
-          <Button
-            onClick={() => {
-              const { setPage, $selectedFilters } = require('@/stores/explore');
-              const current = $selectedFilters.get();
-              if (current.page > 1) {
-                setPage(current.page - 1);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
-            disabled={page === 1}
-            size="sm"
-            variant="outline"
-          >
-            Previous
-          </Button>
-          <span className="text-xs text-muted-foreground">
-            {page} / {totalPages}
-          </span>
-          <Button
-            onClick={() => {
-              const { setPage, $selectedFilters } = require('@/stores/explore');
-              const current = $selectedFilters.get();
-              if (current.page < totalPages) {
-                setPage(current.page + 1);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }
-            }}
-            disabled={page === totalPages}
-            size="sm"
-            variant="outline"
-          >
-            Next
-          </Button>
-        </div>
-      )}
     </div>
+  );
+}
+
+function Pagination({ page, totalPages }: { page: number; totalPages: number }) {
+  if (!totalPages || totalPages <= 1) return null;
+
+  const goTo = (next: number) => {
+    setPage(next);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <nav className="mt-8 flex items-center justify-center gap-2" aria-label="Pagination">
+      <Button onClick={() => goTo(page - 1)} disabled={page <= 1} size="sm" variant="outline">
+        <ChevronLeft className="h-4 w-4" />
+        Previous
+      </Button>
+      <span className="text-sm text-muted-foreground">
+        {page} / {totalPages}
+      </span>
+      <Button
+        onClick={() => goTo(page + 1)}
+        disabled={page >= totalPages}
+        size="sm"
+        variant="outline"
+      >
+        Next
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </nav>
   );
 }
 

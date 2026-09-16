@@ -92,26 +92,6 @@ export function clearGamesState() {
   $gamesError.set(null);
 }
 
-/**
- * Append games to existing list (for pagination/infinite scroll)
- */
-export function appendGamesData(newData: PaginatedGamesResponse) {
-  const currentData = $gamesData.get();
-
-  if (!currentData) {
-    setGamesData(newData);
-    return;
-  }
-
-  // Merge the new games with existing ones
-  const mergedData: PaginatedGamesResponse = {
-    ...newData,
-    data: [...currentData.data, ...newData.data],
-  };
-
-  $gamesData.set(mergedData);
-}
-
 // ============================================================================
 // Game Detail Actions
 // ============================================================================
