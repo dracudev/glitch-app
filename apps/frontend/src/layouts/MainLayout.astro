@@ -4,7 +4,7 @@ import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
 import Notifications from '@/components/ui/Notifications';
 
-export interface Props {
+interface Props {
   title: string;
   description?: string;
   image?: string;
@@ -12,53 +12,29 @@ export interface Props {
   canonicalURL?: string;
   showNavbar?: boolean;
   showFooter?: boolean;
-  containerClass?: string;
 }
 
 const {
-  title,
-  description,
-  image,
-  noIndex = false,
-  canonicalURL,
   showNavbar = true,
   showFooter = true,
-  containerClass = '',
   ...baseLayoutProps
 } = Astro.props;
 
-// Get current path for active navigation
 const currentPath = Astro.url.pathname;
 ---
 
-<BaseLayout
-  title={title}
-  description={description}
-  image={image}
-  noIndex={noIndex}
-  canonicalURL={canonicalURL}
-  {...baseLayoutProps}
->
-  <div class="min-h-screen flex flex-col">
-    <!-- Navigation -->
-    {showNavbar && (
-      <Navbar 
-        client:load 
-        currentPath={currentPath}
-      />
-    )}
+<BaseLayout {...baseLayoutProps}>
+  <slot name="head" slot="head" />
 
-    <!-- Main Content -->
-    <main class={`flex-1 ${containerClass}`}>
+  <div class="flex min-h-screen flex-col">
+    {showNavbar && <Navbar client:load currentPath={currentPath} />}
+
+    <main id="main" class="flex-1">
       <slot />
     </main>
 
-    <!-- Footer -->
-    {showFooter && (
-      <Footer client:load />
-    )}
-
-    <!-- Notifications -->
-    <Notifications client:load />
+    {showFooter && <Footer client:load />}
   </div>
+
+  <Notifications client:load />
 </BaseLayout>

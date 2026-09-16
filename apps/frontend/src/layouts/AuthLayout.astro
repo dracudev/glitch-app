@@ -1,161 +1,53 @@
 ---
-import '../styles/global.css';
+import BaseLayout from './BaseLayout.astro';
 import ThemeToggle from '@/components/ui/ThemeToggle';
 
-export interface Props {
+interface Props {
   title: string;
   description?: string;
-  image?: string;
   noIndex?: boolean;
-  canonicalURL?: string;
 }
 
-const {
-  title,
-  description = "Glitch - The social network for gamers. Discover games, write reviews, and connect with fellow gamers.",
-  image = "/og-image.png",
-  noIndex = false,
-  canonicalURL
-} = Astro.props;
+const { title, description, noIndex = true } = Astro.props;
 
-const siteName = "Glitch";
-const siteURL = Astro.site || "https://glitch.app";
-const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
-const imageURL = new URL(image, siteURL).toString();
-const canonical = canonicalURL || new URL(Astro.url.pathname, siteURL).toString();
 const currentYear = new Date().getFullYear();
 ---
 
-<!DOCTYPE html>
-<html lang="en" class="h-full">
-  <head>
-    <!-- Performance optimizations -->
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="generator" content={Astro.generator} />
-    
-    <!-- Preconnect to external domains for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    
-    <!-- SEO Meta Tags -->
-    <title>{fullTitle}</title>
-    <meta name="description" content={description} />
-    <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow"} />
-    <link rel="canonical" href={canonical} />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:title" content={fullTitle} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={imageURL} />
-    <meta property="og:site_name" content={siteName} />
-    
-    <!-- Twitter Card -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={canonical} />
-    <meta property="twitter:title" content={fullTitle} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={imageURL} />
-    
-    <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" sizes="48x48" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
-    <link rel="manifest" href="/favicon/site.webmanifest" />
-    
-    <!-- Theme color for mobile browsers -->
-    <meta name="theme-color" content="#16161a" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="msapplication-TileColor" content="#7f5af0" />
-    
-    <!-- Theme management script - runs before hydration -->
-    <script is:inline>
-      (function() {
-        function getThemePreference() {
-          const stored = localStorage.getItem('theme');
-          if (stored) return stored;
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        
-        function setTheme(theme) {
-          if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-          } else {
-            document.documentElement.classList.add('light');
-            document.documentElement.classList.remove('dark');
-          }
-        }
-        
-        setTheme(getThemePreference());
-      })();
-    </script>
-  </head>
-  
-  <body class="h-full antialiased bg-[var(--bg-primary)] text-[var(--text-secondary)]">
-    <!-- Minimal Auth Layout -->
-    <div class="min-h-screen flex flex-col">
-      <!-- Simplified Navbar -->
-      <nav class="sticky top-0 z-50 w-full border-b bg-[var(--bg-primary)] backdrop-blur supports-[backdrop-filter]:bg-[var(--bg-primary)]/95 border-[var(--bg-tertiary)]">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="flex justify-between items-center h-16">
-            <!-- Logo -->
-            <a
-              href="/"
-              class="flex items-center space-x-2 text-[var(--text-primary)] hover:text-[var(--brand-accent)] transition-colors"
-            >
-              <img src="/images/glitch-isotype.png" alt="Glitch" class="w-8 h-8" />
-            </a>
+<BaseLayout title={title} description={description} noIndex={noIndex}>
+  <slot name="head" slot="head" />
 
-            <!-- Theme Toggle -->
-            <ThemeToggle client:load />
-          </div>
-        </div>
-      </nav>
+  <div class="flex min-h-screen flex-col">
+    <header class="border-b border-border">
+      <div class="shell flex h-16 items-center justify-between">
+        <a href="/" class="flex items-center gap-2 text-foreground transition-colors hover:text-accent">
+          <img
+            src="/images/glitch-isotype.png"
+            alt=""
+            width="32"
+            height="32"
+            class="size-8 rounded-md"
+          />
+          <span class="font-display text-lg font-semibold tracking-tight">Glitch</span>
+        </a>
+        <ThemeToggle client:load />
+      </div>
+    </header>
 
-      <!-- Main Content -->
-      <main class="flex-1 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-        <slot />
-      </main>
+    <main id="main" class="flex flex-1 items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <slot />
+    </main>
 
-      <!-- Simplified Footer -->
-      <footer class="border-t border-[var(--bg-tertiary)] bg-[var(--bg-primary)]">
-        <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-            <!-- Copyright -->
-            <div class="text-sm text-[var(--text-muted)]">
-              © {currentYear} Glitch. All rights reserved.
-            </div>
-
-            <!-- Footer Links -->
-            <div class="flex items-center space-x-4 text-sm text-[var(--text-muted)]">
-              <a 
-                href="/privacy" 
-                class="hover:text-[var(--text-secondary)] transition-colors"
-              >
-                Privacy
-              </a>
-              <span>•</span>
-              <a 
-                href="/terms" 
-                class="hover:text-[var(--text-secondary)] transition-colors"
-              >
-                Terms
-              </a>
-              <span>•</span>
-              <a 
-                href="/support" 
-                class="hover:text-[var(--text-secondary)] transition-colors"
-              >
-                Support
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
-    </div>
-  </body>
-</html>
+    <footer class="border-t border-border">
+      <div class="shell flex flex-col items-center justify-between gap-4 py-6 sm:flex-row">
+        <p class="text-sm text-muted-foreground">
+          &copy; {currentYear} Glitch. All rights reserved.
+        </p>
+        <nav class="flex items-center gap-4 text-sm text-muted-foreground">
+          <a href="/privacy" class="transition-colors hover:text-foreground">Privacy</a>
+          <a href="/terms" class="transition-colors hover:text-foreground">Terms</a>
+          <a href="/support" class="transition-colors hover:text-foreground">Support</a>
+        </nav>
+      </div>
+    </footer>
+  </div>
+</BaseLayout>

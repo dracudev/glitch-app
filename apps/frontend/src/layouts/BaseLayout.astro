@@ -2,7 +2,7 @@
 import { ViewTransitions } from 'astro:transitions';
 import '../styles/global.css';
 
-export interface Props {
+interface Props {
   title: string;
   description?: string;
   image?: string;
@@ -12,38 +12,40 @@ export interface Props {
 
 const {
   title,
-  description = "Glitch - The social network for gamers. Discover games, write reviews, and connect with fellow gamers.",
-  image = "/og-image.png",
+  description = 'Glitch - The social network for gamers. Discover games, write reviews, and connect with fellow gamers.',
+  image = '/og-image.png',
   noIndex = false,
-  canonicalURL
+  canonicalURL,
 } = Astro.props;
 
-const siteName = "Glitch";
-const siteURL = Astro.site || "https://glitch.app";
+const siteName = 'Glitch';
+const siteURL = Astro.site || 'https://glitch.app';
 const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 const imageURL = new URL(image, siteURL).toString();
 const canonical = canonicalURL || new URL(Astro.url.pathname, siteURL).toString();
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="h-full">
+<html lang="en" class="dark">
   <head>
-    <!-- Performance optimizations -->
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
-    
-    <!-- Preconnect to external domains for performance -->
+
+    <!-- Self-hosted-free type stack: display, body, data -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    
-    <!-- SEO Meta Tags -->
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700&family=Instrument+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap"
+    />
+
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    <meta name="robots" content={noIndex ? "noindex, nofollow" : "index, follow"} />
+    <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index, follow'} />
     <link rel="canonical" href={canonical} />
-    
-    <!-- Open Graph / Facebook -->
+
+    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={fullTitle} />
@@ -53,84 +55,77 @@ const canonical = canonicalURL || new URL(Astro.url.pathname, siteURL).toString(
     <meta property="og:image:height" content="630" />
     <meta property="og:image:type" content="image/png" />
     <meta property="og:site_name" content={siteName} />
-    
-    <!-- Twitter Card -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content={canonical} />
-    <meta property="twitter:title" content={fullTitle} />
-    <meta property="twitter:description" content={description} />
-    <meta property="twitter:image" content={imageURL} />
-    
-    <!-- Favicons -->
-    <link rel="icon" type="image/x-icon" href="/favicon/favicon.ico" sizes="48x48" />
-    <link rel="icon" type="image/png" sizes="32x32" href="/favicon/favicon-32x32.png" />
-    <link rel="icon" type="image/png" sizes="16x16" href="/favicon/favicon-16x16.png" />
-    <link rel="apple-touch-icon" sizes="180x180" href="/favicon/apple-touch-icon.png" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonical} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+
+    <!-- Icons -->
+    <link rel="icon" href="/favicon/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/favicon/favicon-32x32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/favicon/favicon-16x16.png" type="image/png" sizes="16x16" />
+    <link rel="apple-touch-icon" href="/favicon/apple-touch-icon.png" sizes="180x180" />
     <link rel="manifest" href="/favicon/site.webmanifest" />
-    
-    <!-- Theme color for mobile browsers -->
-    <meta name="theme-color" content="#16161a" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
-    <meta name="msapplication-TileColor" content="#7f5af0" />
-    
-    <!-- Astro ViewTransitions for SPA-like navigation -->
+
+    <!-- Browser chrome -->
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0e1009" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#f7f9f4" />
+    <meta name="msapplication-TileColor" content="#a6f53a" />
+
     <ViewTransitions />
-    
-    <!-- Progressive Web App meta tags -->
+
+    <!-- PWA -->
     <meta name="application-name" content={siteName} />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content={siteName} />
-    
-    <!-- JSON-LD Structured Data -->
-    <script type="application/ld+json">
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "name": "Glitch",
-        "description": "The social network for gamers",
-        "url": "https://glitch.app",
-        "potentialAction": {
-          "@type": "SearchAction",
-          "target": "https://glitch.app/search?q={search_term_string}",
-          "query-input": "required name=search_term_string"
-        }
-      }
-    </script>
-    
-    <!-- Theme management script - runs before hydration -->
-    <script is:inline>
-      (function() {
-        function getThemePreference() {
-          const stored = localStorage.getItem('theme');
-          if (stored) return stored;
-          return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        
-        function setTheme(theme) {
-          if (theme === 'dark') {
-            document.documentElement.classList.add('dark');
-            document.documentElement.classList.remove('light');
-          } else {
-            document.documentElement.classList.add('light');
-            document.documentElement.classList.remove('dark');
-          }
-        }
-        
-        setTheme(getThemePreference());
 
-        document.addEventListener('astro:after-swap', function () {
-          setTheme(getThemePreference());
-        });
+    <script type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: siteName,
+      url: siteURL,
+      description,
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: {
+          '@type': 'EntryPoint',
+          urlTemplate: `${siteURL}/search?q={search_term_string}`,
+        },
+        'query-input': 'required name=search_term_string',
+      },
+    })} />
+
+    <!-- Per-page head extras -->
+    <slot name="head" />
+
+    <!--
+      Theme resolution, before first paint. Dark is the product default; light
+      is opt-in only, so an absent preference resolves to dark rather than to
+      the OS setting.
+    -->
+    <script is:inline>
+      (function () {
+        function apply() {
+          var stored = null;
+          try {
+            stored = localStorage.getItem('theme');
+          } catch (e) {}
+          var root = document.documentElement;
+          root.classList.toggle('light', stored === 'light');
+          root.classList.toggle('dark', stored !== 'light');
+        }
+        apply();
+        document.addEventListener('astro:after-swap', apply);
       })();
     </script>
   </head>
-  
-  <body class="h-full antialiased bg-primary text-secondary">
-    <!-- Main application content -->
-    <div id="app" class="min-h-full">
-      <slot />
-    </div>
+
+  <body>
+    <slot />
   </body>
 </html>
