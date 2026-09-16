@@ -3,6 +3,15 @@ import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
 import vercel from '@astrojs/vercel';
 
+// Dev and build both default `cacheDir` to `node_modules/.vite`. That means
+// running `astro build` while `astro dev` is live wipes the optimiser cache the
+// dev server is still serving chunks from: the browser ends up holding deps
+// from two optimiser generations, React resolves to two separate instances, and
+// every Radix provider dies with "Cannot read properties of null (reading
+// 'useRef')" or "useState". It looks exactly like a component bug and is not
+// one. Separate directories make a running dev server survive a build.
+const isBuild = process.argv.includes('build');
+
 // https://astro.build/config
 export default defineConfig({
   site: 'https://glitch-app.vercel.app',
@@ -17,6 +26,7 @@ export default defineConfig({
   devToolbar: { enabled: false },
 
   vite: {
+    cacheDir: isBuild ? 'node_modules/.vite-build' : 'node_modules/.vite',
     plugins: [tailwindcss()],
     // A single React instance, always. Without this, a pre-bundled Radix package
     // can resolve its own copy of React and the app dies at runtime with
