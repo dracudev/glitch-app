@@ -5,6 +5,9 @@ interface GameCardProps {
   game: GameResponse;
 }
 
+const badgeStyles =
+  'absolute flex items-center gap-1 rounded-md border border-border bg-background/85 px-1.5 py-0.5 font-mono text-xs backdrop-blur-sm';
+
 export default function GameCard({ game }: GameCardProps) {
   const basic = game.game;
   const releaseYear = basic.releaseDate ? new Date(basic.releaseDate).getFullYear() : null;
@@ -12,17 +15,18 @@ export default function GameCard({ game }: GameCardProps) {
   return (
     <a
       href={`/games/${basic.slug}`}
-      className="group block rounded-lg transition-transform hover:scale-[1.02]"
+      className="group block"
       aria-label={`View details for ${basic.title}`}
     >
       {/* Game Cover */}
-      <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-muted">
+      <div className="relative aspect-[3/4] overflow-hidden rounded-lg border border-border bg-muted transition-colors group-hover:border-border-hover">
         {/* Always render an img; if there's no coverImage use the local placeholder. Add onError to guard against broken remote URLs. */}
         <img
           src={basic.coverImage || '/images/game-placeholder.svg'}
           alt={basic.coverImage ? `${basic.title} cover` : `${basic.title} placeholder cover`}
-          className="h-full w-full object-cover transition-transform group-hover:scale-105"
+          className="size-full object-cover"
           loading="lazy"
+          decoding="async"
           onError={(e) => {
             try {
               (e.currentTarget as HTMLImageElement).src = '/images/game-placeholder.svg';
@@ -35,17 +39,17 @@ export default function GameCard({ game }: GameCardProps) {
         {/* Average Rating Badge */}
         {basic.averageRating !== undefined && basic.averageRating !== null && (
           <div
-            className="absolute top-2 right-2 flex items-center gap-1 rounded-lg bg-black/70 px-2 py-1 text-xs font-semibold text-white backdrop-blur-sm"
+            className={`${badgeStyles} right-2 top-2 font-medium text-foreground`}
             aria-label={`Average rating: ${basic.averageRating.toFixed(1)} out of 10`}
           >
-            <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" aria-hidden="true" />
+            <Star className="size-3 fill-primary text-primary" aria-hidden="true" />
             <span>{basic.averageRating.toFixed(1)}</span>
           </div>
         )}
 
         {/* Review Count Badge */}
         {basic.reviewCount > 0 && (
-          <div className="absolute bottom-2 left-2 rounded-lg bg-black/70 px-2 py-1 text-xs text-white backdrop-blur-sm">
+          <div className={`${badgeStyles} bottom-2 left-2 text-foreground-secondary`}>
             {basic.reviewCount} {basic.reviewCount === 1 ? 'review' : 'reviews'}
           </div>
         )}
@@ -53,15 +57,15 @@ export default function GameCard({ game }: GameCardProps) {
 
       {/* Game Info */}
       <div className="mt-3 space-y-1">
-        <h3 className="font-semibold text-foreground line-clamp-2 group-hover:text-primary transition-colors">
+        <h3 className="line-clamp-2 min-h-10 text-sm font-medium text-foreground transition-colors group-hover:text-primary">
           {basic.title}
         </h3>
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           {releaseYear && (
             <div className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" aria-hidden="true" />
-              <span>{releaseYear}</span>
+              <Calendar className="size-3" aria-hidden="true" />
+              <span className="font-mono">{releaseYear}</span>
             </div>
           )}
 
@@ -75,17 +79,17 @@ export default function GameCard({ game }: GameCardProps) {
 
         {/* Genres */}
         {game.genres && game.genres.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
+          <div className="mt-2 flex flex-wrap gap-1">
             {game.genres.slice(0, 3).map((genre) => (
               <span
                 key={genre.id}
-                className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
+                className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground"
               >
                 {genre.name}
               </span>
             ))}
             {game.genres.length > 3 && (
-              <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground">
+              <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
                 +{game.genres.length - 3}
               </span>
             )}

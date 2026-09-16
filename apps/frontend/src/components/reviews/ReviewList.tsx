@@ -73,7 +73,7 @@ export default function ReviewList({ initialData = null }: ReviewListProps) {
   // Initial Loading state
   if (isLoading && reviewItems.length === 0) {
     return (
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
         {[1, 2, 3, 4, 5, 6].map((i) => (
           <ReviewSkeleton key={i} />
         ))}
@@ -84,19 +84,9 @@ export default function ReviewList({ initialData = null }: ReviewListProps) {
   // Error state
   if (error && reviewItems.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4">
-          <svg className="w-8 h-8 text-error" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-        </div>
-        <p className="text-error mb-2 font-semibold">Failed to load reviews</p>
-        <p className="text-muted-foreground text-sm">{error}</p>
+      <div className="rounded-lg border border-error/30 bg-error/10 p-8 text-center">
+        <h3 className="text-lg font-semibold text-error">Failed to load reviews</h3>
+        <p className="mt-2 text-sm text-muted-foreground">{error}</p>
       </div>
     );
   }
@@ -104,24 +94,9 @@ export default function ReviewList({ initialData = null }: ReviewListProps) {
   // Empty state
   if (reviewItems.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-card rounded-full mb-4">
-          <svg
-            className="w-8 h-8 text-muted-foreground"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-            />
-          </svg>
-        </div>
-        <p className="text-foreground mb-2 font-semibold">No reviews found</p>
-        <p className="text-muted-foreground text-sm">Be the first to write a review!</p>
+      <div className="rounded-lg border border-border bg-card p-12 text-center">
+        <h3 className="text-lg font-semibold text-foreground">No reviews found</h3>
+        <p className="mt-2 text-sm text-muted-foreground">Be the first to write a review!</p>
       </div>
     );
   }
@@ -135,7 +110,7 @@ export default function ReviewList({ initialData = null }: ReviewListProps) {
   return (
     <div>
       {/* Reviews Grid - Mobile First: 1 col, MD: 2 cols, LG: 3 cols */}
-      <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
         {reviewItems.map((review) => (
           <ReviewCard key={review.id} review={review} />
         ))}
@@ -143,7 +118,7 @@ export default function ReviewList({ initialData = null }: ReviewListProps) {
 
       {/* Loading More Indicator */}
       {isLoading && reviewItems.length > 0 && (
-        <div className="grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3 mt-6">
+        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <ReviewSkeleton key={i} />
           ))}
@@ -155,8 +130,8 @@ export default function ReviewList({ initialData = null }: ReviewListProps) {
 
       {/* End of Results Message */}
       {!hasMorePages && reviewItems.length > 0 && (
-        <div className="text-center py-8">
-          <p className="text-muted text-sm">You've reached the end of the reviews</p>
+        <div className="py-8 text-center">
+          <p className="text-sm text-muted-foreground">You've reached the end of the reviews</p>
         </div>
       )}
     </div>
@@ -172,30 +147,30 @@ export default function ReviewList({ initialData = null }: ReviewListProps) {
  */
 function ReviewSkeleton() {
   return (
-    <div className="bg-card rounded-lg border border-border p-4 animate-pulse">
+    <div className="animate-pulse rounded-lg border border-border bg-card p-4">
       {/* Game Cover Skeleton */}
-      <div className="aspect-[3/4] bg-muted rounded-md mb-4" />
+      <div className="mb-4 aspect-[3/4] rounded-md bg-muted" />
 
       {/* Game Title Skeleton */}
-      <div className="h-5 bg-muted rounded w-3/4 mb-3" />
+      <div className="mb-3 h-5 w-3/4 rounded-md bg-muted" />
 
       {/* User Info Skeleton */}
-      <div className="flex items-center gap-2 mb-3">
-        <div className="w-8 h-8 bg-muted rounded-full" />
-        <div className="h-4 bg-muted rounded w-24" />
+      <div className="mb-3 flex items-center gap-2">
+        <div className="size-8 rounded-full bg-muted" />
+        <div className="h-4 w-24 rounded-md bg-muted" />
       </div>
 
       {/* Rating Skeleton */}
-      <div className="flex items-center gap-1 mb-3">
+      <div className="mb-3 flex items-center gap-1">
         {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="w-4 h-4 bg-muted rounded" />
+          <div key={i} className="size-4 rounded-md bg-muted" />
         ))}
       </div>
 
       {/* Content Preview Skeleton */}
       <div className="space-y-2">
-        <div className="h-3 bg-muted rounded w-full" />
-        <div className="h-3 bg-muted rounded w-5/6" />
+        <div className="h-3 w-full rounded-md bg-muted" />
+        <div className="h-3 w-5/6 rounded-md bg-muted" />
       </div>
     </div>
   );

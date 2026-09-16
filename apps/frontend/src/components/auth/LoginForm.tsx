@@ -4,6 +4,7 @@ import type { LoginRequest } from '@glitch/shared-types';
 import { useAuth } from '@/hooks/useAuth';
 import Card from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginFormProps {
@@ -53,18 +54,18 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
         {error && (
           <div
             role="alert"
-            className="rounded-md p-4 border bg-state-error/10 border-state-error/20"
+            className="rounded-md p-4 border bg-error/10 border-error/20"
           >
             <div className="flex">
               <div className="ml-3">
-                <h3 className="text-sm font-medium text-state-error">Login Error</h3>
-                <div className="mt-2 text-sm text-state-error/80">{error}</div>
+                <h3 className="text-sm font-medium text-error">Login error</h3>
+                <div className="mt-2 text-sm text-error/80">{error}</div>
                 <Button
                   type="button"
                   onClick={clearError}
                   variant="link"
                   size="sm"
-                  className="mt-2 text-state-error hover:text-state-error/80 p-0 h-auto"
+                  className="mt-2 text-error hover:text-error/80 p-0 h-auto"
                 >
                   Dismiss
                 </Button>
@@ -75,28 +76,27 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
 
         {/* Email field */}
         <Form.Field name="email" className="space-y-2">
-          <Form.Label className="block text-sm font-medium text-[var(--text-primary)]">
+          <Form.Label className="block text-sm font-medium text-foreground">
             Email address
           </Form.Label>
 
           <Form.Control asChild>
-            <input
+            <Input
               type="email"
               autoComplete="email"
               required
               onBlur={() => handleBlur('email')}
-              className="appearance-none block w-full px-3 py-2 border border-[var(--bg-tertiary)] bg-[var(--bg-primary)] rounded-md shadow-sm text-sm transition-all text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="Enter your email"
             />
           </Form.Control>
 
           {touched.email && (
             <>
-              <Form.Message match="valueMissing" className="text-sm text-state-error">
+              <Form.Message match="valueMissing" className="text-sm text-error">
                 Email is required
               </Form.Message>
 
-              <Form.Message match="typeMismatch" className="text-sm text-state-error">
+              <Form.Message match="typeMismatch" className="text-sm text-error">
                 Please provide a valid email address
               </Form.Message>
             </>
@@ -105,18 +105,18 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
 
         {/* Password field */}
         <Form.Field name="password" className="space-y-2">
-          <Form.Label className="block text-sm font-medium text-[var(--text-primary)]">
+          <Form.Label className="block text-sm font-medium text-foreground">
             Password
           </Form.Label>
 
           <div className="relative">
             <Form.Control asChild>
-              <input
+              <Input
                 type={showPassword ? 'text' : 'password'}
                 autoComplete="current-password"
                 required
                 onBlur={() => handleBlur('password')}
-                className="appearance-none block w-full px-3 py-2 pr-11 border border-[var(--bg-tertiary)] bg-[var(--bg-primary)] rounded-md shadow-sm text-sm transition-all text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--brand-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                className="pr-11"
                 placeholder="Enter your password"
               />
             </Form.Control>
@@ -126,15 +126,15 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
               variant="ghost"
               size="icon"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute top-1/2 -translate-y-1/2 right-1 h-8 w-8 hover:bg-transparent text-[var(--text-muted)] hover:text-[var(--text-primary)]"
+              className="absolute top-1/2 -translate-y-1/2 right-1 h-8 w-8 hover:bg-transparent text-muted-foreground hover:text-foreground"
               aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
             </Button>
           </div>
 
           {touched.password && (
-            <Form.Message match="valueMissing" className="text-sm text-state-error">
+            <Form.Message match="valueMissing" className="text-sm text-error">
               Password is required
             </Form.Message>
           )}
@@ -147,11 +147,11 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
               id="remember-me"
               name="remember-me"
               type="checkbox"
-              className="h-4 w-4 rounded text-[var(--brand-primary)] border-[var(--bg-tertiary)] bg-[var(--bg-primary)] focus:ring-2 focus:ring-[var(--brand-primary)]/20 transition-colors"
+              className="size-4 shrink-0 cursor-pointer rounded border border-border-strong accent-primary"
             />
             <label
               htmlFor="remember-me"
-              className="ml-2 block text-sm text-[var(--text-secondary)]"
+              className="ml-2 block text-sm text-foreground-secondary"
             >
               Remember me
             </label>
@@ -160,7 +160,7 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
           <div className="text-sm">
             <a
               href="/auth/forgot-password"
-              className="font-medium transition-colors text-[var(--brand-primary)] hover:text-[var(--brand-accent)]"
+              className="font-medium transition-colors text-primary hover:text-accent"
             >
               Forgot your password?
             </a>

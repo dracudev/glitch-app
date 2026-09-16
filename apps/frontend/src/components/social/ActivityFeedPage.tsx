@@ -1,13 +1,29 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivityFeed } from '@/hooks/useSocial';
 import ActivityFeedList from './ActivityFeedList';
 import FeedItemSkeleton from './FeedItemSkeleton';
 import { Button } from '@/components/ui/Button';
 
+/**
+ * One shell for every state this page can be in, so the page rail, the reading
+ * column and the heading never drift between the four early returns below.
+ */
+function PageShell({ children, centered = false }: { children: ReactNode; centered?: boolean }) {
+  return (
+    <div className={centered ? 'shell py-8 text-center lg:py-10' : 'shell py-8 lg:py-10'}>
+      <div className="mx-auto max-w-4xl">
+        <h1 className="mb-6 text-2xl tracking-tight sm:text-3xl lg:mb-8">Your feed</h1>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export default function ActivityFeedPage() {
   const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { fetchFeed, feed, isLoading: isFeedLoading, error: feedError } = useActivityFeed();
+
   useEffect(() => {
     if (isAuthenticated && !feed && !isFeedLoading) {
       fetchFeed({ page: 1, limit: 15 }).catch((err) => {
@@ -15,75 +31,59 @@ export default function ActivityFeedPage() {
       });
     }
   }, [isAuthenticated, fetchFeed, feed, isFeedLoading]);
-  // If auth is loading, show the skeleton
+
   if (isAuthLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 lg:py-8">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="text-3xl font-bold mb-6 text-foreground">Your Feed</h1>
-          <FeedItemSkeleton />
-        </div>
-      </div>
+      <PageShell>
+        <FeedItemSkeleton />
+      </PageShell>
     );
   }
 
-  // If auth is loaded but user is NOT authenticated, show a prompt to log in
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto px-4 py-6 lg:py-8 text-center">
-        <h1 className="text-3xl font-bold mb-6 text-foreground">Your Feed</h1>
+      <PageShell centered>
         <p className="text-muted-foreground">
-          Please{' '}
-          <a href="/auth/login?redirect=/feed" className="text-accent underline">
-            log in
+          <a href="/auth/login?redirect=/feed" className="text-accent underline underline-offset-4">
+            Log in
           </a>{' '}
-          to view your feed.
+          to see what the people you follow are playing.
         </p>
-      </div>
+      </PageShell>
     );
   }
 
-  // From here we know the user IS authenticated. Show loading skeleton ONLY if we are fetching the feed and have no data yet.
   if (isFeedLoading && !feed) {
     return (
-      <div className="container mx-auto px-4 py-6 lg:py-8">
-        <div className="mx-auto max-w-4xl">
-          <h1 className="text-3xl font-bold mb-6 text-foreground">Your Feed</h1>
-          <FeedItemSkeleton />
-        </div>
-      </div>
+      <PageShell>
+        <FeedItemSkeleton />
+      </PageShell>
     );
   }
 
-  // Render error state if feed fetch failed
   if (feedError) {
     return (
-      <div className="container mx-auto px-4 py-6 lg:py-8">
-        <h1 className="text-3xl font-bold mb-6 text-foreground">Your Feed</h1>
-        <div className="text-center py-10 bg-destructive/10 border border-destructive/20 rounded-lg">
-          <p className="text-destructive font-semibold">Failed to Load Feed</p>
-          <p className="text-sm text-destructive/80 mt-1">{feedError}</p>
+      <PageShell>
+        <div className="rounded-lg border border-error/30 bg-error/10 p-8 text-center">
+          <p className="font-semibold text-error">Could not load your feed</p>
+          <p className="mt-1 text-sm text-error/80">{feedError}</p>
           <Button
             onClick={() => fetchFeed({ page: 1, limit: 15 })}
             variant="primary"
             size="sm"
-            className="mt-4"
+            className="mt-5"
           >
-            Try Again
+            Try again
           </Button>
         </div>
-      </div>
+      </PageShell>
     );
   }
 
-  // Render the actual feed list
   return (
-    <div className="container mx-auto px-4 py-6 lg:py-8">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="text-3xl font-bold mb-6 text-foreground">Your Feed</h1>
-        {/* ActivityFeedList will render the empty state if feed.items is empty */}
-        <ActivityFeedList />
-      </div>
-    </div>
+    <PageShell>
+      {/* ActivityFeedList renders its own empty state when there is nothing to show. */}
+      <ActivityFeedList />
+    </PageShell>
   );
 }

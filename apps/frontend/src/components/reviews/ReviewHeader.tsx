@@ -1,4 +1,6 @@
+import { Star } from 'lucide-react';
 import type { ReviewResponse } from '@glitch/shared-types';
+import { getAvatarUrl } from '@/lib/avatar';
 
 // ============================================================================
 // Props Interface
@@ -38,10 +40,8 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
     });
   };
 
-  // Generate avatar URL (using DiceBear as fallback)
-  const avatarUrl =
-    review.user.avatar ||
-    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(review.user.username)}`;
+  // Generate avatar URL (using the shared DiceBear fallback)
+  const avatarUrl = getAvatarUrl(review.user);
 
   // Generate game cover URL
   const coverUrl = review.game.coverImage || '/images/game-placeholder.svg';
@@ -58,15 +58,11 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
     // Full stars
     for (let i = 1; i <= fullStars; i++) {
       stars.push(
-        <svg
+        <Star
           key={`full-${i}`}
-          className="w-5 h-5 md:w-6 md:h-6 text-accent"
-          fill="currentColor"
-          viewBox="0 0 20 20"
+          className="size-5 fill-current text-accent md:size-6"
           aria-hidden="true"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>,
+        />,
       );
     }
 
@@ -75,7 +71,7 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
       stars.push(
         <svg
           key="half"
-          className="w-5 h-5 md:w-6 md:h-6 text-accent"
+          className="size-5 text-accent md:size-6"
           fill="currentColor"
           viewBox="0 0 20 20"
           aria-hidden="true"
@@ -85,7 +81,7 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
               <stop offset="50%" stopColor="currentColor" />
               {/* Must match the empty stars' `text-muted-foreground`, or the unfilled
                   half reads as a different grey from a whole empty star. */}
-              <stop offset="50%" stopColor="var(--text-muted)" />
+              <stop offset="50%" stopColor="var(--color-muted-foreground)" />
             </linearGradient>
           </defs>
           <path
@@ -100,15 +96,11 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
     const emptyStars = 10 - fullStars - (hasHalfStar ? 1 : 0);
     for (let i = 1; i <= emptyStars; i++) {
       stars.push(
-        <svg
+        <Star
           key={`empty-${i}`}
-          className="w-5 h-5 md:w-6 md:h-6 text-muted-foreground"
-          fill="currentColor"
-          viewBox="0 0 20 20"
+          className="size-5 fill-current text-muted-foreground md:size-6"
           aria-hidden="true"
-        >
-          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-        </svg>,
+        />,
       );
     }
 
@@ -120,24 +112,25 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
   // ============================================================================
 
   return (
-    <header className="bg-card rounded-lg border border-border overflow-hidden">
+    <header className="overflow-hidden rounded-lg border border-border bg-card">
       {/* Mobile-First Layout: Stacked on mobile, Grid on larger screens */}
-      <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 p-4 md:p-6">
-        {/* Game Cover Image */}
+      <div className="flex flex-col gap-4 p-4 md:flex-row md:items-start md:gap-6 md:p-6">
+        {/* Game Cover Image — above the fold, so decode eagerly but don't defer. */}
         <a
           href={`/games/${review.game.slug}`}
-          className="shrink-0 self-start group"
+          className="shrink-0 self-start"
           aria-label={`View ${review.game.title}`}
         >
-          <div className="relative w-32 md:w-40 lg:w-48 aspect-[3/4] rounded-md overflow-hidden bg-muted border border-border">
+          <div className="relative aspect-[3/4] w-32 overflow-hidden rounded-md border border-border bg-muted md:w-40 lg:w-48">
             <img
               src={coverUrl}
               alt={review.game.title}
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              className="size-full object-cover"
+              decoding="async"
             />
             {/* Spoiler Badge */}
             {review.isSpoiler && (
-              <div className="absolute top-2 right-2 bg-destructive text-destructive-foreground px-2 py-1 rounded text-xs font-semibold shadow-md">
+              <div className="absolute right-2 top-2 rounded-full border border-border bg-background/85 px-2 py-0.5 text-xs text-muted-foreground backdrop-blur-sm">
                 SPOILER
               </div>
             )}
@@ -145,31 +138,30 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
         </a>
 
         {/* Review Metadata */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           {/* Game Title */}
           <a
             href={`/games/${review.game.slug}`}
-            className="block group mb-4"
+            className="mb-4 block"
             aria-label={`View ${review.game.title}`}
           >
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground group-hover:text-accent transition-colors">
-              {review.game.title}
-            </h1>
+            <h1 className="text-2xl tracking-tight sm:text-3xl">{review.game.title}</h1>
           </a>
 
           {/* User Information */}
           <a
             href={`/profile/${review.user.username}`}
-            className="flex items-center gap-3 mb-4 hover:opacity-80 transition-opacity group"
+            className="mb-4 flex items-center gap-3 transition-opacity hover:opacity-80"
             aria-label={`View ${review.user.displayName}'s profile`}
           >
             <img
               src={avatarUrl}
               alt={review.user.displayName}
-              className="w-10 h-10 md:w-12 md:h-12 rounded-full border-2 border-border group-hover:border-primary transition-colors"
+              className="size-10 rounded-full border border-border md:size-12"
+              decoding="async"
             />
-            <div className="flex flex-col min-w-0">
-              <span className="text-base md:text-lg font-semibold text-foreground truncate">
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-base font-semibold text-foreground md:text-lg">
                 {review.user.displayName}
               </span>
               <span className="text-sm text-muted-foreground">@{review.user.username}</span>
@@ -177,7 +169,7 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
           </a>
 
           {/* Star Rating */}
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <div
               className="flex items-center gap-1"
               role="img"
@@ -186,21 +178,23 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
               {renderStars()}
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="text-xl md:text-2xl font-bold text-accent">
+              <span className="font-mono text-xl font-semibold text-accent md:text-2xl">
                 {review.rating.toFixed(1)}
               </span>
-              <span className="text-muted-foreground">/</span>
-              <span className="text-muted-foreground">10</span>
+              <span className="font-mono text-muted-foreground">/</span>
+              <span className="font-mono text-muted-foreground">10</span>
             </div>
           </div>
 
           {/* Publication Date */}
           <div className="mt-4 text-sm text-muted-foreground">
-            <time dateTime={new Date(review.createdAt).toISOString()}>
+            <time className="font-mono" dateTime={new Date(review.createdAt).toISOString()}>
               {formatDate(review.createdAt)}
             </time>
             {review.updatedAt !== review.createdAt && (
-              <span className="ml-2 text-xs">(Updated {formatDate(review.updatedAt)})</span>
+              <span className="ml-2 font-mono text-xs">
+                (Updated {formatDate(review.updatedAt)})
+              </span>
             )}
           </div>
         </div>

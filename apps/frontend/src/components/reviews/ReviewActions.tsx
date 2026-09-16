@@ -1,9 +1,22 @@
 import { useState } from 'react';
 import type { ReviewResponse } from '@glitch/shared-types';
 import * as Tooltip from '@radix-ui/react-tooltip';
-import { Heart, Edit, Trash2 } from 'lucide-react';
+import { CircleX, Heart, Edit, MessageSquare, Share2, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/Dialog';
 import { notify } from '@/stores/notifications';
+
+/** One tooltip surface for every trigger on this bar. */
+const tooltipStyles =
+  'z-popover rounded-md border border-border bg-popover px-3 py-2 text-sm font-medium text-popover-foreground shadow-lg';
 
 // Hooks
 import { useReviewActions } from '@/hooks/useReviews';
@@ -132,13 +145,7 @@ export default function ReviewActions({
 
           {/* Comments Count */}
           <div className="flex items-center gap-2">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-              <path
-                fillRule="evenodd"
-                d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
-                clipRule="evenodd"
-              />
-            </svg>
+            <MessageSquare className="size-5" aria-hidden="true" />
             <span className="font-medium">
               {currentReview.stats.commentsCount}{' '}
               {currentReview.stats.commentsCount === 1 ? 'comment' : 'comments'}
@@ -166,7 +173,7 @@ export default function ReviewActions({
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
                   <Tooltip.Content
-                    className="bg-popover text-popover-foreground px-3 py-2 rounded-md text-sm font-medium shadow-lg z-tooltip"
+                    className={tooltipStyles}
                     sideOffset={5}
                   >
                     Edit this review
@@ -192,7 +199,7 @@ export default function ReviewActions({
                 </Tooltip.Trigger>
                 <Tooltip.Portal>
                   <Tooltip.Content
-                    className="bg-popover text-popover-foreground px-3 py-2 rounded-md text-sm font-medium shadow-lg z-tooltip"
+                    className={tooltipStyles}
                     sideOffset={5}
                   >
                     Delete this review
@@ -225,7 +232,7 @@ export default function ReviewActions({
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                className="bg-popover text-popover-foreground px-3 py-2 rounded-md text-sm font-medium shadow-lg z-tooltip"
+                className={tooltipStyles}
                 sideOffset={5}
               >
                 {currentReview.isLiked ? 'Unlike this review' : 'Like this review'}
@@ -237,7 +244,10 @@ export default function ReviewActions({
           {/* Share Button with Tooltip */}
           <Tooltip.Root>
             <Tooltip.Trigger asChild>
-              <button
+              <Button
+                variant="outline"
+                leftIcon={<Share2 className="size-5" aria-hidden="true" />}
+                aria-label="Share this review"
                 onClick={() => {
                   const url = window.location.href;
                   if (navigator.share) {
@@ -256,33 +266,13 @@ export default function ReviewActions({
                     navigator.clipboard.writeText(url);
                   }
                 }}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg
-                  bg-transparent border border-border text-foreground
-                  hover:bg-accent
-                  transition-all duration-200
-                  focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-                aria-label="Share this review"
               >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                  />
-                </svg>
-                <span className="font-medium hidden sm:inline">Share</span>
-              </button>
+                <span className="hidden sm:inline">Share</span>
+              </Button>
             </Tooltip.Trigger>
             <Tooltip.Portal>
               <Tooltip.Content
-                className="bg-popover text-popover-foreground px-3 py-2 rounded-md text-sm font-medium shadow-lg z-tooltip"
+                className={tooltipStyles}
                 sideOffset={5}
               >
                 Share this review
@@ -295,48 +285,36 @@ export default function ReviewActions({
 
       {/* Error Display */}
       {error && (
-        <div className="mt-4 p-3 bg-state-error/10 border border-state-error rounded-md">
+        <div className="mt-4 p-3 bg-error/10 border border-error rounded-md">
           <div className="flex items-start gap-2">
-            <svg
-              className="w-5 h-5 text-state-error shrink-0 mt-0.5"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-              aria-hidden="true"
-            >
-              <path
-                fillRule="evenodd"
-                d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <p className="text-sm text-state-error">{error}</p>
+            <CircleX className="w-5 h-5 text-error shrink-0 mt-0.5" aria-hidden="true" />
+            <p className="text-sm text-error">{error}</p>
           </div>
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center">
-          <div className="bg-card rounded-lg border border-border p-6 w-[90vw] max-w-md shadow-xl">
-            <h3 className="text-lg font-semibold text-foreground mb-2">Delete Review</h3>
-            <p className="text-muted-foreground text-sm mb-6">
-              Are you sure you want to delete this review? This action cannot be undone.
-            </p>
-            <div className="flex gap-3 justify-end">
-              <Button
-                variant="secondary"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-              >
+      {/* Delete Confirmation — a real dialog: focus trap, Escape, scroll lock,
+          restore-focus, role/aria-modal, all from the shared primitive. */}
+      <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <DialogContent size="sm">
+          <DialogHeader>
+            <DialogTitle>Delete review</DialogTitle>
+            <DialogDescription>
+              This permanently removes your review and its likes. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="secondary" disabled={isDeleting}>
                 Cancel
               </Button>
-              <Button onClick={handleDelete} disabled={isDeleting}>
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogClose>
+            <Button variant="destructive" onClick={handleDelete} isLoading={isDeleting}>
+              Delete review
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Tooltip.Provider>
   );
 }

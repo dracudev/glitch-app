@@ -67,7 +67,7 @@ export default function ReviewDetailPage({ review }: ReviewDetailPageProps) {
 
   if (isDeleted) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center">
         <div className="text-center">
           <p className="text-foreground text-lg font-semibold">Review deleted</p>
           <p className="text-muted-foreground text-sm mt-2">Redirecting...</p>
@@ -77,24 +77,26 @@ export default function ReviewDetailPage({ review }: ReviewDetailPageProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Main Container - Mobile-First Responsive */}
-      <div className="container mx-auto px-4 py-6 md:py-8 lg:py-12 max-w-4xl">
-        {/* Review Header - Game, User, Rating */}
-        <ReviewHeader review={review} />
+      <div className="shell py-8 lg:py-10">
+        <div className="mx-auto max-w-4xl">
+          {/* Review Header - Game, User, Rating */}
+          <ReviewHeader review={review} />
 
-        {/* Review Content - Title & Body */}
-        <div className="mt-6 md:mt-8">
-          <ReviewContent review={review} />
-        </div>
+          {/* Review Content - Title & Body */}
+          <div className="mt-6 md:mt-8">
+            <ReviewContent review={review} />
+          </div>
 
-        {/* Review Actions - Like, Comment, Share, Edit/Delete */}
-        <div className="mt-6 md:mt-8 pt-6 border-t border-border">
-          <ReviewActions
-            review={review}
-            onEdit={() => setIsEditDialogOpen(true)}
-            onDeleted={handleDeleted}
-          />
+          {/* Review Actions - Like, Comment, Share, Edit/Delete */}
+          <div className="mt-6 md:mt-8 pt-6 border-t border-border">
+            <ReviewActions
+              review={review}
+              onEdit={() => setIsEditDialogOpen(true)}
+              onDeleted={handleDeleted}
+            />
+          </div>
         </div>
       </div>
 

@@ -1,7 +1,15 @@
 import { useState, useEffect } from 'react';
-import * as Dialog from '@radix-ui/react-dialog';
-import { X } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Input, Label, Textarea } from '@/components/ui/Input';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/Dialog';
 import { useStore } from '@nanostores/react';
 import { $currentUser } from '@/stores/auth';
 import StarRating from '@/components/ui/StarRating';
@@ -111,100 +119,92 @@ export default function ReviewFormDialog({
   };
 
   return (
-    <Dialog.Root open={isOpen} onOpenChange={handleOpenChange}>
-      <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 bg-black bg-opacity-50 z-40" />
-        <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-secondary rounded-lg p-6 w-[90vw] max-w-2xl max-h-[85vh] overflow-y-auto z-50 shadow-xl">
-          <div className="flex items-center justify-between mb-6">
-            <Dialog.Title className="text-2xl font-bold text-foreground">
-              {isEditMode ? 'Edit Review' : 'Write a Review'}
-            </Dialog.Title>
-            <Dialog.Close asChild>
-              <button
-                type="button"
-                className="text-secondary-foreground hover:text-foreground transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </Dialog.Close>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent size="lg">
+        <DialogHeader>
+          <DialogTitle>{isEditMode ? 'Edit review' : 'Write a review'}</DialogTitle>
+          <DialogDescription>
+            {isEditMode
+              ? 'Update your rating and thoughts for this game.'
+              : 'Rate the game out of ten and tell other players what you thought.'}
+          </DialogDescription>
+        </DialogHeader>
+
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Title */}
+          <div className="space-y-2">
+            <Label htmlFor="review-title">
+              Title <span className="font-normal text-muted-foreground">(optional)</span>
+            </Label>
+            <Input
+              id="review-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={200}
+              placeholder="A headline for your review"
+            />
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
-            <div>
-              <label className="block text-foreground font-semibold mb-2">
-                Title <span className="text-muted-foreground font-normal">(optional)</span>
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                maxLength={200}
-                className="w-full px-4 py-3 bg-background text-foreground border border-border rounded-md focus:outline-none focus:border-primary"
-                placeholder="A catchy title for your review..."
-              />
+          {/* Rating */}
+          <div className="space-y-2">
+            <Label htmlFor="review-rating">Rating</Label>
+            <StarRating
+              value={rating}
+              onChange={setRating}
+              max={10}
+              size={28}
+              disabled={isLoading}
+            />
+          </div>
+
+          {/* Content */}
+          <div className="space-y-2">
+            <Label htmlFor="review-content">Your review</Label>
+            <Textarea
+              id="review-content"
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              rows={8}
+              placeholder="Share your thoughts about this game"
+              required
+            />
+          </div>
+
+          {/* Spoiler Toggle */}
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="isSpoiler"
+              checked={isSpoiler}
+              onChange={(e) => setIsSpoiler(e.target.checked)}
+              className="size-4 shrink-0 cursor-pointer rounded border border-border-strong accent-primary"
+            />
+            <label htmlFor="isSpoiler" className="cursor-pointer text-sm text-foreground">
+              This review contains spoilers
+            </label>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div className="rounded-md border border-error bg-error/10 p-3">
+              <p className="text-sm text-error">{error}</p>
             </div>
+          )}
 
-            {/* Rating */}
-            <div>
-              <label className="block text-foreground font-semibold mb-2">Rating</label>
-              <StarRating
-                value={rating}
-                onChange={setRating}
-                max={10}
-                size={28}
-                disabled={isLoading}
-              />
-            </div>
-
-            {/* Content */}
-            <div>
-              <label className="block text-foreground font-semibold mb-2">Your Review</label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={8}
-                className="w-full px-4 py-3 bg-background text-foreground border border-border rounded-md focus:outline-none focus:border-primary"
-                placeholder="Share your thoughts about this game..."
-                required
-              />
-            </div>
-
-            {/* Spoiler Toggle */}
-            <div className="flex items-center gap-3">
-              <input
-                type="checkbox"
-                id="isSpoiler"
-                checked={isSpoiler}
-                onChange={(e) => setIsSpoiler(e.target.checked)}
-                className="w-4 h-4 rounded border-border"
-              />
-              <label htmlFor="isSpoiler" className="text-foreground text-sm cursor-pointer">
-                This review contains spoilers
-              </label>
-            </div>
-
-            {/* Error */}
-            {error && (
-              <div className="p-3 bg-red-500/10 border border-red-500 rounded-md">
-                <p className="text-red-500 text-sm">{error}</p>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="flex gap-3 justify-end">
-              <Dialog.Close asChild>
-                <Button type="button" variant="secondary" disabled={isLoading}>
-                  Cancel
-                </Button>
-              </Dialog.Close>
-              <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Saving...' : isEditMode ? 'Update Review' : 'Submit Review'}
+          {/* Actions */}
+          <DialogFooter className="mt-0">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary" disabled={isLoading}>
+                Cancel
               </Button>
-            </div>
-          </form>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+            </DialogClose>
+            <Button type="submit" isLoading={isLoading}>
+              {isEditMode ? 'Update review' : 'Submit review'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }

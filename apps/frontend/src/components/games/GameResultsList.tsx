@@ -28,12 +28,12 @@ export default function GameResultsList() {
   // Error state
   if (error) {
     return (
-      <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-8 text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-destructive mb-4" />
-        <h3 className="text-lg font-semibold text-destructive mb-2">Failed to Load Games</h3>
-        <p className="text-sm text-muted-foreground mb-4">{error}</p>
+      <div className="rounded-lg border border-error/30 bg-error/10 p-8 text-center">
+        <AlertCircle className="mx-auto mb-4 size-12 text-error" />
+        <h3 className="mb-2 text-lg font-semibold text-error">Failed to load games</h3>
+        <p className="mb-4 text-sm text-muted-foreground">{error}</p>
         <Button onClick={() => fetchGames(selectedFilters)} size="sm">
-          Try Again
+          Try again
         </Button>
       </div>
     );
@@ -42,16 +42,16 @@ export default function GameResultsList() {
   // Empty state
   if (!data?.data.length) {
     return (
-      <div className="rounded-lg border border-border bg-muted/50 p-12 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-          <AlertCircle className="h-8 w-8 text-muted-foreground" />
+      <div className="rounded-lg border border-border bg-card p-12 text-center">
+        <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted">
+          <AlertCircle className="size-8 text-muted-foreground" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">No Games Found</h3>
-        <p className="text-sm text-muted-foreground mb-6">
+        <h3 className="mb-2 text-lg font-semibold text-foreground">No games found</h3>
+        <p className="mb-6 text-sm text-muted-foreground">
           Try adjusting your filters or search terms
         </p>
         <Button onClick={clearFilters} size="sm">
-          Clear All Filters
+          Clear all filters
         </Button>
       </div>
     );
@@ -62,7 +62,7 @@ export default function GameResultsList() {
       <ResultsHeader total={data.total} page={data.page} totalPages={data.totalPages} />
 
       {/* Game Grid  */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {data.data.map((game: GameResponse) => (
           <GameCard key={game.game.id} game={game} />
         ))}
@@ -88,7 +88,7 @@ function ResultsHeader({
   if (isLoading) {
     return (
       <div className="mb-6 animate-pulse">
-        <div className="h-6 w-48 bg-muted rounded" />
+        <div className="h-6 w-48 rounded-md bg-muted" />
       </div>
     );
   }
@@ -98,11 +98,12 @@ function ResultsHeader({
       <p className="text-sm text-muted-foreground">
         {total !== undefined && (
           <>
-            Showing <span className="font-semibold text-foreground">{total}</span>{' '}
+            Showing <span className="font-mono font-semibold text-foreground">{total}</span>{' '}
             {total === 1 ? 'game' : 'games'}
             {page && totalPages && (
               <span className="ml-2">
-                • Page {page} of {totalPages}
+                • Page <span className="font-mono">{page}</span> of{' '}
+                <span className="font-mono">{totalPages}</span>
               </span>
             )}
           </>
@@ -123,10 +124,10 @@ function Pagination({ page, totalPages }: { page: number; totalPages: number }) 
   return (
     <nav className="mt-8 flex items-center justify-center gap-2" aria-label="Pagination">
       <Button onClick={() => goTo(page - 1)} disabled={page <= 1} size="sm" variant="outline">
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="size-4" aria-hidden="true" />
         Previous
       </Button>
-      <span className="text-sm text-muted-foreground">
+      <span className="font-mono text-sm text-muted-foreground">
         {page} / {totalPages}
       </span>
       <Button
@@ -136,7 +137,7 @@ function Pagination({ page, totalPages }: { page: number; totalPages: number }) 
         variant="outline"
       >
         Next
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="size-4" aria-hidden="true" />
       </Button>
     </nav>
   );
@@ -145,13 +146,13 @@ function Pagination({ page, totalPages }: { page: number; totalPages: number }) 
 // Loading Skeleton
 function GameGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: 12 }).map((_, i) => (
         <div key={i} className="animate-pulse">
-          <div className="aspect-[3/4] rounded-lg bg-muted mb-3" />
+          <div className="mb-3 aspect-[3/4] rounded-lg bg-muted" />
           <div className="space-y-2">
-            <div className="h-4 bg-muted rounded w-3/4" />
-            <div className="h-3 bg-muted rounded w-1/2" />
+            <div className="h-4 w-3/4 rounded-md bg-muted" />
+            <div className="h-3 w-1/2 rounded-md bg-muted" />
           </div>
         </div>
       ))}

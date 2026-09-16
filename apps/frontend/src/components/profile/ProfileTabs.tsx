@@ -32,50 +32,50 @@ export default function ProfileTabs({ profile }: ProfileTabsProps) {
     <Tabs.Root defaultValue="reviews" className="w-full">
       {/* Tab List */}
       <Tabs.List
-        className="flex gap-1 border-b border-border mb-6 overflow-x-auto scrollbar-hide"
+        className="mb-6 flex gap-1 overflow-x-auto border-b border-border no-scrollbar"
         aria-label="Profile sections"
       >
         <Tabs.Trigger
           value="reviews"
-          className="p-4 text-sm font-semibold text-muted-foreground hover:text-foreground transition-all whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary"
+          className="cursor-pointer whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:font-semibold data-[state=active]:text-foreground"
         >
           Reviews
-          <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">
+          <span className="ml-2 inline-flex items-center rounded-full bg-primary px-2 py-0.5 font-mono text-xs font-medium text-primary-foreground">
             {displayProfile.stats.reviewsCount}
           </span>
         </Tabs.Trigger>
 
         <Tabs.Trigger
           value="followers"
-          className="p-4 text-sm font-semibold text-muted-foreground hover:text-foreground transition-all whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary"
+          className="cursor-pointer whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:font-semibold data-[state=active]:text-foreground"
         >
           Followers
-          <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">
+          <span className="ml-2 inline-flex items-center rounded-full bg-primary px-2 py-0.5 font-mono text-xs font-medium text-primary-foreground">
             {displayProfile.stats.followersCount}
           </span>
         </Tabs.Trigger>
 
         <Tabs.Trigger
           value="following"
-          className="p-4 text-sm font-semibold text-muted-foreground hover:text-foreground transition-all whitespace-nowrap cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-primary"
+          className="cursor-pointer whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:font-semibold data-[state=active]:text-foreground"
         >
           Following
-          <span className="ml-2 text-xs bg-muted px-2 py-0.5 rounded-full">
+          <span className="ml-2 inline-flex items-center rounded-full bg-primary px-2 py-0.5 font-mono text-xs font-medium text-primary-foreground">
             {displayProfile.stats.followingCount}
           </span>
         </Tabs.Trigger>
       </Tabs.List>
 
       {/* Tab Content */}
-      <Tabs.Content value="reviews" className="focus:outline-none">
+      <Tabs.Content value="reviews">
         <ReviewList userId={displayProfile.id} />
       </Tabs.Content>
 
-      <Tabs.Content value="followers" className="focus:outline-none">
+      <Tabs.Content value="followers">
         <FollowList type="followers" username={displayProfile.username} />
       </Tabs.Content>
 
-      <Tabs.Content value="following" className="focus:outline-none">
+      <Tabs.Content value="following">
         <FollowList type="following" username={displayProfile.username} />
       </Tabs.Content>
     </Tabs.Root>

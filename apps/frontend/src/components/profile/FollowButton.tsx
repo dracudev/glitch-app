@@ -71,14 +71,14 @@ export default function FollowButton({ userId, initialIsFollowing = false }: Fol
         isLoading={isLoading}
         fullWidth
         className={
-          isFollowing ? 'hover:border-[var(--accent-error)] hover:text-[var(--accent-error)]' : ''
+          isFollowing ? 'hover:border-error hover:text-error' : ''
         }
         aria-label={isFollowing ? 'Unfollow user' : 'Follow user'}
         aria-pressed={isFollowing}
       >
         {isFollowing ? 'Following' : 'Follow'}
       </Button>
-      {error && <span className="text-sm text-[var(--state-error)] text-center">{error}</span>}
+      {error && <span className="text-center text-sm text-error">{error}</span>}
     </div>
   );
 }

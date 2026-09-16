@@ -1,6 +1,7 @@
 import type { ActivityItem } from '@glitch/shared-types';
 import * as Avatar from '@radix-ui/react-avatar';
-import { Star } from 'lucide-react';
+import { ChevronRight, Star } from 'lucide-react';
+import { getAvatarUrl } from '@/lib/avatar';
 
 interface FeedItemProps {
   activity: ActivityItem;
@@ -29,30 +30,25 @@ export default function FeedItem({ activity }: FeedItemProps) {
     return past.toLocaleDateString();
   };
 
-  // Render stars for ratings (0-10 scale)
+  // Render stars for ratings (0-10 scale). Mirrors the StarRating control:
+  // a filled border-strong track with a primary overlay clipped to a percentage.
   const renderRating = (rating: number) => {
     return (
       <div className="flex items-center gap-1">
         {Array.from({ length: 10 }).map((_, i) => {
           const fillPercent = Math.min(100, Math.max(0, (rating - i) * 100));
           return (
-            <span key={i} className="relative inline-block" style={{ width: 16, height: 16 }}>
+            <span key={i} className="relative inline-block size-4">
               <Star
-                size={16}
-                className="absolute inset-0 text-[var(--text-muted)]"
-                fill="none"
+                className="absolute inset-0 size-4 fill-border-strong text-border-strong"
                 strokeWidth={1.5}
               />
+              {/* Value width is computed from the rating, so it stays inline. */}
               <span
                 className="absolute inset-0 overflow-hidden"
                 style={{ width: `${fillPercent}%` }}
               >
-                <Star
-                  size={16}
-                  fill="var(--brand-accent)"
-                  stroke="var(--brand-accent)"
-                  strokeWidth={1.5}
-                />
+                <Star className="size-4 fill-primary text-primary" strokeWidth={1.5} />
               </span>
             </span>
           );
@@ -79,26 +75,21 @@ export default function FeedItem({ activity }: FeedItemProps) {
           <div className="flex gap-4">
             {/* Game Cover */}
             {review.game?.coverImage && (
-              <a href={`/games/${review.game?.slug}`} className="flex-shrink-0">
+              <a href={`/games/${review.game?.slug}`} className="shrink-0">
                 <img
                   src={review.game?.coverImage}
                   alt={review.game?.title}
-                  className="w-20 h-28 object-cover rounded"
-                  style={{ borderRadius: 'var(--radius-sm)' }}
+                  className="h-28 w-20 rounded-md object-cover"
                 />
               </a>
             )}
 
             {/* Review Content */}
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="mb-2">
                 <a
                   href={`/games/${review.game?.slug}`}
-                  className="font-semibold hover:underline"
-                  style={{
-                    color: 'var(--brand-primary)',
-                    fontSize: 'var(--font-size-lg)',
-                  }}
+                  className="text-lg font-semibold text-primary hover:underline"
                 >
                   {review.game?.title}
                 </a>
@@ -110,33 +101,15 @@ export default function FeedItem({ activity }: FeedItemProps) {
               )}
 
               {/* Review snippet */}
-              {snippet && (
-                <p
-                  className="mb-2"
-                  style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: 'var(--font-size-base)',
-                  }}
-                >
-                  {snippet}
-                </p>
-              )}
+              {snippet && <p className="mb-2 text-base text-foreground-secondary">{snippet}</p>}
 
               {/* Read more link */}
               <a
                 href={`/reviews/${review.id}`}
-                className="font-medium hover:underline inline-flex items-center gap-1"
-                style={{ color: 'var(--brand-primary)', fontSize: 'var(--font-size-sm)' }}
+                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
               >
                 Read full review
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <ChevronRight className="size-4" />
               </a>
             </div>
           </div>
@@ -152,20 +125,13 @@ export default function FeedItem({ activity }: FeedItemProps) {
           <div className="flex items-center gap-4">
             {/* Followed User Avatar */}
             <a href={`/profile/${followedUser.username}`}>
-              <Avatar.Root className="inline-flex items-center justify-center overflow-hidden rounded-full w-12 h-12">
+              <Avatar.Root className="inline-flex size-12 items-center justify-center overflow-hidden rounded-full">
                 <Avatar.Image
-                  src={followedUser.avatar ?? undefined}
+                  src={getAvatarUrl(followedUser)}
                   alt={followedUser.username}
-                  className="w-full h-full object-cover"
+                  className="size-full object-cover"
                 />
-                <Avatar.Fallback
-                  className="flex items-center justify-center w-full h-full font-semibold"
-                  style={{
-                    background: 'var(--bg-tertiary)',
-                    color: 'var(--text-primary)',
-                    fontSize: 'var(--font-size-lg)',
-                  }}
-                >
+                <Avatar.Fallback className="flex size-full items-center justify-center bg-muted text-lg font-semibold text-foreground">
                   {followedUser.username.slice(0, 2).toUpperCase()}
                 </Avatar.Fallback>
               </Avatar.Root>
@@ -173,17 +139,11 @@ export default function FeedItem({ activity }: FeedItemProps) {
 
             {/* Followed User Info */}
             <div className="flex-1">
-              <p
-                style={{
-                  color: 'var(--text-secondary)',
-                  fontSize: 'var(--font-size-base)',
-                }}
-              >
+              <p className="text-base text-foreground-secondary">
                 started following{' '}
                 <a
                   href={`/profile/${followedUser.username}`}
-                  className="font-semibold hover:underline"
-                  style={{ color: 'var(--text-primary)' }}
+                  className="font-semibold text-foreground hover:underline"
                 >
                   {followedUser.displayName ?? followedUser.username}
                 </a>
@@ -205,26 +165,21 @@ export default function FeedItem({ activity }: FeedItemProps) {
           <div className="flex gap-4">
             {/* Game Cover */}
             {review.game?.coverImage && (
-              <a href={`/games/${review.game?.slug}`} className="flex-shrink-0">
+              <a href={`/games/${review.game?.slug}`} className="shrink-0">
                 <img
                   src={review.game?.coverImage}
                   alt={review.game?.title}
-                  className="w-20 h-28 object-cover rounded"
-                  style={{ borderRadius: 'var(--radius-sm)' }}
+                  className="h-28 w-20 rounded-md object-cover"
                 />
               </a>
             )}
 
             {/* Review Content */}
-            <div className="flex-1 min-w-0">
+            <div className="min-w-0 flex-1">
               <div className="mb-2">
                 <a
                   href={`/games/${review.game?.slug}`}
-                  className="font-semibold hover:underline"
-                  style={{
-                    color: 'var(--brand-primary)',
-                    fontSize: 'var(--font-size-lg)',
-                  }}
+                  className="text-lg font-semibold text-primary hover:underline"
                 >
                   {review.game?.title}
                 </a>
@@ -236,33 +191,15 @@ export default function FeedItem({ activity }: FeedItemProps) {
               )}
 
               {/* Review snippet */}
-              {snippet && (
-                <p
-                  className="mb-2"
-                  style={{
-                    color: 'var(--text-secondary)',
-                    fontSize: 'var(--font-size-base)',
-                  }}
-                >
-                  {snippet}
-                </p>
-              )}
+              {snippet && <p className="mb-2 text-base text-foreground-secondary">{snippet}</p>}
 
               {/* Read more link */}
               <a
                 href={`/reviews/${review.id}`}
-                className="font-medium hover:underline inline-flex items-center gap-1"
-                style={{ color: 'var(--brand-primary)', fontSize: 'var(--font-size-sm)' }}
+                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
               >
                 Read full review
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                <ChevronRight className="size-4" />
               </a>
             </div>
           </div>
@@ -271,71 +208,37 @@ export default function FeedItem({ activity }: FeedItemProps) {
 
       // Placeholder for future activity types
       default:
-        return (
-          <p
-            style={{
-              color: 'var(--text-secondary)',
-              fontSize: 'var(--font-size-base)',
-            }}
-          >
-            Activity type not yet implemented
-          </p>
-        );
+        return <p className="text-base text-foreground-secondary">Activity type not yet implemented</p>;
     }
   };
 
   return (
-    <article
-      className="rounded-lg p-6 transition-shadow hover:shadow-md"
-      style={{
-        background: 'var(--bg-secondary)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-sm)',
-      }}
-    >
+    <article className="rounded-lg border border-border bg-card p-6 interactive-surface hover:border-border-hover">
       {/* Activity Header */}
-      <div className="flex items-start gap-4 mb-4">
+      <div className="mb-4 flex items-start gap-4">
         {/* User Avatar */}
-        <a href={`/profile/${user.username}`} className="flex-shrink-0">
-          <Avatar.Root className="inline-flex items-center justify-center overflow-hidden rounded-full w-10 h-10">
+        <a href={`/profile/${user.username}`} className="shrink-0">
+          <Avatar.Root className="inline-flex size-10 items-center justify-center overflow-hidden rounded-full">
             <Avatar.Image
-              src={user.avatar || undefined}
+              src={getAvatarUrl(user)}
               alt={user.username}
-              className="w-full h-full object-cover"
+              className="size-full object-cover"
             />
-            <Avatar.Fallback
-              className="flex items-center justify-center w-full h-full font-semibold"
-              style={{
-                background: 'var(--bg-tertiary)',
-                color: 'var(--text-primary)',
-                fontSize: 'var(--font-size-base)',
-              }}
-            >
+            <Avatar.Fallback className="flex size-full items-center justify-center bg-muted text-base font-semibold text-foreground">
               {user.username.slice(0, 2).toUpperCase()}
             </Avatar.Fallback>
           </Avatar.Root>
         </a>
 
         {/* User Info & Timestamp */}
-        <div className="flex-1 min-w-0">
+        <div className="min-w-0 flex-1">
           <a
             href={`/profile/${user.username}`}
-            className="font-semibold hover:underline"
-            style={{
-              color: 'var(--text-primary)',
-              fontSize: 'var(--font-size-base)',
-            }}
+            className="text-base font-semibold text-foreground hover:underline"
           >
             {user.displayName || user.username}
           </a>
-          <p
-            style={{
-              color: 'var(--text-muted)',
-              fontSize: 'var(--font-size-sm)',
-            }}
-          >
-            {formatTimestamp(createdAtStr)}
-          </p>
+          <p className="font-mono text-sm text-muted-foreground">{formatTimestamp(createdAtStr)}</p>
         </div>
       </div>
 

@@ -18,10 +18,10 @@ export default function MobileFilterButton({
       className="justify-center"
       aria-label={`Open filters ${activeFilterCount > 0 ? `(${activeFilterCount} active)` : ''}`}
     >
-      <Filter className="h-4 w-4" aria-hidden="true" />
+      <Filter className="size-4" aria-hidden="true" />
       <span>Filters</span>
       {activeFilterCount > 0 && (
-        <span className="rounded-full bg-[var(--brand-primary)] px-2 py-0.5 text-xs font-semibold text-white">
+        <span className="inline-flex items-center rounded-full bg-primary px-2 py-0.5 font-mono text-xs font-medium text-primary-foreground">
           {activeFilterCount}
         </span>
       )}

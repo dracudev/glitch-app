@@ -50,9 +50,10 @@ export default function GameReviewList({ gameId }: GameReviewListProps) {
   }
   if (!reviews || reviews.items.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-secondary-foreground text-lg">
-          No reviews yet. Be the first to review this game!
+      <div className="rounded-lg border border-border bg-card p-12 text-center">
+        <h3 className="text-lg font-semibold text-foreground">No reviews yet</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Be the first to review this game!
         </p>
       </div>
     );
@@ -65,10 +66,10 @@ export default function GameReviewList({ gameId }: GameReviewListProps) {
       ))}
 
       {/* Infinite Scroll Trigger */}
-      <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+      <div ref={loadMoreRef} className="flex h-20 items-center justify-center">
         {isLoading && (reviews?.meta.page ?? 1) < (reviews?.meta.totalPages ?? 1) && (
-          <div className="flex items-center gap-2 text-secondary-foreground">
-            <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          <div className="flex items-center gap-2 text-foreground-secondary">
+            <div className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
             <span>Loading more reviews...</span>
           </div>
         )}
@@ -81,18 +82,18 @@ function ReviewListSkeleton() {
   return (
     <div className="space-y-6">
       {[1, 2, 3].map((i) => (
-        <div key={i} className="bg-secondary rounded-lg p-6 animate-pulse">
-          <div className="flex items-start gap-4 mb-4">
-            <div className="w-12 h-12 bg-muted rounded-full" />
+        <div key={i} className="animate-pulse rounded-lg border border-border bg-card p-6">
+          <div className="mb-4 flex items-start gap-4">
+            <div className="size-12 rounded-full bg-muted" />
             <div className="flex-1">
-              <div className="h-5 bg-muted rounded w-1/4 mb-2" />
-              <div className="h-4 bg-muted rounded w-1/6" />
+              <div className="mb-2 h-5 w-1/4 rounded-md bg-muted" />
+              <div className="h-4 w-1/6 rounded-md bg-muted" />
             </div>
           </div>
           <div className="space-y-2">
-            <div className="h-4 bg-muted rounded w-full" />
-            <div className="h-4 bg-muted rounded w-5/6" />
-            <div className="h-4 bg-muted rounded w-4/6" />
+            <div className="h-4 w-full rounded-md bg-muted" />
+            <div className="h-4 w-5/6 rounded-md bg-muted" />
+            <div className="h-4 w-4/6 rounded-md bg-muted" />
           </div>
         </div>
       ))}

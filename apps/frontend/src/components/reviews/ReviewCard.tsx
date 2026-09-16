@@ -1,4 +1,6 @@
+import { Heart, MessageSquare, Star } from 'lucide-react';
 import type { ReviewResponse } from '@glitch/shared-types';
+import { getAvatarUrl } from '@/lib/avatar';
 
 // ============================================================================
 // Props Interface
@@ -44,10 +46,8 @@ export default function ReviewCard({ review }: ReviewCardProps) {
     return content.substring(0, maxLength).trim() + '...';
   };
 
-  // Generate avatar URL (using DiceBear as fallback)
-  const avatarUrl =
-    review.user.avatar ||
-    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(review.user.username)}`;
+  // Generate avatar URL (using the shared DiceBear fallback)
+  const avatarUrl = getAvatarUrl(review.user);
 
   // Generate game cover URL
   const coverUrl = review.game.coverImage || '/images/game-placeholder.svg';
@@ -57,7 +57,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
   // ============================================================================
 
   return (
-    <article className="relative bg-card rounded-lg border border-border overflow-hidden hover:border-primary transition-all duration-200 hover:shadow-lg group flex flex-col md:flex-row cursor-pointer">
+    <article className="relative flex flex-col overflow-hidden rounded-lg border border-border bg-card interactive-surface hover:border-border-hover md:flex-row">
       {/* Review link stretches over the entire card */}
       <a
         href={`/reviews/${review.id}`}
@@ -66,12 +66,13 @@ export default function ReviewCard({ review }: ReviewCardProps) {
       />
 
       {/* Game Cover Image */}
-      <div className="relative w-full md:w-36 flex-shrink-0 md:aspect-[3/4] h-48 md:h-auto overflow-hidden bg-muted">
+      <div className="relative aspect-video w-full shrink-0 overflow-hidden bg-muted md:aspect-[3/4] md:w-36">
         <img
           src={coverUrl}
           alt={review.game.title}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+          className="size-full object-cover"
           loading="lazy"
+          decoding="async"
           onError={(e) => {
             try {
               (e.currentTarget as HTMLImageElement).src = '/images/game-placeholder.svg';
@@ -82,33 +83,34 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         />
         {/* Spoiler Badge */}
         {review.isSpoiler && (
-          <div className="absolute top-2 right-2 bg-destructive text-destructive-foreground px-2 py-1 rounded text-xs font-semibold z-30">
+          <div className="absolute right-2 top-2 z-20 rounded-full border border-border bg-background/85 px-2 py-0.5 text-xs text-muted-foreground backdrop-blur-sm">
             SPOILER
           </div>
         )}
       </div>
 
       {/* Card Content */}
-      <div className="p-4 flex-1">
+      <div className="flex flex-1 flex-col p-4">
         {/* Game Title */}
-        <div className="mb-3">
-          <h3 className="font-semibold text-foreground line-clamp-2">{review.game.title}</h3>
-        </div>
+        <h3 className="line-clamp-2 text-base font-semibold text-foreground">
+          {review.game.title}
+        </h3>
 
         {/* User Info — separate link above the card overlay */}
-        <div className="mb-3">
+        <div className="mt-3">
           <a
             href={`/profile/${review.user.username}`}
-            className="relative z-20 inline-flex items-center gap-2 hover:opacity-80 transition-opacity"
+            className="relative z-20 inline-flex items-center gap-2 transition-opacity hover:opacity-80"
           >
             <img
               src={avatarUrl}
               alt={review.user.displayName}
-              className="w-8 h-8 rounded-full border border-border"
+              className="size-8 rounded-full border border-border"
               loading="lazy"
+              decoding="async"
             />
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm text-foreground font-medium truncate">
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium text-foreground">
                 {review.user.displayName}
               </span>
               <span className="text-xs text-muted-foreground">@{review.user.username}</span>
@@ -117,68 +119,50 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         </div>
 
         {/* Rating Stars */}
-        <div className="flex items-center gap-1 mb-3">
+        <div className="mb-3 mt-3 flex items-center gap-1">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => {
             const isFilled = star <= Math.round(review.rating);
             return (
-              <svg
+              <Star
                 key={star}
-                className={`w-4 h-4 ${isFilled ? 'text-accent' : 'text-muted-foreground'}`}
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-              </svg>
+                className={`size-4 fill-current ${isFilled ? 'text-accent' : 'text-muted-foreground'}`}
+                aria-hidden="true"
+              />
             );
           })}
-          <span className="ml-1 text-sm font-semibold text-accent">{review.rating.toFixed(1)}</span>
+          <span className="ml-1 font-mono text-sm font-semibold text-accent">
+            {review.rating.toFixed(1)}
+          </span>
         </div>
 
         {/* Review Title (if exists) */}
         {review.title && (
-          <div className="mb-2">
-            <h4 className="font-medium text-foreground line-clamp-1">{review.title}</h4>
-          </div>
+          <h4 className="mb-2 line-clamp-1 text-sm font-medium text-foreground">{review.title}</h4>
         )}
 
         {/* Content Preview */}
-        <div className="mb-3">
-          <p className="text-sm text-muted-foreground line-clamp-3">
-            {truncateContent(review.content)}
-          </p>
-        </div>
+        <p className="mb-3 line-clamp-3 text-sm text-muted-foreground">
+          {truncateContent(review.content)}
+        </p>
 
-        {/* Footer: Stats and Date */}
-        <div className="flex items-center justify-between text-xs text-muted-foreground pt-3 border-t border-border">
-          {/* Stats */}
+        {/* Footer: stats and date, pinned to the bottom so grids stay aligned */}
+        <div className="mt-auto flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             {/* Likes */}
             <div className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>{review.stats.likesCount}</span>
+              <Heart className="size-4 fill-current" aria-hidden="true" />
+              <span className="font-mono">{review.stats.likesCount}</span>
             </div>
 
             {/* Comments */}
             <div className="flex items-center gap-1">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path
-                  fillRule="evenodd"
-                  d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
-                  clipRule="evenodd"
-                />
-              </svg>
-              <span>{review.stats.commentsCount}</span>
+              <MessageSquare className="size-4 fill-current" aria-hidden="true" />
+              <span className="font-mono">{review.stats.commentsCount}</span>
             </div>
           </div>
 
           {/* Date */}
-          <time dateTime={new Date(review.createdAt).toISOString()}>
+          <time className="font-mono" dateTime={new Date(review.createdAt).toISOString()}>
             {formatDate(review.createdAt)}
           </time>
         </div>

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import * as Select from '@radix-ui/react-select';
-import { Check, ChevronDown } from 'lucide-react';
+import { Check, ChevronDown, Filter } from 'lucide-react';
+import { Card } from '@/components/ui/Card';
+import { fieldStyles } from '@/components/ui/Input';
 import { useReviews } from '@/hooks/useReviews';
 
 // ============================================================================
@@ -17,29 +19,34 @@ type SortOption = {
 const SORT_OPTIONS: SortOption[] = [
   {
     value: 'recent',
-    label: 'Most Recent',
+    label: 'Most recent',
     sortBy: 'createdAt',
     sortOrder: 'desc',
   },
   {
     value: 'popular',
-    label: 'Most Popular',
+    label: 'Most popular',
     sortBy: 'likesCount',
     sortOrder: 'desc',
   },
   {
     value: 'highest-rated',
-    label: 'Highest Rated',
+    label: 'Highest rated',
     sortBy: 'rating',
     sortOrder: 'desc',
   },
   {
     value: 'lowest-rated',
-    label: 'Lowest Rated',
+    label: 'Lowest rated',
     sortBy: 'rating',
     sortOrder: 'asc',
   },
 ];
+
+const selectTriggerStyles = [
+  fieldStyles,
+  'flex cursor-pointer items-center justify-between gap-2 text-left',
+].join(' ');
 
 // ============================================================================
 // ReviewFilters Component
@@ -84,48 +91,40 @@ export default function ReviewFilters() {
   // ============================================================================
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card rounded-lg border border-border p-4">
+    <Card className="flex flex-col items-start justify-between gap-4 p-4 sm:flex-row sm:items-center">
       {/* Filter Label */}
       <div className="flex items-center gap-2">
-        <svg
-          className="w-5 h-5 text-muted-foreground"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
-          />
-        </svg>
-        <span className="text-sm font-medium text-foreground">Sort By</span>
+        <Filter className="size-5 text-muted-foreground" />
+        <span className="text-sm font-medium text-foreground">Sort by</span>
       </div>
 
       {/* Sort Dropdown */}
       <div className="w-full sm:w-auto">
         <Select.Root value={selectedSort} onValueChange={handleSortChange} disabled={isLoading}>
-          <Select.Trigger className="w-full sm:w-auto flex items-center justify-between rounded-lg border border-border bg-background px-4 py-2 text-sm hover:bg-accent focus:outline-none focus:ring-2 focus:ring-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+          <Select.Trigger
+            className={[selectTriggerStyles, 'w-full sm:w-auto'].join(' ')}
+            aria-label="Sort reviews"
+          >
             <Select.Value />
-            <Select.Icon>
-              <ChevronDown className="h-4 w-4 opacity-50" />
-            </Select.Icon>
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </Select.Trigger>
 
           <Select.Portal>
-            <Select.Content className="z-[60] rounded-lg border border-border bg-card shadow-lg">
-              <Select.Viewport className="p-1">
+            <Select.Content
+              className="z-popover overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-lg"
+              position="popper"
+              sideOffset={4}
+            >
+              <Select.Viewport>
                 {SORT_OPTIONS.map((option) => (
                   <Select.Item
                     key={option.value}
                     value={option.value}
-                    className="relative flex items-center rounded px-8 py-2 text-sm hover:bg-accent focus:bg-accent outline-none cursor-pointer"
+                    className="relative flex cursor-pointer items-center rounded-md py-2 pl-8 pr-3 text-sm text-foreground-secondary outline-none transition-colors data-[highlighted]:bg-secondary data-[highlighted]:text-foreground"
                   >
                     <Select.ItemText>{option.label}</Select.ItemText>
                     <Select.ItemIndicator className="absolute left-2">
-                      <Check className="h-4 w-4" />
+                      <Check className="size-4 text-primary" />
                     </Select.ItemIndicator>
                   </Select.Item>
                 ))}
@@ -134,6 +133,6 @@ export default function ReviewFilters() {
           </Select.Portal>
         </Select.Root>
       </div>
-    </div>
+    </Card>
   );
 }

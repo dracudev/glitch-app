@@ -65,7 +65,7 @@ export default function ProfilePage({ profile, username }: ProfilePageProps) {
   // ============================================================================
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
+    <div className="shell py-8 lg:py-10">
       {/* Profile Header with avatar, bio, stats, and follow/edit button */}
       <ProfileHeader profile={profile} />
 

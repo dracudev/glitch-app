@@ -54,10 +54,10 @@ export default function ExplorePage({
   }, []);
 
   return (
-    <div className="container mx-auto px-4 py-6 lg:py-8">
+    <div className="shell py-8 lg:py-10">
       {/* Page Header */}
       <div className="mb-6 lg:mb-8">
-        <h1 className="text-3xl font-bold tracking-tight lg:text-4xl">Explore Games</h1>
+        <h1 className="text-2xl tracking-tight sm:text-3xl">Explore games</h1>
         {selectedFilters.search && (
           <p className="mt-2 text-muted-foreground">
             Search results for "{selectedFilters.search}"
@@ -65,10 +65,11 @@ export default function ExplorePage({
         )}
       </div>
 
-      <div className="lg:grid lg:grid-cols-[280px_1fr] lg:gap-8">
-        {/* Desktop Sidebar */}
+      <div className="lg:grid lg:grid-cols-[17.5rem_1fr] lg:gap-10">
+        {/* Desktop Sidebar — pt-6 keeps the panel clear of the sticky navbar:
+            the wrapper pins at the nav's height, the padding is the gap. */}
         <aside className="hidden lg:block">
-          <div className="sticky top-6">
+          <div className="sticky top-nav pt-6">
             <FilterSidebar />
           </div>
         </aside>
@@ -76,13 +77,11 @@ export default function ExplorePage({
         {/* Main Content */}
         <main>
           {/* Mobile Filter Button */}
-          <div className="mb-4 lg:hidden sticky top-16 z-40">
-            <div className="bg-background/80 px-0 py-2">
-              <MobileFilterButton
-                onClick={() => setIsMobileFilterOpen(true)}
-                activeFilterCount={getActiveFilterCount(selectedFilters)}
-              />
-            </div>
+          <div className="sticky top-nav z-sticky mb-4 bg-background/90 py-2 backdrop-blur-md lg:hidden">
+            <MobileFilterButton
+              onClick={() => setIsMobileFilterOpen(true)}
+              activeFilterCount={getActiveFilterCount(selectedFilters)}
+            />
           </div>
 
           <GameResultsList />

@@ -1,12 +1,15 @@
 import { useStore } from '@nanostores/react';
 import * as Avatar from '@radix-ui/react-avatar';
+import { Calendar, Link, Lock, MapPin } from 'lucide-react';
 import type { UserProfile } from '@glitch/shared-types';
 import { $currentUser } from '@/stores/auth';
 import { $viewedProfile } from '@/stores/users';
 import FollowButton from './FollowButton';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import EditProfileDialog from './EditProfileDialog';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { getAvatarUrl } from '@/lib/avatar';
 
 // ============================================================================
 // Props Interface
@@ -33,32 +36,41 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
   const viewedProfile = useStore($viewedProfile);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
+  // `$currentUser` only exists client-side: it is read from localStorage by the
+  // navbar after mount. Branching on it during the first render would let a
+  // store-primed client paint the owner state while the server painted the
+  // non-owner state — a guaranteed hydration mismatch. Gate the check until
+  // after mount so both renders agree; the store then takes over and the owner
+  // sees "Edit profile". No network fetch is involved: localStorage is
+  // synchronous, so this always resolves.
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
   // Use the store version if available (for real-time updates), otherwise use the prop
   const displayProfile = viewedProfile || profile;
 
   // Check if current user is viewing their own profile
-  const isOwnProfile = currentUser?.id === displayProfile.id;
+  const isOwnProfile = isClient && currentUser?.id === displayProfile.id;
 
   // Generate avatar URL with fallback
-  const avatarUrl =
-    displayProfile.avatar ||
-    `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(displayProfile.username)}&size=128`;
+  const avatarUrl = getAvatarUrl(displayProfile, 128);
 
   return (
     <>
-      <div className="bg-card rounded-lg shadow-lg border border-border p-6">
+      <Card className="p-6">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
           {/* Column 1: Avatar*/}
           <div className="flex flex-col items-center lg:items-start">
             <div className="relative">
-              <Avatar.Root className="inline-flex h-24 w-24 lg:h-32 lg:w-32 select-none items-center justify-center overflow-hidden rounded-full border-4 border-border align-middle">
+              <Avatar.Root className="inline-flex size-24 select-none items-center justify-center overflow-hidden rounded-full border border-border align-middle lg:size-32">
                 <Avatar.Image
-                  className="h-full w-full object-cover"
+                  className="size-full object-cover"
                   src={avatarUrl}
                   alt={displayProfile.username}
+                  decoding="async"
                 />
                 <Avatar.Fallback
-                  className="flex h-full w-full items-center justify-center bg-muted text-foreground text-2xl lg:text-3xl font-semibold"
+                  className="flex size-full items-center justify-center bg-muted text-2xl font-semibold text-foreground lg:text-3xl"
                   delayMs={600}
                 >
                   {displayProfile.username.slice(0, 2).toUpperCase()}
@@ -66,58 +78,33 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
               </Avatar.Root>
               {displayProfile.isPrivate && (
                 <div
-                  className="absolute bottom-0 right-0 bg-card rounded-full p-2 border-2 border-border"
-                  title="Private Profile"
+                  className="absolute bottom-0 right-0 rounded-full border border-border bg-card p-2"
+                  title="Private profile"
                 >
-                  <svg
-                    className="w-5 h-5 text-foreground"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                    />
-                  </svg>
+                    <Lock className="size-5 text-foreground" />
                 </div>
               )}
             </div>
           </div>
 
           {/* Column 2: Profile Info  */}
-          <div className="mt-6 lg:mt-0 lg:col-span-1 text-center lg:text-left">
+          <div className="mt-6 text-center lg:col-span-1 lg:mt-0 lg:text-left">
             {/* Username */}
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground">
+            <h1 className="text-2xl tracking-tight sm:text-3xl">
               {displayProfile.displayName || displayProfile.username}
             </h1>
-            <p className="text-base lg:text-lg text-muted-foreground">@{displayProfile.username}</p>
+            <p className="text-base text-muted-foreground lg:text-lg">@{displayProfile.username}</p>
 
             {/* Bio */}
             {displayProfile.bio && (
-              <p className="mt-4 text-foreground whitespace-pre-wrap">{displayProfile.bio}</p>
+              <p className="mt-4 whitespace-pre-wrap text-foreground">{displayProfile.bio}</p>
             )}
 
             {/* Additional Info */}
-            <div className="mt-4 flex flex-wrap justify-center lg:justify-start gap-4 text-sm text-muted-foreground">
+            <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-muted-foreground lg:justify-start">
               {displayProfile.location && (
                 <span className="flex items-center gap-1">
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                    />
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
-                    />
-                  </svg>
+                  <MapPin className="size-4" />
                   {displayProfile.location}
                 </span>
               )}
@@ -126,53 +113,41 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
                   href={displayProfile.website}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 hover:text-accent transition-colors"
+                  className="flex items-center gap-1 transition-colors hover:text-accent"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
-                    />
-                  </svg>
+                  <Link className="size-4" />
                   {new URL(displayProfile.website).hostname}
                 </a>
               )}
               <span className="flex items-center gap-1">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-                  />
-                </svg>
+                <Calendar className="size-4" />
                 Joined{' '}
-                {new Date(displayProfile.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
+                <span className="font-mono">
+                  {new Date(displayProfile.createdAt).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </span>
               </span>
             </div>
 
             {/* Stats */}
-            <div className="mt-6 flex justify-center lg:justify-start gap-8">
+            <div className="mt-6 flex justify-center gap-8 lg:justify-start">
               <div className="text-center lg:text-left">
-                <div className="text-2xl font-bold text-foreground">
+                <div className="font-mono text-2xl font-semibold text-foreground">
                   {displayProfile.stats.reviewsCount}
                 </div>
                 <div className="text-sm text-muted-foreground">Reviews</div>
               </div>
               <div className="text-center lg:text-left">
-                <div className="text-2xl font-bold text-foreground">
+                <div className="font-mono text-2xl font-semibold text-foreground">
                   {displayProfile.stats.followersCount}
                 </div>
                 <div className="text-sm text-muted-foreground">Followers</div>
               </div>
               <div className="text-center lg:text-left">
-                <div className="text-2xl font-bold text-foreground">
+                <div className="font-mono text-2xl font-semibold text-foreground">
                   {displayProfile.stats.followingCount}
                 </div>
                 <div className="text-sm text-muted-foreground">Following</div>
@@ -181,14 +156,14 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
           </div>
 
           {/* Column 3: Action Buttons */}
-          <div className="mt-6 lg:mt-0 flex flex-col items-stretch lg:items-end lg:justify-start">
+          <div className="mt-6 flex flex-col items-stretch lg:mt-0 lg:items-end lg:justify-start">
             {isOwnProfile ? (
               <Button
                 onClick={() => setIsEditDialogOpen(true)}
                 variant="primary"
                 className="w-full lg:w-auto"
               >
-                Edit Profile
+                Edit profile
               </Button>
             ) : (
               <div className="w-full lg:w-auto">
@@ -200,7 +175,7 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
             )}
           </div>
         </div>
-      </div>
+      </Card>
 
       {/* Edit Profile Dialog */}
       {isOwnProfile && (

@@ -26,10 +26,10 @@ export default function GameDetailPage({
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 lg:py-8">
-        <GameHeader />
-        <GameTabs />
-        <SimilarGamesSection />
+      <div className="shell py-8 lg:py-10">
+        <GameHeader game={initialGame} />
+        <GameTabs game={initialGame} />
+        <SimilarGamesSection similarGames={initialSimilarGames} />
       </div>
     </div>
   );

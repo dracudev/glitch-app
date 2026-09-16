@@ -1,61 +1,62 @@
 import * as Tabs from '@radix-ui/react-tabs';
+import type { GameDetail } from '@glitch/shared-types';
 import { useGameDetail } from '@/hooks/useGames';
 import GameReviewList from './GameReviewList';
 
-export default function GameTabs() {
-  const { game, isLoading } = useGameDetail();
+const tabTriggerStyles =
+  'cursor-pointer whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:font-semibold data-[state=active]:text-foreground';
 
-  if (isLoading || !game) {
+interface GameTabsProps {
+  /** Server-rendered game. Used for the first paint so the SSR HTML carries
+   * real content; the store is still the source of truth after mount. */
+  game?: GameDetail;
+}
+
+export default function GameTabs({ game: initialGame }: GameTabsProps) {
+  const { game: storeGame } = useGameDetail();
+  const game = initialGame ?? storeGame;
+
+  // Only a genuinely empty store (e.g. client-side navigation) hits this branch.
+  if (!game) {
     return <GameTabsSkeleton />;
   }
 
   return (
     <Tabs.Root defaultValue="about" className="mb-12">
-      <Tabs.List className="flex gap-4 border-b border-border mb-6 overflow-x-auto">
-        <Tabs.Trigger
-          value="about"
-          className="px-4 py-3 text-secondary-foreground font-medium border-b-2 border-transparent data-[state=active]:text-primary data-[state=active]:border-primary hover:text-foreground transition-colors whitespace-nowrap cursor-pointer"
-        >
+      <Tabs.List className="mb-6 flex gap-1 overflow-x-auto border-b border-border no-scrollbar">
+        <Tabs.Trigger value="about" className={tabTriggerStyles}>
           About
         </Tabs.Trigger>
-        <Tabs.Trigger
-          value="reviews"
-          className="px-4 py-3 text-secondary-foreground font-medium border-b-2 border-transparent data-[state=active]:text-primary data-[state=active]:border-primary hover:text-foreground transition-colors whitespace-nowrap cursor-pointer"
-        >
+        <Tabs.Trigger value="reviews" className={tabTriggerStyles}>
           Reviews
         </Tabs.Trigger>
-        <Tabs.Trigger
-          value="details"
-          className="px-4 py-3 text-secondary-foreground font-medium border-b-2 border-transparent data-[state=active]:text-primary data-[state=active]:border-primary hover:text-foreground transition-colors whitespace-nowrap cursor-pointer"
-        >
+        <Tabs.Trigger value="details" className={tabTriggerStyles}>
           Details
         </Tabs.Trigger>
       </Tabs.List>
 
-      <Tabs.Content value="about" className="focus:outline-none">
-        <div className="prose prose-invert max-w-none">
-          <p className="text-secondary-foreground text-lg leading-relaxed whitespace-pre-wrap">
-            {game.description || 'No description available.'}
-          </p>
-        </div>
+      <Tabs.Content value="about">
+        <p className="prose-body whitespace-pre-wrap">
+          {game.description || 'No description available.'}
+        </p>
       </Tabs.Content>
 
-      <Tabs.Content value="reviews" className="focus:outline-none">
+      <Tabs.Content value="reviews">
         <GameReviewList gameId={game.game.id} />
       </Tabs.Content>
 
-      <Tabs.Content value="details" className="focus:outline-none">
+      <Tabs.Content value="details">
         <div className="space-y-6">
           {/* Genres */}
           {game.genres && game.genres.length > 0 && (
             <div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">Genres</h3>
+              <h3 className="mb-3 text-lg font-semibold">Genres</h3>
               <div className="flex flex-wrap gap-2">
                 {game.genres.map((genre) => (
                   <a
                     key={genre.id}
                     href={`/games?genreIds=${genre.id}`}
-                    className="px-4 py-2 bg-secondary text-primary rounded-md hover:bg-muted transition-colors"
+                    className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-hover hover:text-foreground"
                   >
                     {genre.name}
                   </a>
@@ -67,15 +68,16 @@ export default function GameTabs() {
           {/* Platforms */}
           {game.platforms && game.platforms.length > 0 && (
             <div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">Platforms</h3>
+              <h3 className="mb-3 text-lg font-semibold">Platforms</h3>
               <div className="flex flex-wrap gap-2">
                 {game.platforms.map((platform) => (
-                  <span
+                  <a
                     key={platform.id}
-                    className="px-4 py-2 bg-secondary text-foreground rounded-md"
+                    href={`/games?platformIds=${platform.id}`}
+                    className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-hover hover:text-foreground"
                   >
                     {platform.name}
-                  </span>
+                  </a>
                 ))}
               </div>
             </div>
@@ -84,8 +86,8 @@ export default function GameTabs() {
           {/* Release Date */}
           {game.game.releaseDate && (
             <div>
-              <h3 className="text-xl font-semibold text-foreground mb-3">Release Date</h3>
-              <p className="text-secondary-foreground text-lg">
+              <h3 className="mb-3 text-lg font-semibold">Release date</h3>
+              <p className="font-mono text-lg text-foreground-secondary">
                 {new Date(game.game.releaseDate).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
@@ -103,15 +105,17 @@ export default function GameTabs() {
 function GameTabsSkeleton() {
   return (
     <div className="mb-12 animate-pulse">
-      <div className="flex gap-4 border-b border-border mb-6">
-        <div className="h-10 w-24 bg-secondary rounded" />
-        <div className="h-10 w-24 bg-secondary rounded" />
-        <div className="h-10 w-24 bg-secondary rounded" />
+      {/* Three triggers, matching the real tab list's gap and control height. */}
+      <div className="mb-6 flex gap-1 overflow-x-auto border-b border-border no-scrollbar">
+        <div className="h-9 w-20 rounded-md bg-muted" />
+        <div className="h-9 w-24 rounded-md bg-muted" />
+        <div className="h-9 w-20 rounded-md bg-muted" />
       </div>
+      {/* About tab body: prose-body lines. */}
       <div className="space-y-3">
-        <div className="h-4 bg-secondary rounded w-full" />
-        <div className="h-4 bg-secondary rounded w-5/6" />
-        <div className="h-4 bg-secondary rounded w-4/6" />
+        <div className="h-8 w-full rounded-md bg-muted" />
+        <div className="h-8 w-11/12 rounded-md bg-muted" />
+        <div className="h-8 w-3/4 rounded-md bg-muted" />
       </div>
     </div>
   );

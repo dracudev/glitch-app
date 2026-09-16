@@ -2,17 +2,26 @@ import { useState } from 'react';
 import { useStore } from '@nanostores/react';
 import { Calendar, Users, Building2 } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import type { GameDetail } from '@glitch/shared-types';
 import { useGameDetail } from '@/hooks/useGames';
 import { $currentUser } from '@/stores/auth';
 import ReviewFormDialog from './ReviewFormDialog';
 import { Button } from '@/components/ui/Button';
 import { notify } from '@/stores/notifications';
 
-export default function GameHeader() {
-  const { game, isLoading } = useGameDetail();
+interface GameHeaderProps {
+  /** Server-rendered game. Used for the first paint so the SSR HTML carries
+   * real content; the store is still the source of truth after mount. */
+  game?: GameDetail;
+}
+
+export default function GameHeader({ game: initialGame }: GameHeaderProps) {
+  const { game: storeGame } = useGameDetail();
+  const game = initialGame ?? storeGame;
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
 
-  if (isLoading || !game) {
+  // Only a genuinely empty store (e.g. client-side navigation) hits this branch.
+  if (!game) {
     return <GameHeaderSkeleton />;
   }
 
@@ -31,23 +40,26 @@ export default function GameHeader() {
     <header className="mb-8">
       {/* Mobile Layout: Vertical */}
       <div className="flex flex-col gap-6 lg:hidden">
-        {/* Cover Image */}
-        <img
-          src={coverSrc}
-          alt={game.game.title}
-          className="w-full h-64 object-cover rounded-lg shadow-lg"
-        />
+        {/* Cover Image — above the fold, so decode eagerly but don't defer. */}
+        <div className="aspect-video w-full overflow-hidden rounded-lg border border-border bg-muted">
+          <img
+            src={coverSrc}
+            alt={game.game.title}
+            className="size-full object-cover"
+            decoding="async"
+          />
+        </div>
 
         {/* Title and Meta */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">{game.game.title}</h1>
+          <h1 className="mb-2 text-2xl tracking-tight sm:text-3xl">{game.game.title}</h1>
 
           {game.developer && (
             <a
               href={`/developers/${game.developer.slug}`}
-              className="text-primary hover:underline flex items-center gap-2 mb-1"
+              className="mb-1 flex items-center gap-2 text-primary hover:underline"
             >
-              <Users size={16} />
+              <Users className="size-4" aria-hidden="true" />
               {game.developer.name}
             </a>
           )}
@@ -55,9 +67,9 @@ export default function GameHeader() {
           {game.publisher && (
             <a
               href={`/publishers/${game.publisher.slug}`}
-              className="text-secondary-foreground hover:text-primary flex items-center gap-2"
+              className="flex items-center gap-2 text-foreground-secondary transition-colors hover:text-primary"
             >
-              <Building2 size={16} />
+              <Building2 className="size-4" aria-hidden="true" />
               {game.publisher.name}
             </a>
           )}
@@ -68,26 +80,29 @@ export default function GameHeader() {
       </div>
 
       {/* Desktop Layout: Horizontal */}
-      <div className="hidden lg:flex gap-8">
+      <div className="hidden gap-8 lg:flex">
         {/* Cover Image (show placeholder if missing) */}
-        <img
-          src={coverSrc}
-          alt={game.game.title}
-          className="w-64 h-96 object-cover rounded-lg shadow-lg flex-shrink-0"
-        />
+        <div className="aspect-[3/4] w-64 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
+          <img
+            src={coverSrc}
+            alt={game.game.title}
+            className="size-full object-cover"
+            decoding="async"
+          />
+        </div>
 
         {/* Info and Actions */}
-        <div className="flex-1 flex flex-col justify-between">
+        <div className="flex flex-1 flex-col justify-between">
           <div>
-            <h1 className="text-5xl font-bold text-foreground mb-4">{game.game.title}</h1>
+            <h1 className="mb-4 text-2xl tracking-tight sm:text-3xl">{game.game.title}</h1>
 
-            <div className="space-y-2 text-secondary-foreground mb-6">
+            <div className="mb-6 space-y-2 text-foreground-secondary">
               {game.developer && (
                 <a
                   href={`/developers/${game.developer.slug}`}
-                  className="text-primary hover:underline flex items-center gap-2"
+                  className="flex items-center gap-2 text-primary hover:underline"
                 >
-                  <Users size={18} />
+                  <Users className="size-5" aria-hidden="true" />
                   <span className="text-lg">{game.developer.name}</span>
                 </a>
               )}
@@ -95,29 +110,30 @@ export default function GameHeader() {
               {game.publisher && (
                 <a
                   href={`/publishers/${game.publisher.slug}`}
-                  className="hover:text-primary flex items-center gap-2"
+                  className="flex items-center gap-2 transition-colors hover:text-primary"
                 >
-                  <Building2 size={18} />
+                  <Building2 className="size-5" aria-hidden="true" />
                   <span className="text-lg">{game.publisher.name}</span>
                 </a>
               )}
 
               <div className="flex items-center gap-2">
-                <Calendar size={18} />
-                <span className="text-lg">{releaseDate}</span>
+                <Calendar className="size-5" aria-hidden="true" />
+                <span className="font-mono text-lg">{releaseDate}</span>
               </div>
             </div>
 
             {/* Platforms */}
             {game.platforms && game.platforms.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
+              <div className="mb-6 flex flex-wrap gap-2">
                 {game.platforms.map((platform) => (
-                  <span
+                  <a
                     key={platform.id}
-                    className="px-3 py-1 bg-secondary text-foreground text-sm rounded-md"
+                    href={`/games?platformIds=${platform.id}`}
+                    className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:border-border-hover hover:text-foreground"
                   >
                     {platform.name}
-                  </span>
+                  </a>
                 ))}
               </div>
             )}
@@ -141,9 +157,9 @@ function ActionButtons({ onWriteReview }: { onWriteReview: () => void }) {
   const user = useStore($currentUser);
 
   return (
-    <div className="flex gap-3 items-center">
+    <div className="flex items-center gap-3">
       <Button onClick={onWriteReview} className="flex-1 lg:flex-initial">
-        Write Review
+        Write a review
       </Button>
 
       <DropdownMenu.Root>
@@ -160,44 +176,76 @@ function ActionButtons({ onWriteReview }: { onWriteReview: () => void }) {
               }
             }}
           >
-            Add to List
+            Add to list
           </Button>
         </DropdownMenu.Trigger>
 
         {user ? (
-            <DropdownMenu.Portal>
-              <DropdownMenu.Content
-                className="min-w-[220px] bg-card border border-border text-foreground rounded-lg p-1 shadow-lg z-50"
-                sideOffset={5}
-              >
-                <DropdownMenu.Item className="flex items-center rounded px-3 py-2 text-sm hover:bg-accent focus:bg-accent cursor-pointer outline-none">
-                  Favorites
-                </DropdownMenu.Item>
-                <DropdownMenu.Item className="flex items-center rounded px-3 py-2 text-sm hover:bg-accent focus:bg-accent cursor-pointer outline-none">
-                  Playing
-                </DropdownMenu.Item>
-                <DropdownMenu.Item className="flex items-center rounded px-3 py-2 text-sm hover:bg-accent focus:bg-accent cursor-pointer outline-none">
-                  Completed
-                </DropdownMenu.Item>
-                <DropdownMenu.Item className="flex items-center rounded px-3 py-2 text-sm hover:bg-accent focus:bg-accent cursor-pointer outline-none">
-                  Want to Play
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Portal>
-          ) : null}
-        </DropdownMenu.Root>
+          <DropdownMenu.Portal>
+            <DropdownMenu.Content
+              className="z-popover min-w-56 rounded-lg border border-border bg-popover p-1 shadow-lg"
+              sideOffset={5}
+            >
+              <DropdownMenu.Item className="relative flex cursor-pointer items-center rounded-md px-3 py-2 text-sm text-foreground-secondary outline-none transition-colors data-[highlighted]:bg-secondary data-[highlighted]:text-foreground">
+                Favorites
+              </DropdownMenu.Item>
+              <DropdownMenu.Item className="relative flex cursor-pointer items-center rounded-md px-3 py-2 text-sm text-foreground-secondary outline-none transition-colors data-[highlighted]:bg-secondary data-[highlighted]:text-foreground">
+                Playing
+              </DropdownMenu.Item>
+              <DropdownMenu.Item className="relative flex cursor-pointer items-center rounded-md px-3 py-2 text-sm text-foreground-secondary outline-none transition-colors data-[highlighted]:bg-secondary data-[highlighted]:text-foreground">
+                Completed
+              </DropdownMenu.Item>
+              <DropdownMenu.Item className="relative flex cursor-pointer items-center rounded-md px-3 py-2 text-sm text-foreground-secondary outline-none transition-colors data-[highlighted]:bg-secondary data-[highlighted]:text-foreground">
+                Want to play
+              </DropdownMenu.Item>
+            </DropdownMenu.Content>
+          </DropdownMenu.Portal>
+        ) : null}
+      </DropdownMenu.Root>
     </div>
   );
 }
 
 function GameHeaderSkeleton() {
   return (
-    <div className="mb-8 animate-pulse">
+    <header className="mb-8 animate-pulse">
+      {/* Mobile: vertical — mirrors the real header's mobile layout. */}
       <div className="flex flex-col gap-6 lg:hidden">
-        <div className="w-full h-64 bg-secondary rounded-lg" />
-        <div className="h-8 bg-secondary rounded w-3/4" />
-        <div className="h-4 bg-secondary rounded w-1/2" />
+        <div className="aspect-video w-full rounded-lg border border-border bg-card" />
+        <div className="space-y-2">
+          <div className="h-8 w-3/4 rounded-md bg-muted" />
+          <div className="h-5 w-1/2 rounded-md bg-muted" />
+          <div className="h-5 w-1/3 rounded-md bg-muted" />
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="h-10 flex-1 rounded-md bg-muted" />
+          <div className="h-10 flex-1 rounded-md bg-muted" />
+        </div>
       </div>
-    </div>
+
+      {/* Desktop: horizontal — same cover ratio, meta lines and button row. */}
+      <div className="hidden gap-8 lg:flex">
+        <div className="aspect-[3/4] w-64 shrink-0 rounded-lg border border-border bg-card" />
+        <div className="flex flex-1 flex-col justify-between">
+          <div>
+            <div className="mb-4 h-8 w-2/3 rounded-md bg-muted" />
+            <div className="mb-6 space-y-2">
+              <div className="h-6 w-1/3 rounded-md bg-muted" />
+              <div className="h-6 w-1/4 rounded-md bg-muted" />
+              <div className="h-6 w-1/3 rounded-md bg-muted" />
+            </div>
+            <div className="mb-6 flex flex-wrap gap-2">
+              <div className="h-5 w-16 rounded-full bg-muted" />
+              <div className="h-5 w-16 rounded-full bg-muted" />
+              <div className="h-5 w-20 rounded-full bg-muted" />
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-32 rounded-md bg-muted" />
+            <div className="h-10 w-32 rounded-md bg-muted" />
+          </div>
+        </div>
+      </div>
+    </header>
   );
 }

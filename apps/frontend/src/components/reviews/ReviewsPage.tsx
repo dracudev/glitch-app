@@ -48,11 +48,11 @@ export default function ReviewsPage({ initialData }: ReviewsPageProps) {
   // ============================================================================
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
+    <div className="shell py-8 lg:py-10">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold text-foreground mb-2">Recent Reviews</h1>
-        <p className="text-muted-foreground">
+      <div className="mb-6 lg:mb-8">
+        <h1 className="text-2xl tracking-tight sm:text-3xl">Recent reviews</h1>
+        <p className="mt-2 text-muted-foreground">
           Discover the latest game reviews from the Glitch community
         </p>
       </div>
