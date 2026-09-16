@@ -1,16 +1,22 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import AuthLayout from '@/layouts/AuthLayout.astro';
 import RegisterForm from '@/components/auth/RegisterForm';
 import NoScriptFallback from '@/components/fallbacks/NoScriptFallback';
+import { hasSession } from '@/services/ssr-auth';
 
-// Static page metadata
-const pageTitle = "Sign Up";
-const pageDescription = "Join Glitch to discover games, write reviews, and connect with fellow gamers.";
+// Already signed in? There is nothing to sign up for.
+if (hasSession(Astro.request.headers.get('cookie') || undefined)) {
+  return Astro.redirect('/feed');
+}
+
+const pageTitle = 'Sign up';
+const pageDescription =
+  'Join Glitch to discover games, write reviews, and connect with fellow gamers.';
 ---
 
-<AuthLayout 
+<AuthLayout
   title={pageTitle}
   description={pageDescription}
   noIndex={true}
@@ -18,37 +24,37 @@ const pageDescription = "Join Glitch to discover games, write reviews, and conne
   <div class="max-w-md w-full space-y-8">
       <div class="text-center">
         <a href="/" class="inline-block">
-          <h1 class="text-4xl font-bold text-[var(--text-primary)]">
+          <h1 class="text-2xl tracking-tight sm:text-3xl">
             Glitch
           </h1>
-          <p class="mt-2 text-sm text-[var(--text-secondary)]">
+          <p class="mt-2 text-sm text-foreground-secondary">
             The social network for gamers
           </p>
         </a>
       </div>
-      
+
       <div class="space-y-6">
         <div class="text-center">
-          <h2 class="text-2xl font-bold text-[var(--text-primary)]">
-            Sign Up
+          <h2 class="text-lg font-semibold">
+            Sign up
           </h2>
-          <p class="mt-2 text-sm text-[var(--text-secondary)]">
+          <p class="mt-2 text-sm text-foreground-secondary">
             Already have an account?{' '}
-            <a 
-              href="/auth/login" 
-              class="font-medium text-[var(--brand-primary)] hover:text-[var(--brand-accent)] transition-colors"
+            <a
+              href="/auth/login"
+              class="font-medium text-primary hover:text-accent transition-colors"
             >
               Log in here
             </a>
           </p>
         </div>
-        
+
         <!-- React Island -->
         <RegisterForm client:load />
-        
+
         <!-- Fallback content for no-JS users -->
         <NoScriptFallback client:load feature="registration form" />
       </div>
-      
+
   </div>
 </AuthLayout>

@@ -53,3 +53,23 @@ export async function ssrCookieHeader(cookieHeader?: string): Promise<string | u
     return cookieHeader;
   }
 }
+
+/**
+ * Is a signed-in session behind this request?
+ *
+ * Answered from the request cookies alone, with NO backend round-trip, so it is
+ * cheap enough to call in a page's frontmatter.
+ *
+ * The access token is valid for 15 minutes and the refresh token for 7 days, and
+ * the refresh token is only ever written by a successful login (the backend
+ * clears both on logout). So "a valid access token OR any refresh token" matches
+ * a signed-in browser across the whole 7-day window, including the 15-minute
+ * gaps where the access token has aged out. That gap is exactly the case a naive
+ * access-token-only check would get wrong, painting the signed-out UI at a
+ * signed-in visitor.
+ */
+export function hasSession(cookieHeader?: string): boolean {
+  if (!cookieHeader) return false;
+  if (!isExpired(readCookie(cookieHeader, 'authToken'))) return true;
+  return Boolean(readCookie(cookieHeader, 'refreshToken'));
+}

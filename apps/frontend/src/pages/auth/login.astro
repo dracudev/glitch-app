@@ -1,13 +1,19 @@
 ---
-export const prerender = true;
+export const prerender = false;
 
 import AuthLayout from '@/layouts/AuthLayout.astro';
 import LoginForm from '@/components/auth/LoginForm';
 import NoScriptFallback from '@/components/fallbacks/NoScriptFallback';
+import { hasSession } from '@/services/ssr-auth';
 
-// Static page metadata
-const pageTitle = "Login";
-const pageDescription = "Log in to your Glitch account to discover games, write reviews, and connect with fellow gamers.";
+// Already signed in? There is nothing to log in to.
+if (hasSession(Astro.request.headers.get('cookie') || undefined)) {
+  return Astro.redirect('/feed');
+}
+
+const pageTitle = 'Login';
+const pageDescription =
+  'Log in to your Glitch account to discover games, write reviews, and connect with fellow gamers.';
 ---
 
 <AuthLayout 
@@ -18,10 +24,10 @@ const pageDescription = "Log in to your Glitch account to discover games, write 
   <div class="max-w-md w-full space-y-8">
       <div class="text-center">
         <a href="/" class="inline-block">
-          <h1 class="text-4xl font-bold text-[var(--text-primary)]">
+          <h1 class="text-2xl tracking-tight sm:text-3xl">
             Glitch
           </h1>
-          <p class="mt-2 text-sm text-[var(--text-secondary)]">
+          <p class="mt-2 text-sm text-foreground-secondary">
             The social network for gamers
           </p>
         </a>
@@ -29,14 +35,14 @@ const pageDescription = "Log in to your Glitch account to discover games, write 
       
       <div class="space-y-6">
         <div class="text-center">
-          <h2 class="text-2xl font-bold text-[var(--text-primary)]">
-            Log In
+          <h2 class="text-lg font-semibold">
+            Log in
           </h2>
-          <p class="mt-2 text-sm text-[var(--text-secondary)]">
+          <p class="mt-2 text-sm text-foreground-secondary">
             Don't have an account?{' '}
             <a 
-              href="/auth/register" 
-              class="font-medium text-[var(--brand-primary)] hover:text-[var(--brand-accent)] transition-colors"
+              href="/auth/signup" 
+              class="font-medium text-primary hover:text-accent transition-colors"
             >
               Sign up here
             </a>

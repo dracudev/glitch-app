@@ -47,7 +47,7 @@ interface UseAuthReturn {
  *   const handleSubmit = async (credentials: LoginRequest) => {
  *     try {
  *       await login(credentials);
- *       navigate('/dashboard');
+ *       navigate('/feed');
  *     } catch (err) {
  *       // Error is already handled in the hook
  *     }
@@ -167,7 +167,7 @@ export function useGuestOnly(): UseAuthReturn {
     if (!auth.isLoading && auth.isAuthenticated) {
       // Redirect to dashboard
       if (typeof window !== 'undefined') {
-        window.location.href = '/dashboard';
+        window.location.href = '/feed';
       }
     }
   }, [auth.isAuthenticated, auth.isLoading]);
