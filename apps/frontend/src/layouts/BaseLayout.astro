@@ -118,6 +118,10 @@ const canonical = canonicalURL || new URL(Astro.url.pathname, siteURL).toString(
         }
         
         setTheme(getThemePreference());
+
+        document.addEventListener('astro:after-swap', function () {
+          setTheme(getThemePreference());
+        });
       })();
     </script>
   </head>
