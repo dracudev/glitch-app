@@ -55,8 +55,11 @@ const pageDescription = review.content
   : `Read ${review.user.username}'s review of ${review.game.title} with a rating of ${review.rating}/10.`;
 
 // Open Graph image - prefer game cover or review image
-const pageImage = review.game.coverImage || 
-  `${Astro.site || Astro.url.origin}/og-review.png`;
+// Falls back to the site card when the game has no cover. Passed as a path so
+// BaseLayout resolves it against the site URL; concatenating the origin here
+// produced a double slash and pointed at a file that never existed.
+const pageImage = review.game.coverImage ||
+  '/og-image.jpg';
 
 // Canonical URL
 const canonicalURL = new URL(`/reviews/${review.id}`, Astro.site || Astro.url.origin).toString();
@@ -84,7 +87,7 @@ const structuredData = {
   'author': {
     '@type': 'Person',
     'name': review.user.displayName || review.user.username,
-    'url': `${Astro.site || Astro.url.origin}/profile/${review.user.username}`,
+    'url': new URL(`/profile/${review.user.username}`, Astro.site || Astro.url.origin).toString(),
   },
   'reviewBody': review.content,
   'datePublished': publishedDate,
@@ -113,7 +116,7 @@ const articleStructuredData = {
   'author': {
     '@type': 'Person',
     'name': review.user.displayName || review.user.username,
-    'url': `${Astro.site || Astro.url.origin}/profile/${review.user.username}`,
+    'url': new URL(`/profile/${review.user.username}`, Astro.site || Astro.url.origin).toString(),
   },
   'datePublished': publishedDate,
   'dateModified': modifiedDate,
@@ -122,7 +125,7 @@ const articleStructuredData = {
     'name': 'Glitch',
     'logo': {
       '@type': 'ImageObject',
-      'url': `${Astro.site || Astro.url.origin}/favicon/android-chrome-512x512.png`,
+      'url': new URL('/favicon/android-chrome-512x512.png', Astro.site || Astro.url.origin).toString(),
     },
   },
   'mainEntityOfPage': {

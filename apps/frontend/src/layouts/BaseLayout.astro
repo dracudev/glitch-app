@@ -10,10 +10,12 @@ interface Props {
   canonicalURL?: string;
 }
 
+const OG_IMAGE = '/og-image.jpg';
+
 const {
   title,
   description = 'Glitch - The social network for gamers. Discover games, write reviews, and connect with fellow gamers.',
-  image = '/og-image.jpg',
+  image = OG_IMAGE,
   noIndex = false,
   canonicalURL,
 } = Astro.props;
@@ -23,6 +25,14 @@ const siteURL = Astro.site || 'https://glitch.app';
 const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 const imageURL = new URL(image, siteURL).toString();
 const canonical = canonicalURL || new URL(Astro.url.pathname, siteURL).toString();
+
+/**
+ * The declared OG image size is only correct for the default card. Three pages
+ * override `image` with a remote asset of unknown dimensions (a DiceBear avatar
+ * on profile, cover art on the review pages), so emitting 1200x630 there would
+ * be a false claim. Omit it in that case and let scrapers fetch the real size.
+ */
+const hasKnownImageSize = image === OG_IMAGE;
 ---
 
 <!DOCTYPE html>
@@ -51,8 +61,8 @@ const canonical = canonicalURL || new URL(Astro.url.pathname, siteURL).toString(
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={imageURL} />
-    <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="630" />
+    {hasKnownImageSize && <meta property="og:image:width" content="1200" />}
+    {hasKnownImageSize && <meta property="og:image:height" content="630" />}
     <meta property="og:site_name" content={siteName} />
 
     <!-- Twitter -->

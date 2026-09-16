@@ -62,7 +62,7 @@ const pageDescription = profile.bio
   : `View ${displayName}'s gaming profile, reviews, and activity on Glitch. Follow to see their latest game reviews and recommendations.`;
 
 // Profile image for Open Graph
-const profileImage = getAvatarUrl(profile, 512);
+const profileImage = getAvatarUrl(profile, 512, 'png');
 
 // Canonical URL
 const canonicalURL = new URL(`/profile/${profile.username}`, Astro.site || Astro.url.origin).toString();

@@ -39,7 +39,10 @@ const pageDescription =
   'Browse the latest game reviews from the Glitch community. Discover honest opinions, detailed critiques, and recommendations for your next gaming adventure.';
 
 // Open Graph image (you can replace with a custom reviews page image)
-const pageImage = `${Astro.site || Astro.url.origin}/og-reviews.png`;
+// Path only: BaseLayout resolves it against the site URL. The previous
+// concatenation produced a double slash and referenced an asset that does not
+// exist, so review-page shares had no image at all.
+const pageImage = '/og-image.jpg';
 
 // Canonical URL
 const canonicalURL = new URL('/reviews', Astro.site || Astro.url.origin).toString();
