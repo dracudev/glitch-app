@@ -223,3 +223,4 @@ k8s/secrets/
 /.agent
 docs/agent/
 /.codegraph
+/.playwright-mcp
