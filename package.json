@@ -10,9 +10,10 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
+    "dev": "pnpm run dev:infra && concurrently \"pnpm run dev:backend\" \"pnpm run dev:frontend\"",
     "dev:backend": "pnpm --filter backend dev",
     "dev:frontend": "pnpm --filter frontend dev",
+    "dev:infra": "docker compose -f docker-compose.dev.yml up -d postgres redis || echo 'WARN: could not start postgres/redis - the backend will fail to boot without them'",
     "build": "pnpm run build:backend && pnpm run build:frontend",
     "build:backend": "pnpm --filter backend build",
     "build:frontend": "pnpm --filter frontend build",
