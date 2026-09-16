@@ -26,18 +26,14 @@ export class ReviewsService {
   async create(createReviewDto: CreateReviewDto, userId: string): Promise<ReviewResponseDto> {
     const { gameId, ...reviewData } = createReviewDto;
 
-    // Check if game exists
-    const game = await this.gamesService.findById(gameId);
-    if (!game) {
-      throw new BadRequestException('Game not found');
-    }
+    const anchor = await this.gamesService.resolveAnchor(gameId);
 
     // Check if user already has a review for this game
     const existingReview = await this.prisma.review.findUnique({
       where: {
         userId_gameId: {
           userId,
-          gameId,
+          gameId: anchor.id,
         },
       },
     });
@@ -53,7 +49,7 @@ export class ReviewsService {
           data: {
             ...reviewData,
             userId,
-            gameId,
+            gameId: anchor.id,
             isPublished: reviewData.isPublished ?? true,
             isSpoiler: reviewData.isSpoiler ?? false,
           },
@@ -85,7 +81,7 @@ export class ReviewsService {
 
         // Update game rating if review is published
         if (newReview.isPublished) {
-          await this.gamesService.updateRating(gameId);
+          await this.gamesService.updateRating(anchor.id);
         }
 
         return newReview;
@@ -128,6 +124,12 @@ export class ReviewsService {
     // Sanitize search term
     const sanitizedSearch = search?.trim().replace(/[<>\"']/g, '');
 
+    let anchorId: string | undefined;
+    if (gameId) {
+      anchorId = (await this.toAnchorId(gameId)) ?? undefined;
+      if (!anchorId) return PaginatedReviewsResponseDto.from([], page, limit, 0);
+    }
+
     // Build where clause
     const where: Prisma.ReviewWhereInput = {
       AND: [
@@ -145,7 +147,7 @@ export class ReviewsService {
               ],
             }
           : {},
-        gameId ? { gameId } : {},
+        anchorId ? { gameId: anchorId } : {},
         userId ? { userId } : {},
         minRating ? { rating: { gte: minRating } } : {},
         maxRating ? { rating: { lte: maxRating } } : {},
@@ -262,11 +264,14 @@ export class ReviewsService {
   }
 
   async findByUserAndGame(userId: string, gameId: string): Promise<ReviewResponseDto | null> {
+    const anchorId = await this.toAnchorId(gameId);
+    if (!anchorId) return null;
+
     const review = await this.prisma.review.findUnique({
       where: {
         userId_gameId: {
           userId,
-          gameId,
+          gameId: anchorId,
         },
       },
       include: {
@@ -474,6 +479,23 @@ export class ReviewsService {
     currentUserId?: string,
   ): Promise<PaginatedReviewsResponseDto> {
     return this.findAll({ ...query, userId }, currentUserId);
+  }
+
+    private async toAnchorId(identifier: string): Promise<string | null> {
+    const numeric = Number(identifier);
+    const isIgdbId = Number.isInteger(numeric) && String(numeric) === identifier;
+
+    const anchor = isIgdbId
+      ? await this.prisma.game.findUnique({
+          where: { igdbId: numeric },
+          select: { id: true },
+        })
+      : await this.prisma.game.findFirst({
+          where: { OR: [{ slug: identifier }, { id: identifier }] },
+          select: { id: true },
+        });
+
+    return anchor?.id ?? null;
   }
 
   private toReviewResponseDto(review: any, currentUserId?: string): ReviewResponseDto {
