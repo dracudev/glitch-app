@@ -17,7 +17,7 @@ interface CacheEntry {
 // Server-side (SSR/build): always need absolute URL — Node.js can't resolve relative paths.
 // Client-side dev: use Vite proxy (same-origin, no CORS, cookies work natively).
 // Client-side prod: use absolute URL (no Vite proxy available, CORS handles cross-origin).
-const API_BASE_URL = (() => {
+export const API_BASE_URL = (() => {
   if (typeof window === 'undefined') {
     return import.meta.env.PUBLIC_API_URL || 'http://localhost:3000/api/v1';
   }
@@ -165,7 +165,7 @@ class ApiClient {
   private async buildRequestConfig(
     config: RequestConfig,
     ssrHeaders?: HeadersInit,
-  ): Promise<RequestInit> {
+  ): Promise<RequestConfig> {
     const headers = new Headers(this.defaultHeaders);
 
     // Merge SSR headers (cookies, etc.) on top, preserving defaults
@@ -199,16 +199,30 @@ class ApiClient {
   }
 
   /**
+   * Cache key for a GET response, or null when the response must not be cached.
+   * SSR always returns null: the client is a process-wide singleton, so a
+   * cached SSR response leaks one visitor's auth-scoped data to the next.
+   */
+  private cacheKey(url: string): string | null {
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    // Vary by identity so one user never reads another user's cached response.
+    return `${url}|${$authToken.get() ?? ''}`;
+  }
+
+  /**
    * Execute the HTTP request with error handling and retries
    */
-  private async executeRequest<T>(url: string, config: RequestInit): Promise<T> {
-    const maxRetries = (config as RequestConfig).retryAttempts || API_CONFIG.retryAttempts;
+  private async executeRequest<T>(url: string, config: RequestConfig): Promise<T> {
+    const maxRetries = config.retryAttempts || API_CONFIG.retryAttempts;
     const isGet = !config.method || config.method === 'GET';
+    const cacheKey = isGet ? this.cacheKey(url) : null;
     let lastError: Error;
 
     // ponytail: in-memory cache, add Redis if multi-instance or persistence matters
-    if (isGet) {
-      const cached = this.cache.get(url);
+    if (cacheKey) {
+      const cached = this.cache.get(cacheKey);
       if (cached && cached.expiry > Date.now()) {
         return cached.data as T;
       }
@@ -217,9 +231,12 @@ class ApiClient {
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
         const response = await fetch(url, config);
-        const result = await this.handleResponse<T>(response);
-        if (isGet) {
-          this.cache.set(url, { data: result, expiry: Date.now() + this.cacheTTL });
+        const result = await this.handleResponse<T>(response, config);
+        if (cacheKey) {
+          this.cache.set(cacheKey, { data: result, expiry: Date.now() + this.cacheTTL });
+        } else if (!isGet) {
+          // Any write invalidates every cached read.
+          this.cache.clear();
         }
         return result;
       } catch (error) {
@@ -243,9 +260,11 @@ class ApiClient {
   /**
    * Handle the response and parse JSON with error handling
    */
-  private async handleResponse<T>(response: Response): Promise<T> {
-    // Handle authentication errors
-    if (response.status === 401) {
+  private async handleResponse<T>(response: Response, config: RequestConfig): Promise<T> {
+    // Handle authentication errors — except for requests that opted out of auth
+    // (login/register). There a 401 means "bad credentials", and the caller
+    // needs the backend's own message, not a refresh + redirect side effect.
+    if (response.status === 401 && !config.skipAuth) {
       await this.handleUnauthorized();
       throw new ApiClientError('Authentication required', 401);
     }

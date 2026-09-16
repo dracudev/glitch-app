@@ -2,7 +2,7 @@
 import BaseLayout from './BaseLayout.astro';
 import Navbar from '@/components/ui/Navbar';
 import Footer from '@/components/ui/Footer';
-import ToastProvider from '@/components/ui/ToastProvider';
+import Notifications from '@/components/ui/Notifications';
 
 export interface Props {
   title: string;
@@ -58,7 +58,7 @@ const currentPath = Astro.url.pathname;
       <Footer client:load />
     )}
 
-    <!-- Toast notifications -->
-    <ToastProvider client:load />
+    <!-- Notifications -->
+    <Notifications client:load />
   </div>
 </BaseLayout>

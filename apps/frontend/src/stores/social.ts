@@ -139,6 +139,7 @@ export function setSocialStatsError(error: string | null): void {
 export function setActivityFeed(feed: ActivityFeedResponse | null): void {
   $activityFeed.set(feed);
   $activityFeedError.set(null);
+  $activityFeedLoading.set(false);
 }
 
 /**

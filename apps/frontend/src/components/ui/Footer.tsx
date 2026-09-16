@@ -46,7 +46,7 @@ export default function Footer({ className = '' }: FooterProps) {
               <ul className="space-y-2">
                 <li>
                   <a
-                    href="/explore"
+                    href="/games"
                     className="text-sm transition-colors"
                     style={{ color: 'var(--text-muted)' }}
                     onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--text-primary)')}

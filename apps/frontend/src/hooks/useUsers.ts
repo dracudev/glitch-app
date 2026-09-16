@@ -36,7 +36,9 @@ import {
   getUsernameAvailability,
   isUserCached,
   isUserProfileCached,
+  updateViewedProfile,
 } from '@/stores/users';
+import { updateCurrentUser } from '@/stores/auth';
 
 // ============================================================================
 // Types
@@ -415,6 +417,10 @@ export function useCurrentUserProfile(): UseCurrentUserProfileReturn {
       setProfileUpdateLoading(true);
       const updatedProfile = await usersService.updateProfile(updates);
       setCurrentUserProfile(updatedProfile);
+      // The profile page header reads $viewedProfile / $currentUser, so keep them in sync
+      // instead of leaving the page stale until a reload.
+      updateViewedProfile(updatedProfile);
+      updateCurrentUser({ avatar: updatedProfile.avatar, bio: updatedProfile.bio });
       return updatedProfile;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to update profile';

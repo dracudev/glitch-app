@@ -78,6 +78,7 @@ const canonical = canonicalURL || new URL(Astro.url.pathname, siteURL).toString(
     
     <!-- Progressive Web App meta tags -->
     <meta name="application-name" content={siteName} />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content={siteName} />

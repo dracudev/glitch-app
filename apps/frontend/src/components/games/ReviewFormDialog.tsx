@@ -6,7 +6,7 @@ import { useStore } from '@nanostores/react';
 import { $currentUser } from '@/stores/auth';
 import StarRating from '@/components/ui/StarRating';
 import { useReviewActions } from '@/hooks/useReviews';
-import { toast } from 'sonner';
+import { notify } from '@/stores/notifications';
 import type { ReviewResponse } from '@glitch/shared-types';
 
 // ============================================================================
@@ -75,8 +75,9 @@ export default function ReviewFormDialog({
     setLocalError(null);
 
     if (!user) {
-      toast('Log in to write a review', {
-        description: <a href="/auth/login" style={{ color: '#2cb67d', textDecoration: 'underline' }}>Go to login</a>,
+      notify({
+        title: 'Sign in to write a review',
+        action: { label: 'Sign in', href: '/auth/login' },
       });
       return;
     }

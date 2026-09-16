@@ -51,7 +51,10 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
       <Form.Root onSubmit={handleSubmit} className="space-y-6">
         {/* Global auth error from $authError store */}
         {error && (
-          <Form.Message className="rounded-md p-4 border bg-state-error/10 border-state-error/20">
+          <div
+            role="alert"
+            className="rounded-md p-4 border bg-state-error/10 border-state-error/20"
+          >
             <div className="flex">
               <div className="ml-3">
                 <h3 className="text-sm font-medium text-state-error">Login Error</h3>
@@ -67,7 +70,7 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
                 </Button>
               </div>
             </div>
-          </Form.Message>
+          </div>
         )}
 
         {/* Email field */}

@@ -50,7 +50,10 @@ class ReviewsService {
    * });
    * ```
    */
-  async getAllReviews(query: ReviewsQuery = {}): Promise<PaginatedReviewsResponse> {
+  async getAllReviews(
+    query: ReviewsQuery = {},
+    ssrHeaders?: HeadersInit,
+  ): Promise<PaginatedReviewsResponse> {
     const searchParams = new URLSearchParams();
 
     // Add query parameters
@@ -64,7 +67,7 @@ class ReviewsService {
       ? `${REVIEWS_ENDPOINTS.REVIEWS}?${searchParams.toString()}`
       : REVIEWS_ENDPOINTS.REVIEWS;
 
-    return apiClient.get<PaginatedReviewsResponse>(endpoint, { skipAuth: true });
+    return apiClient.get<PaginatedReviewsResponse>(endpoint, {}, ssrHeaders);
   }
 
   /**
@@ -78,14 +81,19 @@ class ReviewsService {
    * const review = await reviewsService.getReviewById('review-id');
    * ```
    */
-  async getReviewById(reviewId: string): Promise<ReviewResponse> {
+  async getReviewById(
+    reviewId: string,
+    ssrHeaders?: HeadersInit,
+  ): Promise<ReviewResponse> {
     if (!reviewId) {
       throw new Error('Review ID is required');
     }
 
-    return apiClient.get<ReviewResponse>(REVIEWS_ENDPOINTS.REVIEW_BY_ID(reviewId), {
-      skipAuth: true,
-    });
+    return apiClient.get<ReviewResponse>(
+      REVIEWS_ENDPOINTS.REVIEW_BY_ID(reviewId),
+      {},
+      ssrHeaders,
+    );
   }
 
   /**
@@ -125,7 +133,7 @@ class ReviewsService {
       ? `${REVIEWS_ENDPOINTS.REVIEWS_BY_GAME(gameId)}?${searchParams.toString()}`
       : REVIEWS_ENDPOINTS.REVIEWS_BY_GAME(gameId);
 
-    return apiClient.get<PaginatedReviewsResponse>(endpoint, { skipAuth: true });
+    return apiClient.get<PaginatedReviewsResponse>(endpoint, {});
   }
 
   /**
@@ -165,7 +173,7 @@ class ReviewsService {
       ? `${REVIEWS_ENDPOINTS.REVIEWS_BY_USER(userId)}?${searchParams.toString()}`
       : REVIEWS_ENDPOINTS.REVIEWS_BY_USER(userId);
 
-    return apiClient.get<PaginatedReviewsResponse>(endpoint, { skipAuth: true });
+    return apiClient.get<PaginatedReviewsResponse>(endpoint, {});
   }
 
   /**
@@ -210,7 +218,7 @@ class ReviewsService {
     try {
       return await apiClient.get<ReviewResponse>(
         REVIEWS_ENDPOINTS.REVIEW_BY_USER_AND_GAME(userId, gameId),
-        { skipAuth: true },
+        {},
       );
     } catch (error: any) {
       // Return null if review not found (404)

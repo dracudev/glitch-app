@@ -77,6 +77,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtRefreshGuard)
   @ApiBearerAuth()
@@ -105,9 +106,8 @@ export class AuthController {
   }
 
   @Post('logout')
+  @Public()
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
   @ApiOperation({ summary: 'Logout user and clear auth cookies' })
   async logout(@Res({ passthrough: true }) res: Response): Promise<void> {
     // Optional: Invalidate tokens server-side (blacklist) here if implemented

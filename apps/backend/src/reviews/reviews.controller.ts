@@ -29,7 +29,7 @@ import {
   DeleteSuccessResponseDto,
 } from './dto';
 import { JwtAuthGuard } from '@/auth/guards';
-import { GetUser, Public } from '@/auth/decorators';
+import { GetUser, OptionalAuth } from '@/auth/decorators';
 import { User } from '@prisma/client';
 
 @ApiTags('Reviews')
@@ -57,7 +57,7 @@ export class ReviewsController {
   }
 
   @Get()
-  @Public()
+  @OptionalAuth()
   @ApiOperation({ summary: 'Get all reviews with filters and pagination' })
   @ApiResponse({
     status: 200,
@@ -83,7 +83,7 @@ export class ReviewsController {
   }
 
   @Get(':id')
-  @Public()
+  @OptionalAuth()
   @ApiOperation({ summary: 'Get review by ID' })
   @ApiParam({ name: 'id', description: 'Review ID' })
   @ApiResponse({
@@ -98,7 +98,7 @@ export class ReviewsController {
   }
 
   @Get('game/:gameId')
-  @Public()
+  @OptionalAuth()
   @ApiOperation({ summary: 'Get reviews for a specific game' })
   @ApiParam({ name: 'gameId', description: 'Game ID' })
   @ApiResponse({
@@ -122,7 +122,7 @@ export class ReviewsController {
   }
 
   @Get('user/:userId')
-  @Public()
+  @OptionalAuth()
   @ApiOperation({ summary: 'Get reviews by a specific user' })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @ApiResponse({
@@ -147,7 +147,7 @@ export class ReviewsController {
   }
 
   @Get('user/:userId/game/:gameId')
-  @Public()
+  @OptionalAuth()
   @ApiOperation({ summary: "Get a specific user's review for a specific game" })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @ApiParam({ name: 'gameId', description: 'Game ID' })

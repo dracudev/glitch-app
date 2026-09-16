@@ -56,10 +56,11 @@ export default function StarRating({
               aria-label={`${i + 1} stars`}
             />
 
-            {/* Star background (outline) */}
+            {/* Star background (filled, so the unfilled part weighs the same as the
+                filled part — an outline here makes a half star read as two greys) */}
             <Star
               size={size}
-              className="absolute inset-0 text-[var(--text-muted)] pointer-events-none"
+              className="absolute inset-0 fill-[var(--bg-tertiary)] text-[var(--text-muted)] pointer-events-none"
             />
             {/* Star fill overlay (clipped to percentage) */}
             <span

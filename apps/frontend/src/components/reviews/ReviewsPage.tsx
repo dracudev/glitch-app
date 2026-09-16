@@ -63,7 +63,7 @@ export default function ReviewsPage({ initialData }: ReviewsPageProps) {
       </div>
 
       {/* Reviews List with Infinite Scroll */}
-      <ReviewList />
+      <ReviewList initialData={initialData} />
     </div>
   );
 }

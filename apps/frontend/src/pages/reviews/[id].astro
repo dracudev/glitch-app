@@ -4,6 +4,7 @@ export const prerender = false;
 import MainLayout from '@/layouts/MainLayout.astro';
 import ReviewDetailPage from '@/components/reviews/ReviewDetailPage';
 import { getReviewById } from '@/services/reviews';
+import { ssrCookieHeader } from '@/services/ssr-auth';
 import type { ReviewResponse } from '@glitch/shared-types';
 
 // ============================================================================
@@ -18,10 +19,11 @@ if (!id) {
 }
 
 let review: ReviewResponse | null = null;
+const cookieHeader = await ssrCookieHeader(Astro.request.headers.get('cookie') || undefined);
 
 try {
-  // Fetch review from API
-  review = await getReviewById(id);
+  // Fetch review from API (forward the cookie so isLiked is per-user)
+  review = await getReviewById(id, cookieHeader ? { cookie: cookieHeader } : undefined);
 } catch (err: any) {
   // Handle 404 - Review not found
   if (err.status === 404) {

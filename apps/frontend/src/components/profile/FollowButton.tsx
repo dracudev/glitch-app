@@ -4,7 +4,7 @@ import { setFollowingStatus } from '@/stores/social';
 import { $currentUser } from '@/stores/auth';
 import { useStore } from '@nanostores/react';
 import { Button } from '@/components/ui/Button';
-import { toast } from 'sonner';
+import { notify } from '@/stores/notifications';
 
 // ============================================================================
 // Props Interface
@@ -44,7 +44,10 @@ export default function FollowButton({ userId, initialIsFollowing = false }: Fol
 
   const handleToggle = async () => {
     if (!currentUser) {
-      toast('Log in to follow users', { description: <a href="/auth/login" style={{ color: '#2cb67d', textDecoration: 'underline' }}>Go to login</a> });
+      notify({
+        title: 'Sign in to follow people',
+        action: { label: 'Sign in', href: '/auth/login' },
+      });
       return;
     }
     setError(null);
@@ -75,7 +78,7 @@ export default function FollowButton({ userId, initialIsFollowing = false }: Fol
       >
         {isFollowing ? 'Following' : 'Follow'}
       </Button>
-      {error && <span className="text-sm text-error text-center">{error}</span>}
+      {error && <span className="text-sm text-[var(--state-error)] text-center">{error}</span>}
     </div>
   );
 }

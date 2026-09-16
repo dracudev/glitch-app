@@ -4,6 +4,7 @@ export const prerender = false;
 import MainLayout from '@/layouts/MainLayout.astro';
 import ReviewsPage from '@/components/reviews/ReviewsPage';
 import { getAllReviews } from '@/services/reviews';
+import { ssrCookieHeader } from '@/services/ssr-auth';
 import type { PaginatedReviewsResponse } from '@glitch/shared-types';
 
 // ============================================================================
@@ -11,15 +12,19 @@ import type { PaginatedReviewsResponse } from '@glitch/shared-types';
 // ============================================================================
 
 let reviewsData: PaginatedReviewsResponse | null = null;
+const cookieHeader = await ssrCookieHeader(Astro.request.headers.get('cookie') || undefined);
 
 try {
-  // Fetch the first page of reviews
-  reviewsData = await getAllReviews({
-    page: 1,
-    limit: 20,
-    sortBy: 'createdAt',
-    sortOrder: 'desc',
-  });
+  // Fetch the first page of reviews (forward the cookie so isLiked is per-user)
+  reviewsData = await getAllReviews(
+    {
+      page: 1,
+      limit: 20,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    },
+    cookieHeader ? { cookie: cookieHeader } : undefined,
+  );
 } catch (err: any) {
   // Log error but continue to render page
   console.error('Error fetching reviews:', err);

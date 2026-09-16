@@ -83,7 +83,9 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
           <defs>
             <linearGradient id="halfGradient">
               <stop offset="50%" stopColor="currentColor" />
-              <stop offset="50%" stopColor="var(--color-muted)" />
+              {/* Must match the empty stars' `text-muted-foreground`, or the unfilled
+                  half reads as a different grey from a whole empty star. */}
+              <stop offset="50%" stopColor="var(--text-muted)" />
             </linearGradient>
           </defs>
           <path

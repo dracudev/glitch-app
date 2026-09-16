@@ -1,10 +1,16 @@
 import { useEffect, useRef, useCallback } from 'react';
+import type { PaginatedReviewsResponse } from '@glitch/shared-types';
 import { useReviews } from '@/hooks/useReviews';
 import ReviewCard from './ReviewCard';
 
 // ============================================================================
 // ReviewList Component
 // ============================================================================
+
+interface ReviewListProps {
+  /** Server-rendered first page — used for the first client render so it matches SSR. */
+  initialData?: PaginatedReviewsResponse | null;
+}
 
 /**
  * Infinite scroll list of reviews
@@ -14,11 +20,13 @@ import ReviewCard from './ReviewCard';
  *
  * @example
  * ```tsx
- * <ReviewList />
+ * <ReviewList initialData={initialData} />
  * ```
  */
-export default function ReviewList() {
-  const { data, isLoading, error, loadMoreReviews } = useReviews();
+export default function ReviewList({ initialData = null }: ReviewListProps) {
+  const { data: storedData, isLoading, error, loadMoreReviews } = useReviews();
+  // Fall back to the server-rendered page until the store is seeded post-hydration.
+  const data = storedData ?? initialData;
   const observerTarget = useRef<HTMLDivElement>(null);
 
   // ============================================================================

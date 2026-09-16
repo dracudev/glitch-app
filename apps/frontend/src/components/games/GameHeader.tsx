@@ -6,7 +6,7 @@ import { useGameDetail } from '@/hooks/useGames';
 import { $currentUser } from '@/stores/auth';
 import ReviewFormDialog from './ReviewFormDialog';
 import { Button } from '@/components/ui/Button';
-import { toast } from 'sonner';
+import { notify } from '@/stores/notifications';
 
 export default function GameHeader() {
   const { game, isLoading } = useGameDetail();
@@ -152,7 +152,12 @@ function ActionButtons({ onWriteReview }: { onWriteReview: () => void }) {
             variant="secondary"
             className="flex-1 lg:flex-initial"
             onClick={() => {
-              if (!user) toast('Log in to manage your game lists', { description: <a href="/auth/login" style={{ color: '#2cb67d', textDecoration: 'underline' }}>Go to login</a> });
+              if (!user) {
+                notify({
+                  title: 'Sign in to save games to a list',
+                  action: { label: 'Sign in', href: '/auth/login' },
+                });
+              }
             }}
           >
             Add to List
