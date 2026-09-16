@@ -67,12 +67,12 @@ export default function Footer({ className = '' }: FooterProps) {
               className="inline-flex items-center gap-2 text-foreground transition-colors hover:text-accent"
             >
               <img
-                src="/images/glitch-isotype.png"
+                src="/images/glitch-mark.svg"
                 alt=""
                 width={32}
                 height={32}
                 loading="lazy"
-                className="size-8 rounded-md"
+                className="size-8"
               />
               <span className="font-display text-lg font-semibold tracking-tight">Glitch</span>
             </a>

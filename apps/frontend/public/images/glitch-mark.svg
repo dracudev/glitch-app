@@ -1,0 +1,90 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 64 64"
+  role="img"
+  aria-labelledby="glitchMarkTitle"
+  shape-rendering="geometricPrecision"
+>
+  <title id="glitchMarkTitle">Glitch</title>
+  <!--
+    Glitch isotype: a heavy geometric capital G with two digital faults, one
+    dropped scanline and one slipped slice.
+
+    Construction
+
+    The letter is drawn ONCE in <defs> as a single stroked glyph (a 300 degree
+    bowl plus a horizontal crossbar). It is then rendered once per band, each
+    copy clipped to that band's slice. One band is translated sideways; one
+    sliver is omitted entirely, which is the dropout.
+
+    Why the clip sits on the OUTER group and the translate on the inner one:
+    a glitch band keeps its vertical position and slides its contents sideways,
+    so the clip window must stay in the original coordinate space while the
+    content moves inside it. Swapping them would slide the window too, and the
+    band would merely appear to move rather than tear.
+
+    Balance notes, all of them learned by rendering this and looking at it:
+
+    - The letter stays essentially INTACT. An earlier version sheared it into
+      five tall bands at 10 percent displacement, and because the G is a single
+      heavy closed form with a 25 percent stroke, that turned the round bowl
+      into chunky rectangles and read as a broken render rather than a mark.
+      The silhouette is the logo, so the silhouette is what has to survive.
+    - So the faults are THIN, 3 and 4 units in a 49 unit cap height. They read
+      as a dropped scanline and a slipped slice: unmistakably digital, while
+      roughly 96 percent of the letter is still in register.
+    - The slipped slice is placed at y 30 to 34 specifically because that is
+      where the crossbar is (y 28.9 to 41.4). Shearing the bar, the G's defining
+      feature, is legible damage. Shearing the bowl's curve is not.
+    - Displacement is 6 units, about 12 percent of cap height, which is enough
+      to overhang the letterform and read as a fault rather than a nudge.
+  -->
+  <defs>
+    <!--
+      The undamaged glyph. Spans x 7.5-56.5 and y 7.5-56.5, so it sits inside a
+      64 unit box with an even 7.5 unit optical margin.
+
+      Values, if the letterform ever needs retuning:
+        centre        (32, 32)
+        centre-line   r 18.25, so the bowl occupies r 12 to r 24.5
+        stroke width  12.5, about 25 percent of cap height
+        mouth         10deg round to -50deg, a 60 degree opening at the right
+        crossbar      38 to 56.3 at y 35.17, butt caps, right end flush
+    -->
+    <g id="glitchGlyph" fill="none" stroke="#a6f53a" stroke-width="12.5">
+      <!-- Bowl: from the lower right terminal at 10deg, 300deg clockwise to -50deg. -->
+      <path d="M49.97 35.17 A18.25 18.25 0 1 1 43.73 18.02" />
+      <!-- Crossbar: runs out to the bowl's outer edge so its right end is flush. -->
+      <path d="M38 35.17 H56.3" />
+    </g>
+
+    <clipPath id="glitchBand1"><rect x="0" y="2" width="64" height="16" /></clipPath>
+    <clipPath id="glitchBand2"><rect x="0" y="21" width="64" height="9" /></clipPath>
+    <clipPath id="glitchBand3"><rect x="0" y="30" width="64" height="4" /></clipPath>
+    <clipPath id="glitchBand4"><rect x="0" y="34" width="64" height="28" /></clipPath>
+  </defs>
+
+  <!-- Upper bowl, in register. -->
+  <g clip-path="url(#glitchBand1)">
+    <use href="#glitchGlyph" />
+  </g>
+
+  <!-- y 18 to 21: the dropped scanline. No group covers this sliver, on purpose. -->
+
+  <!-- Mid bowl, in register. -->
+  <g clip-path="url(#glitchBand2)">
+    <use href="#glitchGlyph" />
+  </g>
+
+  <!-- y 30 to 34, across the crossbar: slipped right. -->
+  <g clip-path="url(#glitchBand3)">
+    <g transform="translate(6 0)">
+      <use href="#glitchGlyph" />
+    </g>
+  </g>
+
+  <!-- Lower bowl, in register. -->
+  <g clip-path="url(#glitchBand4)">
+    <use href="#glitchGlyph" />
+  </g>
+</svg>

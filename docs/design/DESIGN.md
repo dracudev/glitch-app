@@ -81,14 +81,36 @@ copy. **DM Mono** is the third face, and it is reserved for real data — rating
 years, eyebrow labels — so numerals read as data instead of prose. Inter was the safe
 default; none of these three are.
 
-### 2.2 Brand assets are placeholders
+### 2.2 The mark
 
-The current logotype and isotype (`apps/frontend/public/images/glitch-logotype.png`,
-`glitch-isotype.png`) are **placeholders pending a real brand mark**. Nothing in the
-design system should be derived from them — not their proportions, not their colour
-treatment, not the way the isotype sits next to the wordmark. The wordmark is currently
-set live in Bricolage Grotesque next to the isotype; when a real mark arrives it replaces
-those assets and nothing else should have to change.
+The brand mark is `apps/frontend/public/images/glitch-mark.svg`: a heavy geometric
+capital G in `--brand-primary`, on transparent, 3.8K. Its faults are deliberate and
+thin — a dropped scanline at y 18-21 and a slipped slice at y 30-34, displaced 6 units
+in a 64-unit box. About 96% of the letter stays in register, because the silhouette is
+the logo and a sheared silhouette reads as a broken render rather than a mark. The
+slipped slice is placed across the crossbar on purpose: shearing the G's defining
+feature is legible damage, shearing the bowl's curve is not.
+
+It is a single flat colour, so it inherits the theme by design intent rather than by
+mechanism — the SVG carries `#a6f53a` literally, which is the dark-theme primary. If the
+mark is ever needed on a light surface at scale, it needs a second file or a
+`currentColor` variant; today the navbar, footer and auth header all sit on
+`--surface-base`, so the dark value is correct everywhere it is used.
+
+The glyph is authored once inside `<defs>` and referenced by every band with `<use>`.
+This matters if it is ever retuned: change the glyph, not the four bands.
+
+For sizes at or below about 24px the faults stop resolving and the mark softens into a
+blob. That is a known ceiling of the design, accepted deliberately after rendering it at
+256/128/64/48/32/24/16px. Thickening the faults until they survive the shrink would stop
+them reading as faults, so the choice is to accept softness at favicon size rather than
+to ship a second, different mark.
+
+The favicons and PWA icons in `apps/frontend/public/favicon/` are rendered from this SVG
+(16, 32, 48, 180, 192, 512, plus a multi-size `favicon.ico`). They are build artefacts:
+re-render them rather than editing them by hand. The 16/32/ico are transparent; the
+180/192/512 are opaque on `--surface-base` because iOS does not composite transparency
+in a home-screen icon and PWA maskable icons want a full bleed.
 
 ---
 

@@ -79,7 +79,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
           className="col-start-1 flex items-center gap-2 text-foreground transition-colors hover:text-accent"
           aria-label="Glitch home"
         >
-          <img src="/images/glitch-isotype.png" alt="" width={32} height={32} className="size-8 rounded-md" />
+          <img src="/images/glitch-mark.svg" alt="" width={32} height={32} className="size-8" />
           <span className="font-display text-lg font-semibold tracking-tight">Glitch</span>
         </a>
 
