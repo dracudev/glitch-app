@@ -1,5 +1,6 @@
-import { MessageSquare, Star, ThumbsUp } from 'lucide-react';
+import { MessageSquare, ThumbsUp } from 'lucide-react';
 import { useUserReviews } from '@/hooks/useReviews';
+import StarRating from '@/components/ui/StarRating';
 import { useEffect, useRef, useCallback } from 'react';
 import type { ReviewResponse } from '@glitch/shared-types';
 
@@ -185,23 +186,17 @@ function ReviewCard({ review }: ReviewCardProps) {
           />
         </div>
 
-        {/* Review Content */}
-        <div className="flex-1">
+        {/* Review Content — `min-w-0` lets the rating row shrink instead of
+            forcing this column wider than the card. */}
+        <div className="min-w-0 flex-1">
           <h3 className="mb-1 line-clamp-2 text-sm font-medium text-foreground">
             {review.game.title}
           </h3>
 
-          {/* Rating */}
-          <div className="mb-2 flex items-center gap-2">
-            <div className="flex items-center">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`size-4 fill-current ${star <= review.rating ? 'text-accent' : 'text-muted-foreground'}`}
-                  aria-hidden="true"
-                />
-              ))}
-            </div>
+          {/* Rating — wraps so a narrow column drops the date onto its own line
+              instead of crushing the stars to fit beside it. */}
+          <div className="mb-2 flex flex-wrap items-center gap-2">
+            <StarRating value={review.rating} size={16} />
             <span className="font-mono text-sm text-muted-foreground">
               {new Date(review.createdAt).toLocaleDateString()}
             </span>

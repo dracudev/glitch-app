@@ -1,5 +1,5 @@
-import { Star } from 'lucide-react';
 import type { ReviewResponse } from '@glitch/shared-types';
+import StarRating from '@/components/ui/StarRating';
 import { getAvatarUrl } from '@/lib/avatar';
 
 // ============================================================================
@@ -45,67 +45,6 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
 
   // Generate game cover URL
   const coverUrl = review.game.coverImage || '/images/game-placeholder.svg';
-
-  // ============================================================================
-  // Render Star Rating
-  // ============================================================================
-
-  const renderStars = () => {
-    const stars = [];
-    const fullStars = Math.floor(review.rating);
-    const hasHalfStar = review.rating % 1 >= 0.5;
-
-    // Full stars
-    for (let i = 1; i <= fullStars; i++) {
-      stars.push(
-        <Star
-          key={`full-${i}`}
-          className="size-5 fill-current text-accent md:size-6"
-          aria-hidden="true"
-        />,
-      );
-    }
-
-    // Half star
-    if (hasHalfStar && fullStars < 10) {
-      stars.push(
-        <svg
-          key="half"
-          className="size-5 text-accent md:size-6"
-          fill="currentColor"
-          viewBox="0 0 20 20"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="halfGradient">
-              <stop offset="50%" stopColor="currentColor" />
-              {/* Must match the empty stars' `text-muted-foreground`, or the unfilled
-                  half reads as a different grey from a whole empty star. */}
-              <stop offset="50%" stopColor="var(--color-muted-foreground)" />
-            </linearGradient>
-          </defs>
-          <path
-            fill="url(#halfGradient)"
-            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-          />
-        </svg>,
-      );
-    }
-
-    // Empty stars
-    const emptyStars = 10 - fullStars - (hasHalfStar ? 1 : 0);
-    for (let i = 1; i <= emptyStars; i++) {
-      stars.push(
-        <Star
-          key={`empty-${i}`}
-          className="size-5 fill-current text-muted-foreground md:size-6"
-          aria-hidden="true"
-        />,
-      );
-    }
-
-    return stars;
-  };
 
   // ============================================================================
   // Render
@@ -170,13 +109,7 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
 
           {/* Star Rating */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div
-              className="flex items-center gap-1"
-              role="img"
-              aria-label={`Rating: ${review.rating} out of 10`}
-            >
-              {renderStars()}
-            </div>
+            <StarRating value={review.rating} size={20} />
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <span className="font-mono text-xl font-semibold text-accent md:text-2xl">
                 {review.rating.toFixed(1)}

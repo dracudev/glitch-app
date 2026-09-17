@@ -1,6 +1,7 @@
 import type { ActivityItem } from '@glitch/shared-types';
 import * as Avatar from '@radix-ui/react-avatar';
-import { ChevronRight, Star } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
+import StarRating from '@/components/ui/StarRating';
 import { getAvatarUrl } from '@/lib/avatar';
 
 interface FeedItemProps {
@@ -28,33 +29,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
     if (diffHours < 24) return `${diffHours}h ago`;
     if (diffDays < 7) return `${diffDays}d ago`;
     return past.toLocaleDateString();
-  };
-
-  // Render stars for ratings (0-10 scale). Mirrors the StarRating control:
-  // a filled border-strong track with a primary overlay clipped to a percentage.
-  const renderRating = (rating: number) => {
-    return (
-      <div className="flex items-center gap-1">
-        {Array.from({ length: 10 }).map((_, i) => {
-          const fillPercent = Math.min(100, Math.max(0, (rating - i) * 100));
-          return (
-            <span key={i} className="relative inline-block size-4">
-              <Star
-                className="absolute inset-0 size-4 fill-border-strong text-border-strong"
-                strokeWidth={1.5}
-              />
-              {/* Value width is computed from the rating, so it stays inline. */}
-              <span
-                className="absolute inset-0 overflow-hidden"
-                style={{ width: `${fillPercent}%` }}
-              >
-                <Star className="size-4 fill-primary text-primary" strokeWidth={1.5} />
-              </span>
-            </span>
-          );
-        })}
-      </div>
-    );
   };
 
   // Render content based on activity type
@@ -97,7 +71,9 @@ export default function FeedItem({ activity }: FeedItemProps) {
 
               {/* Rating */}
               {review.rating !== null && review.rating !== undefined && (
-                <div className="mb-2">{renderRating(review.rating)}</div>
+                <div className="mb-2">
+                  <StarRating value={review.rating} size={16} />
+                </div>
               )}
 
               {/* Review snippet */}
@@ -187,7 +163,9 @@ export default function FeedItem({ activity }: FeedItemProps) {
 
               {/* Rating */}
               {review.rating !== null && review.rating !== undefined && (
-                <div className="mb-2">{renderRating(review.rating)}</div>
+                <div className="mb-2">
+                  <StarRating value={review.rating} size={16} />
+                </div>
               )}
 
               {/* Review snippet */}

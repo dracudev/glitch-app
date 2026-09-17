@@ -1,5 +1,6 @@
-import { Heart, MessageSquare, Star } from 'lucide-react';
+import { Heart, MessageSquare } from 'lucide-react';
 import type { ReviewResponse } from '@glitch/shared-types';
+import StarRating from '@/components/ui/StarRating';
 import { getAvatarUrl } from '@/lib/avatar';
 
 // ============================================================================
@@ -89,8 +90,9 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         )}
       </div>
 
-      {/* Card Content */}
-      <div className="flex flex-1 flex-col p-4">
+      {/* Card Content — `min-w-0` keeps the rating row from setting a min-content
+          floor that would push this column past the card's clipped edge. */}
+      <div className="flex min-w-0 flex-1 flex-col p-4">
         {/* Game Title */}
         <h3 className="line-clamp-2 text-base font-semibold text-foreground">
           {review.game.title}
@@ -119,18 +121,9 @@ export default function ReviewCard({ review }: ReviewCardProps) {
         </div>
 
         {/* Rating Stars */}
-        <div className="mb-3 mt-3 flex items-center gap-1">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((star) => {
-            const isFilled = star <= Math.round(review.rating);
-            return (
-              <Star
-                key={star}
-                className={`size-4 fill-current ${isFilled ? 'text-accent' : 'text-muted-foreground'}`}
-                aria-hidden="true"
-              />
-            );
-          })}
-          <span className="ml-1 font-mono text-sm font-semibold text-accent">
+        <div className="mb-3 mt-3 flex items-center gap-2">
+          <StarRating value={review.rating} size={16} />
+          <span className="font-mono text-sm font-semibold text-accent">
             {review.rating.toFixed(1)}
           </span>
         </div>
