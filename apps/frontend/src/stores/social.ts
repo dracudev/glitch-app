@@ -2,6 +2,7 @@ import { atom } from 'nanostores';
 import type {
   SocialStats,
   ActivityFeedResponse,
+  ActivityUser,
   FollowSuggestion,
   MutualFollowsResponse,
 } from '@glitch/shared-types';
@@ -140,6 +141,28 @@ export function setActivityFeed(feed: ActivityFeedResponse | null): void {
   $activityFeed.set(feed);
   $activityFeedError.set(null);
   $activityFeedLoading.set(false);
+}
+
+/**
+ * Rewrite the author embedded in every cached activity item after a profile edit.
+ */
+export function rewriteFeedAuthors(
+  userId: string,
+  author: { username: string; displayName?: string; avatar?: string },
+): void {
+  const feed = $activityFeed.get();
+  if (!feed) return;
+
+  const patch = (user: ActivityUser): ActivityUser =>
+    user.id === userId ? { ...user, ...author } : user;
+
+  const items = feed.items.map((item) => ({
+    ...item,
+    user: patch(item.user),
+    followedUser: item.followedUser ? patch(item.followedUser) : item.followedUser,
+  }));
+
+  $activityFeed.set({ ...feed, items });
 }
 
 /**

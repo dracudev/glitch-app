@@ -12,7 +12,7 @@ export default function SimilarGamesSection({
   similarGames: initialSimilarGames,
 }: SimilarGamesSectionProps) {
   const { games: storeSimilarGames } = useSimilarGames();
-  const similarGames = initialSimilarGames ?? storeSimilarGames;
+  const similarGames = storeSimilarGames ?? initialSimilarGames;
 
   // Only a genuinely empty store (e.g. client-side navigation) hits this branch.
   if (!similarGames) {

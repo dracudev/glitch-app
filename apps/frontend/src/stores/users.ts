@@ -6,6 +6,8 @@ import type {
   UpdateProfileRequest,
 } from '@glitch/shared-types';
 import { getAvatarUrl } from '@/lib/avatar';
+import { rewriteReviewAuthors } from './reviews';
+import { rewriteFeedAuthors } from './social';
 
 // ============================================================================
 // Users State
@@ -358,6 +360,23 @@ export function updateViewedProfile(updates: Partial<UserProfile>): void {
   }
 }
 
+/**
+ * Bump the viewed profile's review count when the author posts or deletes one.
+ * The count is a server aggregate, so nothing else recomputes it client-side.
+ */
+export function adjustViewedProfileReviewsCount(
+  authorId: string | null | undefined,
+  delta: number,
+): void {
+  const viewed = $viewedProfile.get();
+  if (!authorId || !viewed || viewed.id !== authorId) return;
+
+  setViewedProfile({
+    ...viewed,
+    stats: { ...viewed.stats, reviewsCount: Math.max(0, viewed.stats.reviewsCount + delta) },
+  });
+}
+
 // ============================================================================
 // Users State Helpers
 // ============================================================================
@@ -542,6 +561,19 @@ export async function updateProfile(data: UpdateProfileRequest): Promise<UserPro
       avatar: updatedProfile.avatar,
       // Map other relevant fields from UserProfile to AuthUser
     });
+
+    // The same user is cached in several places - the viewed profile, the user
+    // caches, and the author copies embedded in reviews and the activity feed.
+    const author = {
+      username: updatedProfile.username,
+      displayName: updatedProfile.displayName ?? updatedProfile.username,
+      avatar: updatedProfile.avatar,
+    };
+    updateViewedProfile(updatedProfile);
+    updateUserProfile(updatedProfile.id, updatedProfile);
+    updateUser(updatedProfile.id, updatedProfile);
+    rewriteReviewAuthors(updatedProfile.id, author);
+    rewriteFeedAuthors(updatedProfile.id, author);
 
     setProfileUpdateLoading(false);
     return updatedProfile;

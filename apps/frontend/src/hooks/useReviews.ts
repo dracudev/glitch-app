@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useStore } from '@nanostores/react';
 import type {
   ReviewResponse,
@@ -44,7 +44,12 @@ import {
   addReviewToList,
   updateReviewInLists,
   removeReviewFromList,
+  findReviewById,
 } from '@/stores/reviews';
+import { $currentUser } from '@/stores/auth';
+import { clearActivityFeedState } from '@/stores/social';
+import { adjustViewedProfileReviewsCount } from '@/stores/users';
+import { refreshGameAggregate } from '@/stores/games';
 
 // ============================================================================
 // Types
@@ -719,10 +724,48 @@ export function useGameReviews(): UseGameReviewsReturn {
   };
 }
 
+/**
+ * The current user's own review for a game, if they have one.
+ *
+ * Reads the cached game reviews first (instant, and already updated by
+ * create/update), then falls back to a targeted fetch for a review that is not
+ * on the first page of the game's reviews.
+ */
+export function useMyReviewForGame(gameId?: string): ReviewResponse | null {
+  const user = useStore($currentUser);
+  const gameReviews = useStore($gameReviews);
+  const [fetched, setFetched] = useState<ReviewResponse | null>(null);
+
+  const userId = user?.id;
+  const fromStore = userId ? (gameReviews?.items.find((r) => r.user.id === userId) ?? null) : null;
+
+  useEffect(() => {
+    if (!userId || !gameId) {
+      setFetched(null);
+      return;
+    }
+
+    let cancelled = false;
+    reviewsService
+      .getReviewsByGame(gameId, { userId, limit: 1 })
+      .then((response) => {
+        if (!cancelled) setFetched(response.items[0] ?? null);
+      })
+      .catch(() => {
+        if (!cancelled) setFetched(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, gameId]);
+
+  return fromStore ?? fetched;
+}
+
 // ============================================================================
 // Review Actions Hook (CRUD + Like/Unlike)
 // ============================================================================
-
 /**
  * Hook for managing review actions (create, update, delete, like, unlike)
  *
@@ -781,6 +824,9 @@ export function useReviewActions(): UseReviewActionsReturn {
       try {
         const response = await reviewsService.createReview(reviewData);
         addReviewToList(response);
+        adjustViewedProfileReviewsCount(response.user.id, 1);
+        clearActivityFeedState();
+        void refreshGameAggregate(response.game.slug);
         return response;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to create review';
@@ -801,6 +847,8 @@ export function useReviewActions(): UseReviewActionsReturn {
       try {
         const response = await reviewsService.updateReview(reviewId, updateData);
         updateReviewInLists(response);
+        clearActivityFeedState();
+        void refreshGameAggregate(response.game.slug);
         return response;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Failed to update review';
@@ -818,8 +866,14 @@ export function useReviewActions(): UseReviewActionsReturn {
     setReviewActionError(null);
 
     try {
+      // Read the review before it is removed from the caches - its game slug is
+      // what tells us whose aggregate rating went stale.
+      const affected = findReviewById(reviewId);
       await reviewsService.deleteReview(reviewId);
       removeReviewFromList(reviewId);
+      adjustViewedProfileReviewsCount($currentUser.get()?.id, -1);
+      clearActivityFeedState();
+      if (affected) void refreshGameAggregate(affected.game.slug);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to delete review';
       setReviewActionError(errorMessage);
@@ -835,6 +889,7 @@ export function useReviewActions(): UseReviewActionsReturn {
 
     try {
       await reviewsService.likeReview(reviewId);
+      clearActivityFeedState();
     } catch (error) {
       // Revert optimistic update on error
       optimisticLikeUpdate(reviewId, false);
@@ -850,6 +905,7 @@ export function useReviewActions(): UseReviewActionsReturn {
 
     try {
       await reviewsService.unlikeReview(reviewId);
+      clearActivityFeedState();
     } catch (error) {
       // Revert optimistic update on error
       optimisticLikeUpdate(reviewId, true);

@@ -4,6 +4,7 @@ import { Calendar, Users, Building2 } from 'lucide-react';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import type { GameDetail } from '@glitch/shared-types';
 import { useGameDetail } from '@/hooks/useGames';
+import { useMyReviewForGame } from '@/hooks/useReviews';
 import { $currentUser } from '@/stores/auth';
 import ReviewFormDialog from './ReviewFormDialog';
 import { Button } from '@/components/ui/Button';
@@ -17,8 +18,14 @@ interface GameHeaderProps {
 
 export default function GameHeader({ game: initialGame }: GameHeaderProps) {
   const { game: storeGame } = useGameDetail();
-  const game = initialGame ?? storeGame;
+  // Store-first, but only when the store is actually holding THIS game - on a
+  // client-side navigation it can still hold the previous one for a render.
+  const storeIsThisGame =
+    storeGame != null && (initialGame == null || storeGame.game.slug === initialGame.game.slug);
+  const game = storeIsThisGame ? storeGame : initialGame;
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
+  // Hooks cannot sit below the early return.
+  const myReview = useMyReviewForGame(initialGame?.game.id ?? storeGame?.game.id);
 
   // Only a genuinely empty store (e.g. client-side navigation) hits this branch.
   if (!game) {
@@ -76,7 +83,10 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
         </div>
 
         {/* Action Buttons */}
-        <ActionButtons onWriteReview={() => setIsReviewDialogOpen(true)} />
+        <ActionButtons
+          onWriteReview={() => setIsReviewDialogOpen(true)}
+          hasReview={Boolean(myReview)}
+        />
       </div>
 
       {/* Desktop Layout: Horizontal */}
@@ -139,7 +149,10 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
             )}
           </div>
 
-          <ActionButtons onWriteReview={() => setIsReviewDialogOpen(true)} />
+          <ActionButtons
+            onWriteReview={() => setIsReviewDialogOpen(true)}
+            hasReview={Boolean(myReview)}
+          />
         </div>
       </div>
 
@@ -148,18 +161,25 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
         gameId={game.game.id}
         isOpen={isReviewDialogOpen}
         onClose={() => setIsReviewDialogOpen(false)}
+        existingReview={myReview}
       />
     </header>
   );
 }
 
-function ActionButtons({ onWriteReview }: { onWriteReview: () => void }) {
+function ActionButtons({
+  onWriteReview,
+  hasReview,
+}: {
+  onWriteReview: () => void;
+  hasReview: boolean;
+}) {
   const user = useStore($currentUser);
 
   return (
     <div className="flex items-center gap-3">
       <Button onClick={onWriteReview} className="flex-1 lg:flex-initial">
-        Write a review
+        {hasReview ? 'Edit your review' : 'Write a review'}
       </Button>
 
       <DropdownMenu.Root>

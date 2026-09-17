@@ -532,6 +532,44 @@ export function removeReviewFromList(reviewId: string) {
   }
 }
 
+/**
+ * Rewrite the author embedded in every cached review after a profile edit.
+ * Reviews carry a copy of the author, so the lists have to be patched too.
+ */
+export function rewriteReviewAuthors(
+  userId: string,
+  author: { username: string; displayName: string; avatar?: string },
+) {
+  const patch = (review: ReviewResponse): ReviewResponse =>
+    review.user.id === userId ? { ...review, user: { ...review.user, ...author } } : review;
+
+  for (const atom of [$reviewsData, $gameReviews, $userReviews]) {
+    const data = atom.get();
+    if (!data) continue;
+    const items = data.items.map(patch);
+    if (items.some((item, index) => item !== data.items[index])) {
+      atom.set({ ...data, items });
+    }
+  }
+
+  const detail = $reviewDetail.get();
+  if (detail?.user.id === userId) {
+    $reviewDetail.set(patch(detail));
+  }
+}
+
+/** Find a review in the client caches (used to learn which game a delete affects) */
+export function findReviewById(reviewId: string): ReviewResponse | null {
+  const detail = $reviewDetail.get();
+  if (detail?.id === reviewId) return detail;
+
+  for (const atom of [$reviewsData, $gameReviews, $userReviews]) {
+    const found = atom.get()?.items.find((r) => r.id === reviewId);
+    if (found) return found;
+  }
+  return null;
+}
+
 function _replaceInList(
   atom: ReturnType<typeof import('nanostores').atom>,
   updated: ReviewResponse,
@@ -544,10 +582,7 @@ function _replaceInList(
   });
 }
 
-function _removeFromList(
-  atom: ReturnType<typeof import('nanostores').atom>,
-  reviewId: string,
-) {
+function _removeFromList(atom: ReturnType<typeof import('nanostores').atom>, reviewId: string) {
   const data = atom.get() as PaginatedReviewsResponse | null;
   if (!data) return;
   const filtered = data.items.filter((r) => r.id !== reviewId);

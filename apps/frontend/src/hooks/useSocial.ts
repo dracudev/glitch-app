@@ -411,6 +411,8 @@ export function useFollowActions(): UseFollowActionsReturn {
       updateCurrentUserStatsAfterFollow(true);
       updateUserStatsAfterBeingFollowed(userId, true);
       removeSuggestionAfterFollow(userId);
+      // A follow is a feed event - drop the cached feed so /feed refetches.
+      clearActivityFeedState();
 
       // Refetch follow lists to show the new follower card
       if (viewedProfile) {
@@ -425,7 +427,10 @@ export function useFollowActions(): UseFollowActionsReturn {
       if (viewedProfile && viewedProfile.id === userId) {
         updateViewedProfile({
           isFollowing: false,
-          stats: { ...viewedProfile.stats, followersCount: Math.max(0, viewedProfile.stats.followersCount - 1) },
+          stats: {
+            ...viewedProfile.stats,
+            followersCount: Math.max(0, viewedProfile.stats.followersCount - 1),
+          },
         });
       }
       throw err;
@@ -442,7 +447,10 @@ export function useFollowActions(): UseFollowActionsReturn {
     if (viewedProfile && viewedProfile.id === userId) {
       updateViewedProfile({
         isFollowing: false,
-        stats: { ...viewedProfile.stats, followersCount: Math.max(0, viewedProfile.stats.followersCount - 1) },
+        stats: {
+          ...viewedProfile.stats,
+          followersCount: Math.max(0, viewedProfile.stats.followersCount - 1),
+        },
       });
     }
 
@@ -452,6 +460,7 @@ export function useFollowActions(): UseFollowActionsReturn {
       setFollowingStatus(userId, false);
       updateCurrentUserStatsAfterFollow(false);
       updateUserStatsAfterBeingFollowed(userId, false);
+      clearActivityFeedState();
 
       // Refetch follow lists to remove the follower card
       if (viewedProfile) {

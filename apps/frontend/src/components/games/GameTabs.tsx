@@ -14,7 +14,11 @@ interface GameTabsProps {
 
 export default function GameTabs({ game: initialGame }: GameTabsProps) {
   const { game: storeGame } = useGameDetail();
-  const game = initialGame ?? storeGame;
+  // Store-first, but only when the store is actually holding THIS game - on a
+  // client-side navigation it can still hold the previous one for a render.
+  const storeIsThisGame =
+    storeGame != null && (initialGame == null || storeGame.game.slug === initialGame.game.slug);
+  const game = storeIsThisGame ? storeGame : initialGame;
 
   // Only a genuinely empty store (e.g. client-side navigation) hits this branch.
   if (!game) {

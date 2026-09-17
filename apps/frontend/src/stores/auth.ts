@@ -1,6 +1,10 @@
 import { atom, computed } from 'nanostores';
 import type { AuthUser, UserRole } from '@glitch/shared-types';
 import { getAvatarUrl } from '@/lib/avatar';
+import { clearAllReviewsState } from './reviews';
+import { clearAllGamesState } from './games';
+import { clearSocialState } from './social';
+import { clearUsersState, clearViewedProfileState } from './users';
 
 // ============================================================================
 // Core Authentication State
@@ -132,6 +136,14 @@ export function clearAuthState() {
 
   // Clear persisted data
   clearPersistedAuthState();
+
+  // The session is gone: drop every user-scoped cache too, or the next visitor
+  // sees the previous user's reviews, feed and profile.
+  clearAllReviewsState();
+  clearAllGamesState();
+  clearSocialState();
+  clearUsersState();
+  clearViewedProfileState();
 }
 
 /**

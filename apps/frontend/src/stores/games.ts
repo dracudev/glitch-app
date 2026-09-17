@@ -166,6 +166,53 @@ export function clearSimilarGamesState() {
 }
 
 // ============================================================================
+// Aggregate Rating Actions
+// ============================================================================
+
+/**
+ * Patch a game's aggregate rating/review count wherever it is cached.
+ * Reviews never hold every review of a game, so the average cannot be
+ * recomputed client-side - it has to come from a refetch.
+ */
+export function patchGameAggregate(slug: string, averageRating?: number, reviewCount?: number) {
+  const patch = (game: GameResponse): GameResponse =>
+    game.game.slug === slug
+      ? {
+          ...game,
+          game: {
+            ...game.game,
+            averageRating,
+            reviewCount: reviewCount ?? game.game.reviewCount,
+          },
+        }
+      : game;
+
+  const gamesData = $gamesData.get();
+  if (gamesData) {
+    $gamesData.set({ ...gamesData, data: gamesData.data.map(patch) });
+  }
+
+  const similarGames = $similarGames.get();
+  if (similarGames) {
+    $similarGames.set(similarGames.map(patch));
+  }
+}
+
+/**
+ * Refetch a game's aggregates and patch the cached cards.
+ * Failures are swallowed: the card just keeps its previous number.
+ */
+export async function refreshGameAggregate(slug: string): Promise<void> {
+  try {
+    const { gamesService } = await import('../services/games');
+    const detail = await gamesService.getGameBySlug(slug);
+    patchGameAggregate(slug, detail.game.averageRating, detail.game.reviewCount);
+  } catch {
+    // Non-fatal: a stale rating chip is better than a broken page.
+  }
+}
+
+// ============================================================================
 // Global Actions
 // ============================================================================
 
