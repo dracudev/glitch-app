@@ -86,11 +86,11 @@ export class ReviewsQueryDto {
     description: 'Filter by published status',
   })
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === 'true') return true;
-    if (value === 'false') return false;
-    return value;
-  })
+  // Pin the type to String: with `enableImplicitConversion` the global
+  // ValidationPipe would coerce "false" to `true` (Boolean('false') === true)
+  // before the transform below ever sees the raw query param.
+  @Type(() => String)
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
   @IsBoolean()
   isPublished?: boolean;
 
@@ -99,11 +99,8 @@ export class ReviewsQueryDto {
     description: 'Filter by spoiler status',
   })
   @IsOptional()
-  @Transform(({ value }) => {
-    if (value === 'true') return true;
-    if (value === 'false') return false;
-    return value;
-  })
+  @Type(() => String)
+  @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
   @IsBoolean()
   isSpoiler?: boolean;
 
