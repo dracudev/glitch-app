@@ -11,6 +11,7 @@ import { CommonModule } from '@/common/common.module';
 import { DatabaseModule } from '@/database/database.module';
 import { JwtAuthGuard } from '@/auth/guards';
 import { GamesModule } from '@/games/games.module';
+import { AdminModule } from '@/admin/admin.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { GamesModule } from '@/games/games.module';
     GamesModule,
     ReviewsModule,
     SocialModule,
+    AdminModule,
   ],
   controllers: [HealthController],
   providers: [
