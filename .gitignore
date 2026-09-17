@@ -224,3 +224,4 @@ k8s/secrets/
 docs/agent/
 /.codegraph
 /.playwright-mcp
+domains.csv

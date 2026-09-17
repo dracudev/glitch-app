@@ -4,6 +4,7 @@ export const prerender = false;
 import MainLayout from '@/layouts/MainLayout.astro';
 import ReviewDetailPage from '@/components/reviews/ReviewDetailPage';
 import { getReviewById } from '@/services/reviews';
+import { reviewPageTitle } from '@/lib/review-title';
 import { ssrCookieHeader } from '@/services/ssr-auth';
 import type { ReviewResponse } from '@glitch/shared-types';
 
@@ -49,7 +50,7 @@ if (!review) {
 // SEO Meta Tags
 // ============================================================================
 
-const pageTitle = `${review.title} - A review by ${review.user.username} | Glitch`;
+const pageTitle = reviewPageTitle(review);
 const pageDescription = review.content 
   ? `${review.content.substring(0, 160)}...`
   : `Read ${review.user.username}'s review of ${review.game.title} with a rating of ${review.rating}/10.`;

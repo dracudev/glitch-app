@@ -9,6 +9,10 @@ import ReviewFormDialog from '@/components/games/ReviewFormDialog';
 
 // Stores
 import { setReviewDetail } from '@/stores/reviews';
+import { useReviewDetail } from '@/hooks/useReviews';
+
+// Lib
+import { reviewPageTitle } from '@/lib/review-title';
 
 // ============================================================================
 // Props Interface
@@ -51,6 +55,18 @@ export default function ReviewDetailPage({ review }: ReviewDetailPageProps) {
     setReviewDetail(review, review.id);
   }, [review]);
 
+  // The stored copy is what edits write to, so render it once it is hydrated.
+  // Without this the page keeps showing the stale server-rendered prop and an
+  // edit only becomes visible after a manual reload.
+  const { review: storeReview } = useReviewDetail();
+  const liveReview = storeReview?.id === review.id ? storeReview : review;
+
+  // The <head> title is server-rendered once, so an edit would leave the old
+  // title sitting in the tab. Mirror it from whichever copy is being rendered.
+  useEffect(() => {
+    document.title = reviewPageTitle(liveReview);
+  }, [liveReview]);
+
   // ============================================================================
   // Handlers
   // ============================================================================
@@ -82,17 +98,17 @@ export default function ReviewDetailPage({ review }: ReviewDetailPageProps) {
       <div className="shell py-8 lg:py-10">
         <div className="mx-auto max-w-4xl">
           {/* Review Header - Game, User, Rating */}
-          <ReviewHeader review={review} />
+          <ReviewHeader review={liveReview} />
 
           {/* Review Content - Title & Body */}
           <div className="mt-6 md:mt-8">
-            <ReviewContent review={review} />
+            <ReviewContent review={liveReview} />
           </div>
 
           {/* Review Actions - Like, Comment, Share, Edit/Delete */}
           <div className="mt-6 md:mt-8 pt-6 border-t border-border">
             <ReviewActions
-              review={review}
+              review={liveReview}
               onEdit={() => setIsEditDialogOpen(true)}
               onDeleted={handleDeleted}
             />
@@ -102,10 +118,10 @@ export default function ReviewDetailPage({ review }: ReviewDetailPageProps) {
 
       {/* Edit Review Dialog */}
       <ReviewFormDialog
-        gameId={review.game.id}
+        gameId={liveReview.game.id}
         isOpen={isEditDialogOpen}
         onClose={() => setIsEditDialogOpen(false)}
-        existingReview={review}
+        existingReview={liveReview}
       />
     </div>
   );
