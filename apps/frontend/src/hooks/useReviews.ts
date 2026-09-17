@@ -665,7 +665,9 @@ export function useGameReviews(): UseGameReviewsReturn {
 
       try {
         const response = await reviewsService.getReviewsByGame(gameId, query);
-        setGameReviews(response, gameId);
+        // No slug here: the game page owns the key, so paginating must not
+        // overwrite it with the anchor id passed in.
+        setGameReviews(response);
         return response;
       } catch (error) {
         const errorMessage =

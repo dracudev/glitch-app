@@ -78,9 +78,13 @@ export const $gameReviews = atom<PaginatedReviewsResponse | null>(null);
 export const $gameReviewsLoading = atom<boolean>(false);
 
 /**
- * Currently loaded game ID for reviews
+ * Slug of the currently loaded game's reviews.
+ *
+ * Keyed by slug, not id: `GameBasic.id` is the IGDB id while a review's
+ * `game.id` is our internal database id, so an id comparison never matched and
+ * a new review was silently dropped from the game's review list.
  */
-export const $currentGameReviewsId = atom<string | null>(null);
+export const $currentGameReviewsSlug = atom<string | null>(null);
 
 // ============================================================================
 // Review Actions State (Create, Update, Delete)
@@ -252,10 +256,13 @@ export function clearUserReviewsState() {
 
 /**
  * Set game reviews data (replaces existing data)
+ *
+ * `gameSlug` is optional so a paginated fetch can refresh the list without
+ * losing the key the game page hydrated (see `$currentGameReviewsSlug`).
  */
-export function setGameReviews(data: PaginatedReviewsResponse, gameId: string) {
+export function setGameReviews(data: PaginatedReviewsResponse, gameSlug?: string) {
   $gameReviews.set(data);
-  $currentGameReviewsId.set(gameId);
+  if (gameSlug) $currentGameReviewsSlug.set(gameSlug);
 }
 
 /**
@@ -292,7 +299,7 @@ export function setGameReviewsLoading(loading: boolean) {
 export function clearGameReviewsState() {
   $gameReviews.set(null);
   $gameReviewsLoading.set(false);
-  $currentGameReviewsId.set(null);
+  $currentGameReviewsSlug.set(null);
 }
 
 // ============================================================================
@@ -487,7 +494,7 @@ export function optimisticLikeUpdate(reviewId: string, isLiked: boolean) {
 /** Prepend a newly created review to game reviews and main reviews list */
 export function addReviewToList(review: ReviewResponse) {
   const gameReviews = $gameReviews.get();
-  if (gameReviews && review.game.id === $currentGameReviewsId.get()) {
+  if (gameReviews && review.game.slug === $currentGameReviewsSlug.get()) {
     $gameReviews.set({
       ...gameReviews,
       items: [review, ...gameReviews.items],

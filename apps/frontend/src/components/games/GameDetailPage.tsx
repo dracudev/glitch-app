@@ -20,7 +20,7 @@ export default function GameDetailPage({
   // Hydrate stores on mount with server-fetched data
   useEffect(() => {
     setGameDetailWithCache(initialGame, initialGame.game.slug);
-    setGameReviews(initialReviews, initialGame.game.id);
+    setGameReviews(initialReviews, initialGame.game.slug);
     setSimilarGames(initialSimilarGames);
   }, [initialGame, initialReviews, initialSimilarGames]);
 
