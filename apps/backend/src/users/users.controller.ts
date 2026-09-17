@@ -1,30 +1,18 @@
 import {
   Controller,
   Get,
-  Post,
   Body,
   Patch,
   Param,
-  Delete,
   Query,
   UseGuards,
-  HttpCode,
-  HttpStatus,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiParam,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateProfileDto, UserResponseDto, UserProfileDto } from './dto';
 import { PaginationQueryDto, PaginatedResponseDto } from '../common/dto';
-import { JwtAuthGuard, RolesGuard } from '../auth/guards';
-import { GetUser, Roles, Public, OptionalAuth } from '../auth/decorators';
-import { UserRole } from '@prisma/client';
+import { JwtAuthGuard } from '../auth/guards';
+import { GetUser, Public, OptionalAuth } from '../auth/decorators';
 
 @ApiTags('Users')
 @Controller('users')
@@ -95,34 +83,5 @@ export class UsersController {
     @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<UserResponseDto> {
     return this.usersService.updateProfile(userId, updateProfileDto);
-  }
-
-  @Patch(':id/role')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update user role (Admin only)' })
-  @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'User role updated successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  async updateRole(@Param('id') id: string, @Body('role') role: UserRole) {
-    return this.usersService.updateRole(id, role);
-  }
-
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete user (Admin only)' })
-  @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ status: 204, description: 'User deleted successfully' })
-  @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
-  @ApiResponse({ status: 404, description: 'User not found' })
-  async remove(@Param('id') id: string): Promise<void> {
-    return this.usersService.remove(id);
   }
 }
