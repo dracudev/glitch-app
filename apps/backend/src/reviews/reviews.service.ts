@@ -104,6 +104,7 @@ export class ReviewsService {
   async findAll(
     query: ReviewsQueryDto,
     currentUserId?: string,
+    isAdmin = false,
   ): Promise<PaginatedReviewsResponseDto> {
     const {
       page = REVIEWS_CONSTANTS.PAGINATION.DEFAULT_PAGE,
@@ -133,10 +134,11 @@ export class ReviewsService {
     // Build where clause
     const where: Prisma.ReviewWhereInput = {
       AND: [
-        // Only show published reviews unless filtering by current user
+        // Only show published reviews — except to an admin moderating, or to the
+        // author viewing their own drafts.
         isPublished !== undefined
           ? { isPublished }
-          : userId && userId === currentUserId
+          : isAdmin || (userId && userId === currentUserId)
             ? {}
             : { isPublished: true },
         sanitizedSearch
@@ -307,6 +309,7 @@ export class ReviewsService {
     id: string,
     updateReviewDto: UpdateReviewDto,
     currentUserId: string,
+    isAdmin = false,
   ): Promise<ReviewResponseDto> {
     const existingReview = await this.prisma.review.findUnique({
       where: { id },
@@ -316,8 +319,8 @@ export class ReviewsService {
       throw new NotFoundException('Review not found');
     }
 
-    // Check ownership
-    if (existingReview.userId !== currentUserId) {
+    // Check ownership — admins moderate any review
+    if (!isAdmin && existingReview.userId !== currentUserId) {
       throw new ForbiddenException('You can only update your own reviews');
     }
 
@@ -377,7 +380,7 @@ export class ReviewsService {
     }
   }
 
-  async remove(id: string, currentUserId: string): Promise<void> {
+  async remove(id: string, currentUserId: string, isAdmin = false): Promise<void> {
     const review = await this.prisma.review.findUnique({
       where: { id },
     });
@@ -386,8 +389,8 @@ export class ReviewsService {
       throw new NotFoundException('Review not found');
     }
 
-    // Check ownership
-    if (review.userId !== currentUserId) {
+    // Check ownership — admins moderate any review
+    if (!isAdmin && review.userId !== currentUserId) {
       throw new ForbiddenException('You can only delete your own reviews');
     }
 

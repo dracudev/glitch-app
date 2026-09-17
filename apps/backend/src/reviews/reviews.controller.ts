@@ -32,6 +32,9 @@ import { JwtAuthGuard } from '@/auth/guards';
 import { GetUser, OptionalAuth } from '@/auth/decorators';
 import { User } from '@prisma/client';
 
+/** Admins moderate any review; everyone else is scoped to their own. */
+const isAdmin = (user?: User) => user?.role === 'ADMIN';
+
 @ApiTags('Reviews')
 @Controller('reviews')
 export class ReviewsController {
@@ -79,7 +82,7 @@ export class ReviewsController {
     @Query() query: ReviewsQueryDto,
     @GetUser() user?: User,
   ): Promise<PaginatedReviewsResponseDto> {
-    return this.reviewsService.findAll(query, user?.id);
+    return this.reviewsService.findAll(query, user?.id, isAdmin(user));
   }
 
   @Get(':id')
@@ -167,7 +170,7 @@ export class ReviewsController {
   @Patch(':id')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Update a review (owner only)' })
+  @ApiOperation({ summary: 'Update a review (owner, or admin)' })
   @ApiParam({ name: 'id', description: 'Review ID' })
   @ApiResponse({
     status: 200,
@@ -183,14 +186,14 @@ export class ReviewsController {
     @Body() updateReviewDto: UpdateReviewDto,
     @GetUser() user: User,
   ): Promise<ReviewResponseDto> {
-    return this.reviewsService.update(id, updateReviewDto, user.id);
+    return this.reviewsService.update(id, updateReviewDto, user.id, isAdmin(user));
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Delete a review (owner only)' })
+  @ApiOperation({ summary: 'Delete a review (owner, or admin)' })
   @ApiParam({ name: 'id', description: 'Review ID' })
   @ApiResponse({
     status: 204,
@@ -201,7 +204,7 @@ export class ReviewsController {
   @ApiResponse({ status: 403, description: 'Forbidden - Not review owner' })
   @ApiResponse({ status: 404, description: 'Review not found' })
   async remove(@Param('id') id: string, @GetUser() user: User): Promise<void> {
-    return this.reviewsService.remove(id, user.id);
+    return this.reviewsService.remove(id, user.id, isAdmin(user));
   }
 
   @Post(':id/like')
