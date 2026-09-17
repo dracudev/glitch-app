@@ -157,16 +157,22 @@ export class GamesService {
     }
   }
 
-  async updateRating(gameId: string): Promise<void> {
+  // Callers inside a $transaction must pass `tx`: this.prisma is a separate
+  // connection and would not see the uncommitted write, leaving the aggregate
+  // one mutation behind.
+  async updateRating(
+    gameId: string,
+    client: Prisma.TransactionClient = this.prisma,
+  ): Promise<void> {
     try {
-      const exists = await this.prisma.game.findUnique({ where: { id: gameId } });
+      const exists = await client.game.findUnique({ where: { id: gameId } });
       if (!exists) return;
-      const result = await this.prisma.review.aggregate({
+      const result = await client.review.aggregate({
         where: { gameId, isPublished: true },
         _avg: { rating: true },
         _count: { rating: true },
       });
-      await this.prisma.game.update({
+      await client.game.update({
         where: { id: gameId },
         data: { averageRating: result._avg.rating || 0, reviewCount: result._count.rating },
       });

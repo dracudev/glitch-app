@@ -81,7 +81,7 @@ export class ReviewsService {
 
         // Update game rating if review is published
         if (newReview.isPublished) {
-          await this.gamesService.updateRating(anchor.id);
+          await this.gamesService.updateRating(anchor.id, tx);
         }
 
         return newReview;
@@ -360,7 +360,7 @@ export class ReviewsService {
           wasPublished !== willBePublished ||
           (willBePublished && updateReviewDto.rating !== undefined)
         ) {
-          await this.gamesService.updateRating(existingReview.gameId);
+          await this.gamesService.updateRating(existingReview.gameId, tx);
         }
 
         return updatedReview;
@@ -398,7 +398,7 @@ export class ReviewsService {
 
       // Update game rating after deletion if review was published
       if (review.isPublished) {
-        await this.gamesService.updateRating(review.gameId);
+        await this.gamesService.updateRating(review.gameId, tx);
       }
     });
   }
