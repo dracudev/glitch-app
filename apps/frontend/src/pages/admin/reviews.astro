@@ -1,0 +1,42 @@
+---
+export const prerender = false;
+
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import AdminReviewsPage from '@/components/admin/AdminReviewsPage';
+import { getAdminReviews } from '@/services/admin';
+import { getSessionRole, ssrCookieHeader } from '@/services/ssr-auth';
+import type { PaginatedReviewsResponse } from '@glitch/shared-types';
+
+// ============================================================================
+// Access Control
+// ============================================================================
+
+// The API enforces ADMIN; this only keeps non-admins from seeing an empty shell.
+const cookieHeader = Astro.request.headers.get('cookie') || undefined;
+
+if ((await getSessionRole(cookieHeader)) !== 'ADMIN') {
+  return Astro.redirect('/');
+}
+
+// ============================================================================
+// Server-Side Data Fetching
+// ============================================================================
+
+const ssrHeaders = await ssrCookieHeader(cookieHeader);
+
+let reviewsData: PaginatedReviewsResponse | null = null;
+
+try {
+  // No `isPublished` filter: an admin sees published and hidden reviews alike.
+  reviewsData = await getAdminReviews(
+    { page: 1, limit: 20, sortBy: 'createdAt', sortOrder: 'desc' },
+    ssrHeaders ? { cookie: ssrHeaders } : undefined,
+  );
+} catch (err: any) {
+  console.error('Error fetching admin reviews:', err);
+}
+---
+
+<AdminLayout title="Reviews" description="Publish, hide, edit or delete any review in the catalogue">
+  <AdminReviewsPage initialData={reviewsData} client:load />
+</AdminLayout>

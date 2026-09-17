@@ -1,0 +1,38 @@
+---
+export const prerender = false;
+
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import AdminUsersPage from '@/components/admin/AdminUsersPage';
+import { getAdminUsers } from '@/services/admin';
+import { getSessionRole, ssrCookieHeader } from '@/services/ssr-auth';
+import type { AdminUser, PaginatedResponse } from '@glitch/shared-types';
+
+// ============================================================================
+// Access Control
+// ============================================================================
+
+// The API enforces ADMIN; this only keeps non-admins from seeing an empty shell.
+const cookieHeader = Astro.request.headers.get('cookie') || undefined;
+
+if ((await getSessionRole(cookieHeader)) !== 'ADMIN') {
+  return Astro.redirect('/');
+}
+
+// ============================================================================
+// Server-Side Data Fetching
+// ============================================================================
+
+const ssrHeaders = await ssrCookieHeader(cookieHeader);
+
+let usersData: PaginatedResponse<AdminUser> | null = null;
+
+try {
+  usersData = await getAdminUsers({ page: 1, limit: 20 }, ssrHeaders ? { cookie: ssrHeaders } : undefined);
+} catch (err: any) {
+  console.error('Error fetching admin users:', err);
+}
+---
+
+<AdminLayout title="Users" description="Create, edit and delete accounts, and manage roles">
+  <AdminUsersPage initialData={usersData} client:load />
+</AdminLayout>

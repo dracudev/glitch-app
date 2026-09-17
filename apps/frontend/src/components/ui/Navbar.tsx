@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Menu, User, LogOut, Settings } from 'lucide-react';
+import { Menu, User, LogOut, Settings, Shield } from 'lucide-react';
 import { useStore } from '@nanostores/react';
 import {
   $currentUser,
   $isAuthenticated,
+  $isAdmin,
   initializeAuthState,
   getUserAvatarUrl,
 } from '@/stores/auth';
@@ -50,6 +51,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
 
   const currentUser = useStore($currentUser);
   const isAuthenticated = useStore($isAuthenticated);
+  const isAdmin = useStore($isAdmin);
 
   const user = currentUser
     ? { username: currentUser.username, avatar: currentUser.avatar }
@@ -152,6 +154,15 @@ export default function Navbar({ currentPath }: NavbarProps) {
                           <span>Settings</span>
                         </a>
                       </DropdownMenu.Item>
+
+                      {isAdmin && (
+                        <DropdownMenu.Item className={dropdownItem} asChild>
+                          <a href="/admin">
+                            <Shield className="size-4" />
+                            <span>Admin</span>
+                          </a>
+                        </DropdownMenu.Item>
+                      )}
 
                       <DropdownMenu.Separator className="my-1 h-px bg-border" />
 
@@ -264,6 +275,17 @@ export default function Navbar({ currentPath }: NavbarProps) {
                           <Settings className="size-4" />
                           <span>Settings</span>
                         </a>
+
+                        {isAdmin && (
+                          <a
+                            href="/admin"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className={dropdownItem}
+                          >
+                            <Shield className="size-4" />
+                            <span>Admin</span>
+                          </a>
+                        )}
 
                         <button
                           type="button"

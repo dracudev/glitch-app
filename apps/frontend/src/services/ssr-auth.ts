@@ -73,3 +73,26 @@ export function hasSession(cookieHeader?: string): boolean {
   if (!isExpired(readCookie(cookieHeader, 'authToken'))) return true;
   return Boolean(readCookie(cookieHeader, 'refreshToken'));
 }
+
+/**
+ * Role of the session behind this request, or undefined when there is none.
+ *
+ * Runs through `ssrCookieHeader` first so an aged-out access token is refreshed
+ * before we read it, then decodes the payload: the backend signs `role` into the
+ * JWT (`auth/interfaces/jwt-payload.interface.ts`), so no extra call is needed.
+ *
+ * This is a rendering guard, not a security boundary — the API re-checks the
+ * role on every `/admin` request. It exists so a non-admin never sees the panel.
+ */
+export async function getSessionRole(cookieHeader?: string): Promise<string | undefined> {
+  const header = await ssrCookieHeader(cookieHeader);
+  const token = header && readCookie(header, 'authToken');
+  if (!token || isExpired(token)) return undefined;
+
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString());
+    return typeof payload.role === 'string' ? payload.role : undefined;
+  } catch {
+    return undefined;
+  }
+}

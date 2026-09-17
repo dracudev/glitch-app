@@ -1,0 +1,119 @@
+---
+export const prerender = false;
+
+import AdminLayout from '@/layouts/AdminLayout.astro';
+import { getAdminStats } from '@/services/admin';
+import { getSessionRole, ssrCookieHeader } from '@/services/ssr-auth';
+import type { AdminStats } from '@glitch/shared-types';
+
+// ============================================================================
+// Access Control
+// ============================================================================
+
+// The API enforces ADMIN; this only keeps non-admins from seeing an empty shell.
+const cookieHeader = Astro.request.headers.get('cookie') || undefined;
+
+if ((await getSessionRole(cookieHeader)) !== 'ADMIN') {
+  return Astro.redirect('/');
+}
+
+// ============================================================================
+// Server-Side Data Fetching
+// ============================================================================
+
+const ssrHeaders = await ssrCookieHeader(cookieHeader);
+
+let stats: AdminStats | null = null;
+
+try {
+  stats = await getAdminStats(ssrHeaders ? { cookie: ssrHeaders } : undefined);
+} catch (err: any) {
+  console.error('Error fetching admin stats:', err);
+}
+
+// ============================================================================
+// Display Groups
+// ============================================================================
+
+const overview = stats
+  ? [
+      { label: 'Total users', value: stats.totalUsers },
+      { label: 'Games with reviews', value: stats.totalGames },
+      { label: 'Total reviews', value: stats.totalReviews },
+      { label: 'New users (7 days)', value: stats.newUsersLast7Days },
+    ]
+  : [];
+
+const moderation = stats
+  ? [
+      { label: 'Published', value: stats.publishedReviews },
+      { label: 'Hidden', value: stats.hiddenReviews },
+      { label: 'New reviews (7 days)', value: stats.newReviewsLast7Days },
+    ]
+  : [];
+
+const roles = stats
+  ? [
+      { label: 'Users', value: stats.usersByRole.USER },
+      { label: 'Moderators', value: stats.usersByRole.MODERATOR },
+      { label: 'Admins', value: stats.usersByRole.ADMIN },
+    ]
+  : [];
+
+const tile = 'rounded-lg border border-border bg-card p-4';
+const tileLabel = 'text-sm text-muted-foreground';
+const tileValue = 'mt-2 font-mono text-2xl';
+---
+
+<AdminLayout title="Overview" description="Catalogue, community and moderation at a glance">
+  {
+    stats ? (
+      <div class="space-y-8">
+        <section>
+          <h2 class="mb-1 text-lg">Community and catalogue</h2>
+          <p class="mb-3 text-sm text-muted-foreground">
+            A game only enters the local catalogue when someone reviews it. Browsing or
+            searching the catalogue reads IGDB live and stores nothing, so this counts
+            reviewed games, not IGDB's listing.
+          </p>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {overview.map((item) => (
+              <div class={tile}>
+                <p class={tileLabel}>{item.label}</p>
+                <p class={tileValue}>{item.value.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 class="mb-3 text-lg">Review moderation</h2>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {moderation.map((item) => (
+              <div class={tile}>
+                <p class={tileLabel}>{item.label}</p>
+                <p class={tileValue}>{item.value.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 class="mb-3 text-lg">Users by role</h2>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {roles.map((item) => (
+              <div class={tile}>
+                <p class={tileLabel}>{item.label}</p>
+                <p class={tileValue}>{item.value.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
+    ) : (
+      <p class="rounded-md border border-error/40 bg-error/10 px-3 py-2 text-sm text-error">
+        Could not load the dashboard statistics.
+      </p>
+    )
+  }
+</AdminLayout>
