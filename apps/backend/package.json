@@ -99,5 +99,8 @@
     "moduleNameMapping": {
       "^@/(.*)$": "<rootDir>/$1"
     }
+  },
+  "prisma": {
+    "seed": "ts-node prisma/seeds/seed.ts"
   }
 }
