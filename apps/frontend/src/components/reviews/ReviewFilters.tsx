@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import * as Select from '@radix-ui/react-select';
-import { Check, ChevronDown, Filter } from 'lucide-react';
+import { Filter } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
-import { fieldStyles } from '@/components/ui/Input';
+import Select from '@/components/ui/Select';
 import { useReviews } from '@/hooks/useReviews';
 
 // ============================================================================
@@ -42,11 +41,6 @@ const SORT_OPTIONS: SortOption[] = [
     sortOrder: 'asc',
   },
 ];
-
-const selectTriggerStyles = [
-  fieldStyles,
-  'flex cursor-pointer items-center justify-between gap-2 text-left',
-].join(' ');
 
 // ============================================================================
 // ReviewFilters Component
@@ -100,38 +94,13 @@ export default function ReviewFilters() {
 
       {/* Sort Dropdown */}
       <div className="w-full sm:w-auto">
-        <Select.Root value={selectedSort} onValueChange={handleSortChange} disabled={isLoading}>
-          <Select.Trigger
-            className={[selectTriggerStyles, 'w-full sm:w-auto'].join(' ')}
-            aria-label="Sort reviews"
-          >
-            <Select.Value />
-            <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-          </Select.Trigger>
-
-          <Select.Portal>
-            <Select.Content
-              className="z-popover overflow-hidden rounded-lg border border-border bg-popover p-1 shadow-lg"
-              position="popper"
-              sideOffset={4}
-            >
-              <Select.Viewport>
-                {SORT_OPTIONS.map((option) => (
-                  <Select.Item
-                    key={option.value}
-                    value={option.value}
-                    className="relative flex cursor-pointer items-center rounded-md py-2 pl-8 pr-3 text-sm text-foreground-secondary outline-none transition-colors data-[highlighted]:bg-secondary data-[highlighted]:text-foreground"
-                  >
-                    <Select.ItemText>{option.label}</Select.ItemText>
-                    <Select.ItemIndicator className="absolute left-2">
-                      <Check className="size-4 text-primary" />
-                    </Select.ItemIndicator>
-                  </Select.Item>
-                ))}
-              </Select.Viewport>
-            </Select.Content>
-          </Select.Portal>
-        </Select.Root>
+        <Select
+          ariaLabel="Sort reviews"
+          value={selectedSort}
+          onValueChange={handleSortChange}
+          options={SORT_OPTIONS}
+          disabled={isLoading}
+        />
       </div>
     </Card>
   );
