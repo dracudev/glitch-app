@@ -3,6 +3,7 @@ import {
   ArrowDown,
   ArrowUp,
   ChevronsUpDown,
+  ExternalLink,
   Eye,
   EyeOff,
   Pencil,
@@ -369,6 +370,21 @@ export default function AdminReviewsPage({ initialData }: AdminReviewsPageProps)
                   </td>
 
                   <td className={`${bodyCell} whitespace-nowrap text-right`}>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      asChild
+                      leftIcon={<ExternalLink className="size-3.5" />}
+                    >
+                      <a
+                        href={`/reviews/${review.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View
+                      </a>
+                    </Button>
+
                     <Button
                       size="sm"
                       variant="ghost"

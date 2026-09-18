@@ -262,6 +262,15 @@ export default function AdminUsersPage({ initialData }: AdminUsersPageProps) {
                   </td>
 
                   <td className={`${bodyCell} text-right whitespace-nowrap`}>
+                    <Button size="sm" variant="ghost" asChild>
+                      <a
+                        href={`/profile/${user.username}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        View
+                      </a>
+                    </Button>
                     <Button size="sm" variant="ghost" onClick={() => setEditing(user)}>
                       Edit
                     </Button>
