@@ -36,21 +36,34 @@ export default function GameCard({ game }: GameCardProps) {
           }}
         />
 
-        {/* Average Rating Badge */}
-        {basic.averageRating !== undefined && basic.averageRating !== null && (
+        {/* Glitch score — belongs to this site. Never IGDB's number. */}
+        {basic.reviewCount > 0 && basic.averageRating != null ? (
           <div
             className={`${badgeStyles} right-2 top-2 font-medium text-foreground`}
-            aria-label={`Average rating: ${basic.averageRating.toFixed(1)} out of 10`}
+            aria-label={`Glitch rating: ${basic.averageRating.toFixed(1)} out of 10`}
           >
             <Star className="size-3 fill-primary text-primary" aria-hidden="true" />
             <span>{basic.averageRating.toFixed(1)}</span>
           </div>
+        ) : (
+          <div className={`${badgeStyles} right-2 top-2 text-muted-foreground`}>No reviews</div>
         )}
 
         {/* Review Count Badge */}
         {basic.reviewCount > 0 && (
           <div className={`${badgeStyles} bottom-2 left-2 text-foreground-secondary`}>
             {basic.reviewCount} {basic.reviewCount === 1 ? 'review' : 'reviews'}
+          </div>
+        )}
+
+        {/* IGDB reference — external, labeled, secondary. */}
+        {basic.igdbRating != null && (
+          <div
+            className={`${badgeStyles} bottom-2 right-2 text-foreground-secondary`}
+            aria-label={`IGDB score: ${basic.igdbRating.toFixed(1)} out of 10`}
+          >
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">IGDB</span>
+            <span>{basic.igdbRating.toFixed(1)}</span>
           </div>
         )}
       </div>

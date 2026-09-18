@@ -36,8 +36,14 @@ export interface GameBasic {
   coverImage?: string;
   releaseDate?: Date;
   status: GameStatus;
+  /** Glitch community score (0-10), from published reviews on this site. Absent until the first review. */
   averageRating?: number;
+  /** Glitch review count. 0 means no one here has reviewed it yet. */
   reviewCount: number;
+  /** External IGDB reference score (0-10). Context only — never the Glitch score. */
+  igdbRating?: number;
+  /** Number of IGDB ratings behind `igdbRating`. */
+  igdbRatingCount?: number;
 }
 
 export interface GameResponse {
@@ -109,8 +115,8 @@ export interface GamesQuery {
   sortBy?:
     | 'title'
     | 'releaseDate'
-    | 'averageRating'
-    | 'reviewCount'
+    | 'igdbRating'
+    | 'igdbRatingCount'
     | 'createdAt';
   sortOrder?: 'asc' | 'desc';
 }

@@ -16,7 +16,7 @@ const GAME_STATUSES: GameStatus[] = [
 const DEFAULT_FILTERS: GamesQuery = {
   page: 1,
   limit: 20,
-  sortBy: 'averageRating',
+  sortBy: 'igdbRating',
   sortOrder: 'desc',
   genreIds: [],
   platformIds: [],

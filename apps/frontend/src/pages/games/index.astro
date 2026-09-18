@@ -19,7 +19,7 @@ const parseIds = (value: string | null): number[] =>
 const initialQuery: GamesQuery = {
   page: parseInt(searchParams.get('page') || '1', 10),
   limit: parseInt(searchParams.get('limit') || '20', 10),
-  sortBy: (searchParams.get('sortBy') as GamesQuery['sortBy']) || 'averageRating',
+  sortBy: (searchParams.get('sortBy') as GamesQuery['sortBy']) || 'igdbRating',
   sortOrder: searchParams.get('sortOrder') === 'asc' ? 'asc' : 'desc',
   genreIds: parseIds(searchParams.get('genreIds')),
   platformIds: parseIds(searchParams.get('platformIds')),

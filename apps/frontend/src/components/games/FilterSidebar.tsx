@@ -97,9 +97,9 @@ export default function FilterSidebar({ isMobile = false, onClose }: FilterSideb
               <Select.Portal>
                 <Select.Content className={selectContentStyles} position="popper" sideOffset={4}>
                   <Select.Viewport>
-                    <SelectItem value="averageRating-desc">Highest rated</SelectItem>
-                    <SelectItem value="averageRating-asc">Lowest rated</SelectItem>
-                    <SelectItem value="reviewCount-desc">Most reviewed</SelectItem>
+                    <SelectItem value="igdbRating-desc">Top rated (IGDB)</SelectItem>
+                    <SelectItem value="igdbRating-asc">Lowest rated (IGDB)</SelectItem>
+                    <SelectItem value="igdbRatingCount-desc">Most rated (IGDB)</SelectItem>
                     <SelectItem value="releaseDate-desc">Recently released</SelectItem>
                     <SelectItem value="releaseDate-asc">Oldest first</SelectItem>
                     <SelectItem value="title-asc">Title (A-Z)</SelectItem>
@@ -312,7 +312,7 @@ function FilterSkeleton() {
 function isDefaultFilters(filters: any): boolean {
   return (
     filters.page === 1 &&
-    filters.sortBy === 'averageRating' &&
+    filters.sortBy === 'igdbRating' &&
     filters.sortOrder === 'desc' &&
     (!filters.genreIds || filters.genreIds.length === 0) &&
     (!filters.platformIds || filters.platformIds.length === 0) &&

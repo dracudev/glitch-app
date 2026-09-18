@@ -109,7 +109,10 @@ const structuredData = {
   "publisher": game.publisher?.name,
   "gamePlatform": game.platforms?.map(p => p.name).join(", "),
   "datePublished": game.game.releaseDate,
-  "aggregateRating": game.game.averageRating && game.game.reviewCount ? {
+  // aggregateRating must describe THIS site's reviews, never IGDB's borrowed
+  // score — so it comes from the local Glitch aggregate and is omitted when
+  // nobody here has reviewed the game yet.
+  "aggregateRating": game.game.reviewCount > 0 && game.game.averageRating != null ? {
     "@type": "AggregateRating",
     "ratingValue": game.game.averageRating,
     "reviewCount": game.game.reviewCount,

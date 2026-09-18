@@ -82,6 +82,8 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
           )}
         </div>
 
+        <GameScores game={game} />
+
         {/* Action Buttons */}
         <ActionButtons
           onWriteReview={() => setIsReviewDialogOpen(true)}
@@ -132,6 +134,8 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
                 <span className="font-mono text-lg">{releaseDate}</span>
               </div>
             </div>
+
+            <GameScores game={game} />
 
             {/* Platforms */}
             {game.platforms && game.platforms.length > 0 && (
@@ -222,6 +226,40 @@ function ActionButtons({
           </DropdownMenu.Portal>
         ) : null}
       </DropdownMenu.Root>
+    </div>
+  );
+}
+
+function GameScores({ game }: { game: GameDetail }) {
+  const { averageRating, reviewCount, igdbRating } = game.game;
+  const hasGlitchScore = reviewCount > 0 && averageRating != null;
+
+  return (
+    <div className="mb-6 flex items-center gap-6">
+      <div>
+        <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">Glitch</p>
+        {hasGlitchScore ? (
+          <p className="mt-1 flex items-baseline gap-1.5">
+            <span className="font-mono text-3xl font-semibold text-foreground">
+              {averageRating.toFixed(1)}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {reviewCount} {reviewCount === 1 ? 'review' : 'reviews'}
+            </span>
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-muted-foreground">No reviews yet — be the first</p>
+        )}
+      </div>
+
+      {igdbRating != null && (
+        <div className="border-l border-border pl-6">
+          <p className="font-mono text-xs uppercase tracking-widest text-muted-foreground">IGDB</p>
+          <p className="mt-1 font-mono text-lg text-foreground-secondary">
+            {igdbRating.toFixed(1)}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

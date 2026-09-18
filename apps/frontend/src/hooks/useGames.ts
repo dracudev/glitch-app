@@ -110,7 +110,7 @@ interface UseSimilarGamesReturn {
  *   } = useGames();
  *
  *   useEffect(() => {
- *     fetchGames({ page: 1, limit: 12, sortBy: 'averageRating', sortOrder: 'desc' });
+ *     fetchGames({ page: 1, limit: 12, sortBy: 'igdbRating', sortOrder: 'desc' });
  *   }, []);
  *
  *   const handleSearch = (searchTerm: string) => {
@@ -554,7 +554,7 @@ export function useFeaturedGames(limit: number = 12) {
     return getTopRatedGames({
       limit,
       minRating: 8.0,
-      sortBy: 'averageRating',
+      sortBy: 'igdbRating',
       sortOrder: 'desc',
     });
   }, [getTopRatedGames, limit]);
@@ -609,7 +609,7 @@ export function useTrendingGames(limit: number = 12) {
   const fetchTrendingGames = useCallback(async () => {
     return getPopularGames({
       limit,
-      sortBy: 'reviewCount',
+      sortBy: 'igdbRatingCount',
       sortOrder: 'desc',
     });
   }, [getPopularGames, limit]);

@@ -32,7 +32,7 @@ export class GamesService {
       page = GAMES_CONSTANTS.PAGINATION.DEFAULT_PAGE,
       limit = GAMES_CONSTANTS.PAGINATION.DEFAULT_LIMIT,
       search,
-      sortBy = 'averageRating',
+      sortBy = 'igdbRating',
       sortOrder = 'desc',
     } = query;
 
@@ -48,7 +48,8 @@ export class GamesService {
       where: this.buildIgdbWhere(query),
     });
 
-    return PaginatedGamesResponseDto.from(games.map(mapIgdbToDto), page, limit, count);
+    const withLocalRatings = await this.attachLocalRatings(games.map(mapIgdbToDto));
+    return PaginatedGamesResponseDto.from(withLocalRatings, page, limit, count);
   }
 
   async findBySlug(slug: string): Promise<GameDetailDto> {
@@ -75,6 +76,11 @@ export class GamesService {
       const preview = GAMES_CONSTANTS.REVIEW_PREVIEW.MAX_LENGTH;
       return {
         ...detail,
+        game: {
+          ...detail.game,
+          averageRating: anchor.averageRating ?? undefined,
+          reviewCount: anchor.reviewCount,
+        },
         recentReviews: reviews.map((r) => ({
           id: r.id,
           title: r.title ?? undefined,
@@ -88,6 +94,33 @@ export class GamesService {
     } catch {
       return detail;
     }
+  }
+
+  // The catalogue is served live from IGDB, which knows nothing about our
+  // reviews. Look up the DB anchors for the whole page in one query and overlay
+  // the real Glitch score, leaving IGDB's own score in its labeled field.
+  private async attachLocalRatings(games: GameResponseDto[]): Promise<GameResponseDto[]> {
+    const igdbIds = games.map((g) => Number(g.game.id)).filter((id) => Number.isInteger(id));
+    if (igdbIds.length === 0) return games;
+
+    const anchors = await this.prisma.game.findMany({
+      where: { igdbId: { in: igdbIds } },
+      select: { igdbId: true, averageRating: true, reviewCount: true },
+    });
+    const byIgdbId = new Map(anchors.map((a) => [a.igdbId, a]));
+
+    return games.map((g) => {
+      const anchor = byIgdbId.get(Number(g.game.id));
+      if (!anchor) return g;
+      return {
+        ...g,
+        game: {
+          ...g.game,
+          averageRating: anchor.averageRating ?? undefined,
+          reviewCount: anchor.reviewCount,
+        },
+      };
+    });
   }
 
   async getSimilarGames(

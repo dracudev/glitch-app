@@ -175,7 +175,7 @@ export function clearSimilarGamesState() {
  * recomputed client-side - it has to come from a refetch.
  */
 export function patchGameAggregate(slug: string, averageRating?: number, reviewCount?: number) {
-  const patch = (game: GameResponse): GameResponse =>
+  const patch = <T extends GameResponse>(game: T): T =>
     game.game.slug === slug
       ? {
           ...game,
@@ -186,6 +186,13 @@ export function patchGameAggregate(slug: string, averageRating?: number, reviewC
           },
         }
       : game;
+
+  // The detail page (game header) reads from its own atom, so patch it too —
+  // otherwise the score only moves on a full reload.
+  const detail = $gameDetail.get();
+  if (detail?.game.slug === slug) {
+    $gameDetail.set(patch(detail));
+  }
 
   const gamesData = $gamesData.get();
   if (gamesData) {

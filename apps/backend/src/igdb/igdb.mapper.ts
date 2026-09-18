@@ -34,12 +34,16 @@ export function toGameResponseDto(igdb: IgdbGame): GameResponseDto {
     coverImage: coverUrlFor(igdb),
     releaseDate: igdb.first_release_date ? new Date(igdb.first_release_date * 1000) : undefined,
     status: mapIgdbStatus(igdb.status),
-    averageRating: igdb.total_rating
+    // Local Glitch aggregate starts empty; GamesService fills it when a DB
+    // anchor with reviews exists. IGDB's score goes to its own labeled field.
+    averageRating: undefined,
+    reviewCount: 0,
+    igdbRating: igdb.total_rating
       ? Number((igdb.total_rating / 10).toFixed(1))
       : igdb.rating
         ? Number((igdb.rating / 10).toFixed(1))
         : undefined,
-    reviewCount: igdb.rating_count || 0,
+    igdbRatingCount: igdb.rating_count || 0,
   };
 
   return {

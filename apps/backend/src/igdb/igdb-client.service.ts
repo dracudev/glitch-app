@@ -37,9 +37,8 @@ const IGDB_FIELDS = [
 const SORT_MAP: Record<string, string> = {
   title: 'name',
   releaseDate: 'first_release_date',
-  averageRating: 'total_rating',
-  rating: 'total_rating',
-  reviewCount: 'rating_count',
+  igdbRating: 'total_rating',
+  igdbRatingCount: 'rating_count',
   createdAt: 'first_release_date',
 };
 

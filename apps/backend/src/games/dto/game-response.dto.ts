@@ -58,11 +58,17 @@ export class GameBasicDto {
   @ApiProperty({ example: 'RELEASED' })
   status: string;
 
-  @ApiPropertyOptional({ example: 9.2 })
+  @ApiPropertyOptional({ example: 7.8, description: 'Glitch community score (0-10) from published reviews' })
   averageRating?: number;
 
-  @ApiProperty({ example: 1250 })
+  @ApiProperty({ example: 3, description: 'Glitch review count (0 = not reviewed here yet)' })
   reviewCount: number;
+
+  @ApiPropertyOptional({ example: 8.7, description: 'IGDB reference score (0-10) — external context, not the Glitch score' })
+  igdbRating?: number;
+
+  @ApiPropertyOptional({ example: 1250, description: 'Number of IGDB ratings behind igdbRating' })
+  igdbRatingCount?: number;
 }
 
 export class GameResponseDto {

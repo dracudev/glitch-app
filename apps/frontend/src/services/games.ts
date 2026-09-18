@@ -98,7 +98,7 @@ class GamesService {
   async getTopRatedGames(options: GamesQuery = {}): Promise<PaginatedGamesResponse> {
     return this.getAllGames({
       ...options,
-      sortBy: 'averageRating',
+      sortBy: 'igdbRating',
       sortOrder: 'desc',
       minRating: options.minRating ?? 7,
     });
@@ -115,7 +115,7 @@ class GamesService {
   async getPopularGames(options: GamesQuery = {}): Promise<PaginatedGamesResponse> {
     return this.getAllGames({
       ...options,
-      sortBy: 'reviewCount',
+      sortBy: 'igdbRatingCount',
       sortOrder: 'desc',
     });
   }

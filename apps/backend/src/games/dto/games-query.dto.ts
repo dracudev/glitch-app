@@ -54,7 +54,7 @@ export class GamesQueryDto extends PaginationQueryDto {
   @Max(10)
   maxRating?: number;
 
-  @ApiPropertyOptional({ enum: SORT_FIELDS, default: 'averageRating' })
+  @ApiPropertyOptional({ enum: SORT_FIELDS, default: 'igdbRating' })
   @IsOptional()
   @IsEnum(SORT_FIELDS)
   sortBy?: string;
