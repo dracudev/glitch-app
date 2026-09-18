@@ -1,268 +1,291 @@
-# 📘 Glitch - Development Guide
+# 📘 Glitch — Development Guide
 
-**Last Updated:** November 4, 2025  
+**Last Updated:** September 2026
 **Status:** Production Ready
+
+This guide covers the requirements Glitch implements, its architecture at a glance, and how
+to run and work on it locally. For deep references see the [Backend TCD](./backend-tcd.md),
+the [Frontend TCD](./frontend-tcd.md) and the [System Design](./system-design.md). The
+product overview lives in the [README](../../README.md).
 
 ## 1. Requirements Analysis (ERS)
 
 ### 1.1 System Objective
 
-Glitch is a social network focused on **video games**, similar to Letterboxd but for gamers.  
-It will allow users to:
+Glitch is a social network focused on **video games**, similar to Letterboxd but for gamers.
+It lets users:
 
 - Create a personal profile.
-- Write video game reviews.
-- Connect with other users (follow / friend).
-- Access a dynamic feed with the most recent reviews.
-- Consult detailed information about video games from an internal database or public APIs.
-
-In the future, it will integrate with the Steam API for login and game library data, and will function as a **showcase for indie mobile games**, allowing demos or store links to be displayed.
-
----
+- Write video game reviews with ratings out of 10.
+- Connect with other users (follow / unfollow).
+- Consume a dynamic feed of the most recent reviews from the people they follow.
+- Browse detailed game information sourced from a public API (IGDB).
 
 ### 1.2 Functional Requirements
 
 1. **User Authentication**
    - Registration and login with email/password and JWT.
-   - Different roles:
-     - **Administrator**: access to moderation panel (users, reviews).
-     - **Registered user**: create reviews, follow other users, comment.
-     - **Guest (not logged in)**: can only browse public reviews and profiles.
-
+   - Roles: `ADMIN` (moderation panel: users, reviews), `MODERATOR` (content moderation),
+     `USER` (create/edit/delete own reviews, follow others, manage own profile), and guests
+     (read-only access to public games, reviews and profiles).
+   - Password change, forgot-password and reset-password flows.
 2. **Profile Management**
-   - Each user will have a public profile with photo, bio, and list of reviews.
-
-3. **Video Game Management**
-   - Database with at least 5 related tables.
-   - Video game catalog with technical sheet, cover, release date.
-
+   - Each user has a public profile with avatar, bio, location, website and their reviews.
+3. **Video Game Catalog**
+   - Game data is fetched from **IGDB** rather than hand-maintained: titles, covers, genres,
+     platforms and ratings.
+   - Genres and platforms are exposed as real filter options, not a duplicated local taxonomy.
 4. **Reviews**
-   - CRUD for reviews (create, read, update, delete).
-   - Useful vote / "like" on reviews.
-
+   - CRUD for reviews (create, read, update, delete) with one review per user per game.
+   - Ratings out of 10, spoiler flags and publish state.
+   - Likes on reviews; comments modelled in the schema.
 5. **Social Feed**
-   - Section where the user sees reviews from people they follow.
-
+   - A section where the user sees reviews from people they follow.
 6. **User Connections**
-   - Follow/unfollow users.
-   - View activity of followed users.
-
----
+   - Follow/unfollow, follower/following lists, follow suggestions and mutual connections.
 
 ### 1.3 Non-Functional Requirements
 
-- **Scalability:** system designed to support growth in users and data.
-- **Security:** passwords with hash (bcrypt), input validation, JWT for sessions.
-- **Availability:** uptime ≥ 99% in production.
-- **Usability:** clear and responsive interface (mobile / desktop).
-- **Internationalization:** initial support in English and Spanish.
-
----
+- **Security:** bcrypt password hashing, DTO validation, JWT in HTTP-only cookies, role
+  guards, rate limiting and Helmet security headers.
+- **Usability:** clear, responsive interface (mobile / desktop) with an accessible component
+  system.
+- **Accessibility:** keyboard-operable Radix primitives and `aria-*` attributes throughout.
+- **SEO:** canonical URLs, Open Graph metadata, `robots.txt` and a server-rendered sitemap.
+- **Maintainability:** a shared TypeScript contract between frontend and backend.
 
 ## 2. System Design
 
 ### 2.1 Architecture
 
-- **Frontend:** Astro 5.x + React 19.x Islands + Tailwind CSS v4.
-  - Static pages for optimal performance and SEO (SSG by default).
-  - Interactive components in React Islands with selective hydration.
-  - Radix UI primitives for accessible component foundations.
-- **Backend:** NestJS 11.x (Node.js) + TypeScript + REST API.
-- **Database:** PostgreSQL 13+ with Prisma ORM v6.14.0.
-- **Authentication:** JWT with HTTP-only cookies for session management.
-- **Deployment:**
-  - Frontend → Vercel (static hosting with edge functions).
-  - Backend → Railway/Render (containerized deployment).
-  - Database → Neon/Supabase (managed PostgreSQL).
-
----
+- **Frontend:** Astro 5.x + React 19.x islands + Tailwind CSS v4, with Radix UI primitives
+  and Nanostores for global state. Rendered with `output: 'server'` and the Vercel adapter.
+- **Backend:** NestJS 11.x (Node.js) + TypeScript, REST API only, global prefix `/api` with
+  URI versioning (`/api/v1`).
+- **Database:** PostgreSQL with Prisma ORM 6.x.
+- **Authentication:** JWT access + refresh tokens in HTTP-only cookies.
+- **Public data:** IGDB via the Twitch client-credentials flow.
+- **Deployment:** frontend on Vercel, backend on Render, managed PostgreSQL on Neon.
 
 ### 2.2 Data Model
 
-- **User**
-  - id, username, email, password_hash, bio, avatar, role
+Defined in `apps/backend/prisma/schema.prisma`:
 
-- **Game**
-  - id, title, description, release_date, cover_image, developer_id
+- **User** — id, email, username, password (hash), role, displayName, bio, avatar, location,
+  website, isPrivate, language, timezone, emailNotifications, resetToken.
+- **Game** — id, igdbId, title, slug, coverImage, averageRating, reviewCount. The rating and
+  count are the **Glitch community aggregate**; the IGDB rating is fetched live and shown
+  separately.
+- **Review** — id, title, content, rating (0–10), isPublished, isSpoiler, userId, gameId.
+- **Follow** — followerId, followingId (self-referencing many-to-many).
+- **Like** — userId, reviewId (unique pair).
+- **Comment** — content, userId, reviewId.
+- **GameList / GameListEntry** — modelled for future collections.
+- **Achievement / UserAchievement / Notification / UserSession** — modelled for future
+  features; not yet exposed through the API.
 
-- **Developer**
-  - id, name, country
-
-- **Review**
-  - id, user_id, game_id, rating, content, created_at
-
-- **Follow**
-  - follower_id, followed_id
-
-**Relationships:** User ↔ Review, User ↔ Follow, Game ↔ Review, Game ↔ Developer
-
----
+**Key constraints:** unique user email/username, unique game slug and igdbId, one review per
+user per game, cascade deletes on user/game removal.
 
 ### 2.3 Web Sections
 
-1. **Home / Feed**
-2. **Explore video games**
-3. **Reviews**
-4. **User profile**
-5. **Admin panel**
-6. **Login / Register**
-
----
+1. **Home** — landing and discovery.
+2. **Explore games** — catalog with filters.
+3. **Game detail** — metadata, community reviews and similar games.
+4. **Reviews** — global listing and review detail.
+5. **User profile** — public profile and activity.
+6. **Feed** — reviews from followed users.
+7. **Auth** — login and signup.
+8. **Admin** — stats, user management and review moderation.
 
 ## 3. Implementation
 
-### 3.1 Backend (REST API + GraphQL with NestJS)
+### 3.1 Backend (REST API with NestJS)
 
-The backend will be built with **NestJS**, structured in modules that expose both **REST endpoints** and **GraphQL resolvers**. Both share the same **services** and **entities** in the domain layer, avoiding duplicated logic.
+The backend is a modular monolith. Feature modules expose REST controllers that delegate to
+services, which use Prisma for persistence. There is no GraphQL layer.
 
-#### 🔹 REST Endpoints (Core / MVP)
+Modules: `auth`, `users`, `games`, `reviews`, `social`, `admin`, `igdb`, `health`,
+`database`, `common`.
 
-REST will be used for simpler, cacheable, and well-documented cases (e.g., via Swagger):
+- **`auth`** — register, login, refresh, logout, change-password, forgot-password,
+  reset-password, me. Passport strategies (local, JWT, JWT refresh) + guards.
+- **`users`** — user listing/search, public profile by username, followers, following,
+  profile updates.
+- **`games`** — public catalog reads: list with filters (genre, platform, status, rating
+  range, sort), filter options, game by slug, similar games. Backed by `igdb`.
+- **`igdb`** — IGDB integration: Twitch client-credentials auth with token caching,
+  rate-limited HTTP client (250 ms), response mapping.
+- **`reviews`** — review CRUD, per-game and per-user listings, like/unlike, and moderation
+  hooks for admins/moderators.
+- **`social`** — follow/unfollow, following lists, activity feed, stats, suggestions and
+  mutual connections.
+- **`admin`** — platform stats and user administration, restricted to `ADMIN`.
+- **`common`** — pagination DTOs, exception filters and response interceptors.
 
-- `/auth` → login, register (JWT).
-- `/users` → user and profile management.
-- `/games` → list and detail of video games.
-- `/reviews` → basic CRUD for reviews.
-- `/follows` → follow / unfollow users.
+Technical infrastructure:
 
-#### 🔹 GraphQL Schema (Social / Complex Relations)
-
-GraphQL will be used for dynamic queries and relationships between entities (feed, search, recommendations):
-
-- **Queries**
-  - `me` → authenticated user data.
-  - `feed(limit, offset)` → latest reviews from followed users.
-  - `game(id)` → game details + related reviews.
-  - `user(id)` → user profile + reviews and followers.
-
-- **Mutations**
-  - `createReview(gameId, text, rating)` → create a new review.
-  - `followUser(userId)` / `unfollowUser(userId)`.
-  - `updateProfile(...)` → update profile information.
-
-#### 🔹 Roles & Permissions
-
-- Implemented with **NestJS middleware + guards** to validate:
-  - JWT authentication.
-  - Role (`user`, `admin`).
-- Permission differentiation:
-  - Guest (no login) → read-only access to public games and reviews.
-  - User → CRUD reviews, follow users, customize profile.
-  - Admin → moderation (delete reviews, manage users).
-
-#### 🔹 Technical Infrastructure
-
-- **NestJS Modules**: `AuthModule`, `UsersModule`, `GamesModule`, `ReviewsModule`, `FollowsModule`.
-- **Prisma ORM** for database access (MySQL/Postgres).
-- **Resolvers and Controllers** both consume the same service layer.
-- **Swagger** → REST documentation.
-- **GraphQL Playground / Apollo** → GraphQL exploration.
+- **Prisma ORM** for all database access.
+- **Swagger** for REST documentation, served at `/api/docs` outside production.
+- **Global concerns:** validation pipe (whitelist + transform), exception filter, response
+  interceptor, Helmet, compression, cookie parsing, CORS with credentials, throttler.
 
 ### 3.2 Frontend (Astro + React Islands)
 
-The frontend is built with **Astro 5.x** for static rendering (fast and SEO-friendly) and **React 19.x Islands** for interactive components. This allows for an optimal balance between performance and interactivity.
+Astro renders every page on the server by default (`output: 'server'`). The only prerendered
+route is `/feed`. Interactive behaviour is delivered as hydrated React islands.
 
-#### 🔹 Static Pages (SSG by Default)
+#### Routes
 
-Astro uses static output by default (`output: 'static'` in `astro.config.mjs`). Most pages are pre-rendered at build time:
+| Route | Rendering | Notes |
+|---|---|---|
+| `/` | SSR | Home / discovery |
+| `/games` | SSR | Catalog + filters |
+| `/games/[slug]` | SSR | Game detail |
+| `/reviews` | SSR | Global review listing |
+| `/reviews/[id]` | SSR | Review detail |
+| `/profile/[username]` | SSR | Public profile |
+| `/feed` | Prerendered | Prerender shell; content is user-scoped |
+| `/auth/login`, `/auth/signup` | SSR | Auth forms |
+| `/admin`, `/admin/users`, `/admin/reviews` | SSR | Admin only, role-gated |
 
-- `/` (Home): Static home page with client-side auth redirect logic
-- `/auth/login` & `/auth/register`: Static forms with client-side validation
-- `/feed`: Static shell with client-side data fetching for activity feed
-- `/reviews`: Static listing with pagination
+#### React islands
 
-#### 🔹 Dynamic Pages (SSR - Opt-in with `prerender: false`)
+Auth forms, the game filter sidebar and mobile filter button, game header/tabs/review list,
+review editor and actions, follow buttons and lists, profile header/tabs and edit dialog,
+the activity feed, and the admin user/review tables and dialogs.
 
-Specific routes require server-side rendering for dynamic content:
+#### Styles, state and API access
 
-- `/games` (Explore): SSR for dynamic filters and query-based pagination
-- `/games/[slug]`: SSR for individual game pages with real-time data
-- `/profile/[username]`: SSR for user profiles with up-to-date information
-- `/reviews/[id]`: SSR for review details with social interactions
-
-#### 🔹 React Islands (Dynamic Components)
-
-React is used selectively for components that need interactivity:
-
-- **Social feed** → Dynamically loaded reviews from followed users
-- **Login / Register / Profile forms** → Controlled React forms with validation
-- **Review editor** → Create/edit review with rich text editor
-- **Follow / unfollow buttons** → Reactive, updated without page reload
-- **Search bar** → Autocomplete with API queries
-- **Game filters** → Interactive filtering interface
-
-#### 🔹 Styles & UI
-
-- **Tailwind CSS v4** → Utility-first, responsive, mobile-first design with `@tailwindcss/vite` plugin
-- **Radix UI** → Headless, accessible component primitives (Dialog, Tabs, Avatar, etc.)
-- **Custom Design System** → CSS custom properties for consistent theming
-- **Lucide React** → Consistent icon library
-- **Dark mode** → System preference support with toggle
-
-#### 🔹 State Management
-
-- **Nanostores** → Lightweight state management for global state
-- **React State** → Component-level state with hooks
-- **Persistent Auth** → Token management with localStorage
-
----
+- **Tailwind CSS v4** via `@tailwindcss/vite`, driven by tokens in
+  `src/styles/global.css`. See the [System Design](./system-design.md).
+- **Radix UI** headless primitives for accessible dialogs, menus, tabs, selects, etc.
+- **Nanostores** for global state (`auth`, `games`, `reviews`, `social`, `users`,
+  `explore`, `notifications`), each with a companion hook.
+- **Typed API client** (`src/services/api.ts`): absolute URL for SSR, same-origin `/api/v1`
+  in the browser, cookie forwarding on the server, automatic token refresh and an in-memory
+  cache that is disabled for SSR responses.
 
 ## 4. Testing
 
-- **Backend**
-  - Unit tests with Jest.
-  - Endpoint integration tests with Supertest.
+Automated tests are **not yet in place**. The tooling is configured but no specs are
+committed:
 
-- **Frontend**
-  - React Testing Library + Jest.
-  - Cypress for end-to-end tests.
+- **Backend:** Jest and Supertest are installed (`jest` config in
+  `apps/backend/package.json`, `testRegex` matching `*.spec.ts`), but there are no
+  `*.spec.ts` files yet.
+- **Frontend:** `astro check` (TypeScript + Astro diagnostics) is wired to `pnpm
+  type-check:frontend`; there is no component test runner.
+- **E2E:** `apps/e2e` exists as a placeholder with no tests.
 
-- **Key test cases:**
-  - User registration/login.
-  - Create/edit reviews.
-  - Feed showing reviews from followed users.
+Until a suite exists, verification is manual plus `pnpm type-check` and `pnpm lint`. Adding
+the automated suite is tracked in the [README roadmap](../../README.md#roadmap).
 
----
+## 5. Local setup
 
-## 5. Deployment
+### Prerequisites
 
-- **Development environment:** Docker Compose (backend + db).
-- **Staging environment:** Railway/Render + Supabase.
-- **Production:**
-  - Backend: Render.
-  - Frontend: Vercel.
-  - Database: Neon/Supabase.
-- **CI/CD:** GitHub Actions to run tests before deploy.
+- **Node.js** 18+
+- **PNPM** 10+ (`corepack enable` then use the pinned `packageManager`)
+- **Docker** & Docker Compose (for PostgreSQL, Redis and MinIO)
 
----
+### Steps
 
-## 6. Maintenance
+```bash
+pnpm install
 
-- **Monitoring:** centralized logs + Sentry for errors.
-- **Automatic backups:** of the database in Supabase/Neon.
+# Start the infrastructure containers (postgres, redis, minio)
+pnpm docker:dev
 
----
+# Configure environment: create apps/backend/.env and apps/frontend/.env
+# (see "Environment variables" below), then:
+pnpm db:migrate
+pnpm db:seed
 
-## 7. Roadmap
+pnpm dev            # backend + frontend together
+```
 
-1. **Indie games showcase**
-   - Upload demos or store links (Play Store, App Store, itch.io).
-   - Statistics dashboard for developers.
-   - "Indie Games" section, filterable and featured.
+### Local URLs
 
-2. **Integration with external APIs**
-   - Steam OAuth for login and game library.
-   - Public video game APIs (RAWG, IGDB) for catalogs and profiles.
+- Frontend: http://localhost:4321
+- Backend API: http://localhost:3000/api/v1
+- Swagger (non-production): http://localhost:3000/api/docs
+- Prisma Studio: `pnpm db:studio`
 
-3. **Personal video game management and tracking**
-   - Add video games to favorite, played, and pending lists.
-   - Achievement tracker synced via Steam (automatic import of achievements).
-   - Create a personalized "glitch" with tasks or pending challenges within each video game.
+### Environment variables
 
-4. **Gamification**
-   - Achievements for reviews, lists, or games played.
-   - Social feed with friends' activity related to indie games.
+The backend reads its configuration from `apps/backend/.env`. Required for a working local
+setup:
 
-5. **Advanced interactivity**
-   - Embedded web games (JS/TS, Phaser, Unity WebGL) (future)
-   - Real-time notifications via WebSockets (future)
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | PostgreSQL connection string |
+| `JWT_SECRET`, `JWT_REFRESH_SECRET` | Token signing secrets |
+| `JWT_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN` | Token lifetimes |
+| `FRONTEND_URL` | CORS origin (e.g. `http://localhost:4321`) |
+| `PORT` | API port (default 3000) |
+| `IGDB_CLIENT_ID`, `IGDB_CLIENT_SECRET` | IGDB credentials (Twitch app) |
+| `NODE_ENV` | Controls Swagger and cookie security |
+
+The frontend uses `PUBLIC_API_URL` for server-side API calls and `PUBLIC_SITE_URL` for
+canonical/SEO metadata. In the browser the API is always called same-origin at `/api/v1`;
+Vite proxies `/api` to the backend in development and the Vercel rewrite does the same in
+production.
+
+### Commands
+
+```bash
+# Workspace
+pnpm dev                 # backend + frontend
+pnpm build               # build both apps
+pnpm lint                # lint both apps
+pnpm type-check          # type-check both apps
+pnpm format              # Prettier
+
+# Per app
+pnpm dev:backend         # NestJS with hot reload
+pnpm dev:frontend        # Astro dev server
+pnpm --filter backend test
+pnpm --filter frontend type-check
+
+# Database
+pnpm db:migrate          # prisma migrate dev
+pnpm db:seed             # load the seed dataset
+pnpm db:studio           # Prisma Studio
+pnpm db:reset            # destructive reset
+
+# Docker
+pnpm docker:dev          # start dev containers
+pnpm docker:dev:down     # stop dev containers
+pnpm docker:dev:logs     # follow logs
+```
+
+## 6. Deployment
+
+- **Frontend → Vercel.** `apps/frontend/astro.config.mjs` sets
+  `site: 'https://glitch-for-gamers.vercel.app'`, `output: 'server'` and the
+  `@astrojs/vercel` adapter. `apps/frontend/vercel.json` rewrites `/api/:path*` to the
+  Render backend so the browser always talks to a first-party origin.
+- **Backend → Render**, running the NestJS build in a container.
+- **Database → Neon** (managed PostgreSQL). Run `prisma migrate deploy` on release.
+
+## 7. Workflow
+
+- **Commits:** conventional commits (enforced by commitlint).
+- **Type safety:** TypeScript strict across the workspace; shared types in
+  `packages/shared-types`.
+- **Styling:** token utilities only — never raw colours or arbitrary `var(--x)` classes. See
+  the [System Design](./system-design.md).
+- **Documentation:** update the relevant document under `docs/architecture/` when behaviour
+  or structure changes.
+
+## 8. Roadmap
+
+1. **Automated tests** — backend unit/integration tests and an end-to-end suite in
+   `apps/e2e`.
+2. **Steam integration** — OAuth login and library sync.
+3. **Social depth** — comment UI, notifications and achievements (schema already models
+   them).
+4. **Personal game lists** — favourites / playing / completed / backlog.
+5. **AI recommendations** — suggestions based on a user's reviews and ratings.
+6. **Internationalisation** — `User.language` already exists; UI strings are English-only.

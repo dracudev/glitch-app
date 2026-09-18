@@ -1,6 +1,6 @@
 # Glitch
 
-**A social network for gamers** - Think Letterboxd, but for video games.
+**A social network for gamers** — think Letterboxd, but for video games.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18+-green.svg)](https://nodejs.org/)
@@ -8,335 +8,216 @@
 [![PNPM](https://img.shields.io/badge/PNPM-10+-orange.svg)](https://pnpm.io/)
 [![Astro](https://img.shields.io/badge/Astro-5.x-ff5d01.svg)](https://astro.build/)
 [![NestJS](https://img.shields.io/badge/NestJS-11.x-e0234e.svg)](https://nestjs.com/)
+[![Prisma](https://img.shields.io/badge/Prisma-6.x-2D3748.svg)](https://www.prisma.io/)
 
-Glitch is a comprehensive social platform where gamers can discover games, write reviews, connect with fellow players, and build personalized gaming profiles. Built with modern web technologies and designed for scalability, it features a static-first architecture that combines optimal performance with selective interactivity for dynamic user experiences.
+**Last Updated:** September 2026
 
-**Last Updated:** November 4, 2025
+Glitch is a community platform where players rate and review the games they play, follow
+people whose taste they trust, and discover what to play next. The score on a game is the
+average of what players gave it — there is no publisher score and no editorial verdict.
+
+## Live application
+
+| Piece | URL |
+|---|---|
+| Web app (Front-Office + Back-Office) | https://glitch-for-gamers.vercel.app |
+| REST API | https://questlog-app.onrender.com/api/v1 |
+| API docs (Swagger, non-production only) | `/api/docs` |
+
+## What Glitch is
+
+- **Player-authored.** Reviews and ratings come from the community. A game's score is the
+  Glitch aggregate (`averageRating`, `reviewCount`); the IGDB rating is shown separately as
+  external reference.
+- **Social by design.** Follow other players, browse an activity feed of people you follow,
+  get follow suggestions, and see mutual connections.
+- **Built on real game data.** The catalog comes from IGDB (via the Twitch client-credentials
+  flow), so genres, platforms, covers and release data are live rather than hand-maintained.
+- **Two audiences, two surfaces.** A public Front-Office for browsing games, reviews and
+  profiles, and a private Back-Office at `/admin` for moderation and user management.
 
 ## Features
 
-### Authentication & User Management
+### Accounts, roles and sessions
 
-- **Secure JWT Authentication** with refresh tokens and role-based access control
-- **User Profiles** with customizable avatars, bios, and gaming statistics
-- **Role-Based Permissions** supporting User, Moderator, and Admin roles
-- **Persistent Sessions** with automatic token refresh
+- Email/password registration and login with JWT.
+- Access token (15 min) and refresh token (7 days) stored in **HTTP-only cookies**; the API
+  also accepts `Authorization: Bearer` for SSR and non-browser callers.
+- Three roles: `USER`, `MODERATOR`, `ADMIN`.
+- Password change, forgot-password and reset-password flows, plus `GET /auth/me`.
 
-### Game Discovery & Management
+### Game catalog (IGDB)
 
-- **Comprehensive Game Catalog** with detailed information, covers, and metadata
-- **Advanced Search & Filtering** by genre, platform, developer, and more
-- **Game Details Pages** with aggregated reviews and related games
-- **External API Integration** ready for RAWG, IGDB, and Steam APIs
+- Browse the catalog with filters by **genre**, **platform**, status and rating range, with
+  sorting and pagination.
+- `GET /games/filters` returns the real IGDB genre and platform options used to build the
+  filter UI, so the taxonomy is the live IGDB one rather than a duplicated local list.
+- Game detail pages aggregate community reviews and surface similar games.
+- IGDB access is cached and rate-limited in the backend (`igdb/` module, 250 ms request
+  spacing, client-credentials token caching).
 
-### Review System
+### Reviews
 
-- **Rich Review Creation** with ratings, content, and spoiler warnings
-- **Social Interactions** including likes, comments, and sharing
-- **Review Moderation** tools for community management
-- **Personalized Feeds** showing reviews from followed users
+- Full CRUD: any registered user can create, edit and delete **their own** reviews.
+- One review per user per game (enforced by a database unique constraint).
+- Ratings are out of 10. Reviews support titles, spoiler flags and publish state.
+- Likes on reviews, and comments are modelled in the schema.
+- Moderation: an admin/moderator can edit, unpublish or delete **any** review.
 
-### Social Features
+### Social
 
-- **User Following** system with activity feeds
-- **Social Statistics** tracking followers, reviews, and engagement
-- **Activity Streams** showcasing user interactions and achievements
-- **Community Features** for discovering new users and content
+- Follow / unfollow, followers and following lists.
+- Personal activity feed built from the reviews of the people you follow.
+- Social statistics, follow suggestions and mutual-connection discovery.
 
-### Admin & Moderation
+### Profiles
 
-- **Admin Dashboard** for platform management
-- **Content Moderation** tools for reviews and user-generated content
-- **User Management** with role assignment and account controls
-- **Analytics & Insights** for platform health monitoring
+- Public profile pages at `/profile/[username]` with bio, avatar, location, website, stats
+  and their reviews.
 
-### Performance & Developer Experience
+### Back-Office (`/admin`)
 
-- **Hybrid Architecture** with static generation and dynamic components
-- **Type-Safe API** with comprehensive shared types across the stack
-- **Modern Development Stack** with hot reload and optimized builds
-- **Comprehensive Testing** suite with unit, integration, and E2E tests
+- Role-gated to `ADMIN`, enforced both in the frontend (SSR redirect) and the backend
+  (`RolesGuard`).
+- Platform stats dashboard, user administration (create, update role/profile, delete) and
+  review moderation.
 
 ## Architecture
 
-Glitch uses a modern PNPM monorepo architecture designed for scalability and developer productivity:
-
-### Frontend (Astro 5.x + React 19.x)
-
-- **Astro 5.x** with static output by default for excellent SEO and performance
-- **React 19.x Islands** for selective interactivity and optimal JavaScript delivery
-- **Tailwind CSS v4** with @tailwindcss/vite plugin and custom design system
-- **Radix UI** primitives for accessible, unstyled component foundations
-- **Nanostores** for lightweight, efficient state management
-
-### Backend (NestJS 11.x + Prisma 6.x)
-
-- **NestJS 11.x** framework with modular, domain-driven architecture
-- **Prisma ORM v6.14.0** with PostgreSQL for type-safe database operations
-- **JWT Authentication** with HTTP-only cookies and role-based access control
-- **Comprehensive REST API** with Swagger/OpenAPI documentation
-
-### Infrastructure
-
-- **Docker Compose** for development environment consistency
-- **PostgreSQL 13+** as primary database
-- **Redis** for caching and session management (planned)
-- **MinIO** for S3-compatible file storage (planned)
-- **Prometheus** monitoring and centralized logging (planned)
+Glitch is a **PNPM monorepo** with two applications sharing a typed contract.
 
 ```tree
 glitch-app/
 ├── apps/
-│   ├── backend/          # NestJS API server
-│   ├── frontend/         # Astro + React frontend
-│   └── e2e/              # End-to-end tests
+│   ├── backend/          # NestJS REST API (Prisma + PostgreSQL)
+│   ├── frontend/         # Astro 5 + React 19 application
+│   └── e2e/              # Reserved for end-to-end tests (not implemented yet)
 ├── packages/
-│   ├── shared-types/     # TypeScript type definitions
-│   ├── ui-components/    # Shared React components
-│   ├── utils/            # Utility functions
-│   ├── config/           # Shared configurations
-│   └── game-apis/        # External API integrations
-└── docker/               # Docker configurations
+│   ├── shared-types/     # TypeScript types shared by frontend and backend
+│   ├── utils/            # Shared helpers
+│   └── config/           # Shared ESLint / Prettier / TypeScript config
+├── docker/               # Docker configuration
+├── docs/                 # Project documentation
+└── scripts/              # Development helper scripts
 ```
 
-## Quick Start
+`packages/` also contains reserved, currently empty folders for planned work:
+`analytics/`, `game-apis/`, `indie-sdk/` and `steam-integration/`.
 
-### Prerequisites
+### Frontend — Astro 5 + React 19
 
-- **Node.js** 18+ ([Download](https://nodejs.org/))
-- **PNPM** 8+ ([Installation](https://pnpm.io/installation))
-- **Docker** & **Docker Compose** ([Get Docker](https://docs.docker.com/get-docker/))
+- **Astro 5** with `output: 'server'` and the `@astrojs/vercel` adapter. Pages are
+  server-rendered by default (`/feed` is the one prerendered page).
+- **React 19 islands** for interactive parts (auth forms, filters, review editor, follow
+  buttons, admin tables).
+- **Tailwind CSS v4** (`@tailwindcss/vite`) with a token-driven design system.
+- **Radix UI** primitives for accessible dialogs, menus, tabs, selects, tooltips, etc.
+- **Nanostores** for lightweight global state (auth, games, reviews, social, users).
+- API access goes through a typed client (`src/services/api.ts`) with an in-memory cache,
+  automatic token refresh and SSR cookie forwarding.
 
-### Installation
+### Backend — NestJS 11 + Prisma 6
 
-1. **Clone the repository**
+- **NestJS 11** modular REST API, global prefix `/api` with URI versioning (`/api/v1`).
+- **Prisma 6 + PostgreSQL** for the database.
+- **Auth** with Passport strategies (local, JWT, JWT refresh), HTTP-only cookies and
+  role-based guards.
+- **Security**: Helmet, CORS with credentials, rate limiting (`@nestjs/throttler`),
+  global validation pipe (whitelist + transform).
+- **Swagger/OpenAPI** served at `/api/docs` outside production.
+- Modular domains: `auth`, `users`, `games`, `reviews`, `social`, `admin`, `igdb`,
+  `health`, `database`, `common`.
 
-   ```bash
-   git clone https://github.com/dracudev/glitch-app.git
-   cd glitch-app
-   ```
+### Data model
 
-2. **Install dependencies**
+Defined in `apps/backend/prisma/schema.prisma`:
 
-   ```bash
-   pnpm install
-   ```
+`User`, `Game`, `Review`, `Follow`, `Like`, `Comment`, `GameList`, `GameListEntry`,
+`Achievement`, `UserAchievement`, `Notification`, `UserSession`.
 
-3. **Set up environment variables**
+The last four groups (game lists, achievements, notifications, sessions) are modelled for
+planned features but are not yet exposed through the API.
 
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your configuration
-   ```
+## API overview
 
-4. **Start development services**
+All routes are versioned under `/api/v1`.
 
-   ```bash
-   pnpm docker:dev        # Start PostgreSQL, Redis, MinIO, etc.
-   ```
+| Group | Purpose |
+|---|---|
+| `GET /health` | Lightweight health check |
+| `/auth` | register, login, refresh, logout, change/forgot/reset password, me |
+| `/users` | list & search, profile by username, followers, following, update profile |
+| `/games` | catalog with filters, filter options (`/games/filters`), game by slug, similar games |
+| `/reviews` | create/read/update/delete, by game, by user, user+game lookup, like/unlike |
+| `/social` | follow/unfollow, following, feed, stats, suggestions, mutual connections |
+| `/admin` | platform stats, user administration (admin only) |
 
-5. **Set up the database**
+## Design
 
-   ```bash
-   pnpm db:migrate        # Run database migrations
-   pnpm db:seed           # Seed with sample data
-   ```
+Glitch is a dark-first, single-hue product surface built on a documented token system. The
+brand direction, full token tables, component contracts and accessibility rules live in
+[`docs/architecture/system-design.md`](./docs/architecture/system-design.md); the tokens
+themselves are authored in `apps/frontend/src/styles/global.css`, which is authoritative.
 
-6. **Start development servers**
+## SEO and accessibility
 
-   ```bash
-   pnpm dev               # Start both backend and frontend
-   ```
-
-### Development URLs
-
-- **Frontend**: [http://localhost:4321](http://localhost:4321)
-- **Backend API**: [http://localhost:3000](http://localhost:3000)
-- **API Documentation**: [http://localhost:3000/api](http://localhost:3000/api)
-- **Prisma Studio**: Run `pnpm db:studio` to open database admin interface
-
-## 📚 Documentation
-
-Comprehensive documentation is available in the `/docs` directory:
-
-- **[System Design](./docs/architecture/system-design.md)** - Design system, components, and patterns
-- **[Development Guide](./docs/architecture/dev-guide.md)** - Detailed development workflow and requirements
-- **[Frontend TCD](./docs/architecture/frontend-tcd.md)** - Frontend technical context and architecture
-- **[Backend TCD](./docs/architecture/backend-tcd.md)** - Backend technical context and API design
-- **[Project Structure](./docs/architecture/project-structure.md)** - Codebase organization and monorepo structure
-
-## Development Scripts
-
-### General Commands
-
-```bash
-pnpm dev                   # Start both backend and frontend
-pnpm build                 # Build all applications
-pnpm test                  # Run all tests
-pnpm lint                  # Lint all packages
-pnpm type-check            # Type check all packages
-```
-
-### Backend Specific
-
-```bash
-pnpm dev:backend           # Start backend with hot reload
-pnpm build:backend         # Build backend for production
-pnpm test:backend          # Run backend tests
-```
-
-### Frontend Specific
-
-```bash
-pnpm dev:frontend          # Start frontend with hot reload
-pnpm build:frontend        # Build frontend for production
-pnpm test:frontend         # Run frontend tests
-```
-
-### Database Management
-
-```bash
-pnpm db:migrate            # Create and run migrations
-pnpm db:seed               # Seed database with sample data
-pnpm db:studio             # Open Prisma Studio GUI
-pnpm db:reset              # Reset database (destructive)
-```
-
-### Docker Services
-
-```bash
-pnpm docker:dev            # Start development containers
-pnpm docker:dev:down       # Stop development containers
-pnpm docker:dev:logs       # View container logs
-pnpm docker:dev:build      # Rebuild and start containers
-```
-
-## Testing
-
-Glitch includes comprehensive testing across all layers:
-
-- **Unit Tests**: Jest with React Testing Library
-- **Integration Tests**: Supertest for API testing
-- **E2E Tests**: Cypress for end-to-end workflows
-- **Type Checking**: TypeScript strict mode across all packages
-
-```bash
-pnpm test                  # Run all tests
-pnpm test:backend          # Backend tests only
-pnpm test:frontend         # Frontend tests only
-pnpm test:e2e              # End-to-end tests
-```
+- Per-page titles, canonical URLs and Open Graph metadata, with a configurable `PUBLIC_SITE_URL`.
+- `public/robots.txt` disallows the private surfaces (`/admin/`, `/auth/`, `/feed`) and
+  references the sitemap.
+- A server-rendered `sitemap.xml` endpoint lists the static pages plus live game, profile
+  and review URLs.
+- Semantic markup, keyboard-operable Radix primitives and `aria-*` attributes throughout.
 
 ## Deployment
 
-### Development
+| Layer | Platform | Notes |
+|---|---|---|
+| Frontend | **Vercel** | Astro `output: 'server'` via `@astrojs/vercel` |
+| API proxy | **Vercel rewrite** | `vercel.json` forwards `/api/*` to the Render backend, keeping cookies first-party |
+| Backend | **Render** | NestJS API, containerised |
+| Database | **Neon** | Managed PostgreSQL |
 
-- **Backend**: Local development with hot reload
-- **Frontend**: Astro dev server with React Fast Refresh
-- **Database**: PostgreSQL via Docker Compose
+## Project status
 
-### Production
+| Area | State |
+|---|---|
+| Authentication, roles, profiles | Done |
+| IGDB catalog, filters, game pages | Done |
+| Reviews (CRUD, likes, moderation) | Done |
+| Social (follow, feed, suggestions, stats) | Done |
+| Back-Office (stats, users, review moderation) | Done |
+| SEO (metadata, robots, sitemap) | Done |
+| Automated tests | **Not yet in place** — tooling is configured (Jest on the backend, `astro check` on the frontend) but no specs are committed |
 
-- **Frontend**: Vercel with automatic deployments
-- **Backend**: Railway/Render with Docker containers
-- **Database**: Neon/Supabase with automated backups
-- **CDN**: Cloudflare for static assets and performance
+### Roadmap
 
-## Roadmap
+- Automated test suite (unit, integration and end-to-end).
+- Steam OAuth login and library sync.
+- Comment UI, notifications and achievements (already modelled in the schema).
+- Personal game lists (favourites / playing / completed / backlog).
+- AI-assisted recommendations.
+- Internationalisation (the `User.language` field already exists).
 
-### Phase 1: Core Foundation
+## Documentation
 
-- [x] Project architecture and monorepo setup
-- [x] Authentication system with JWT and roles
-- [x] Complete backend API with all domains
-- [x] Frontend architecture with Astro + React
-- [x] Comprehensive state management
-- [x] Type-safe API integration
-- [x] Radix UI integration for accessibility
-- [x] Design system with CSS custom properties
-
-### Phase 2: UI Development (Current Phase - Q4 2025)
-
-- [x] Core layout refactoring with Radix UI (Navbar, Footer, ThemeToggle)
-- [x] User profile feature implementation (complete 3-layer architecture)
-- [x] Authentication pages (login, register)
-- [x] Mobile-first responsive design patterns
-- [x] Optimistic UI updates with automatic rollback
-- [x] Games catalog and filtering interface
-- [ ] Review creation and editing UI
-- [ ] Advanced search interface
-- [x] Activity feed implementation with real-time updates
-- [ ] Enhanced mobile responsive improvements
-
-### Phase 3: Social Features Enhancement (Q1 2026)
-
-- [ ] Real-time activity feed with polling
-- [ ] Comment system for reviews
-- [ ] Enhanced user discovery and recommendations
-- [ ] Notification center UI
-- [ ] Advanced social interactions (mentions, shares)
-
-### Phase 4: Game Integration & APIs (Q2 2026)
-
-- [ ] RAWG API integration for game data
-- [ ] Steam OAuth and library sync
-- [ ] Achievement tracking system
-- [ ] Personal game lists (wishlist, playing, completed, backlog)
-- [ ] IGDB integration for enhanced metadata
-
-### Phase 5: Indie Showcase (Q3 2026)
-
-- [ ] Developer portal and registration
-- [ ] Game submission system
-- [ ] Demo hosting and embedding
-- [ ] Developer analytics dashboard
-- [ ] Featured indie games section
-
-### Phase 6: Advanced Features (Q4 2026+)
-
-- [ ] AI-powered game recommendations
-- [ ] Mobile applications (React Native)
-- [ ] Real-time chat and messaging
-- [ ] WebSocket integration for live updates
-- [ ] Advanced analytics and insights
-- [ ] Multi-language support (i18n)
-
-## Contributing
-
-We welcome contributions from the gaming and development community! Here's how you can help:
-
-1. **Fork the repository**
-2. **Create a feature branch**: `git checkout -b feature/amazing-feature`
-3. **Make your changes** with proper tests and documentation
-4. **Commit your changes**: `git commit -m 'Add amazing feature'`
-5. **Push to the branch**: `git push origin feature/amazing-feature`
-6. **Open a Pull Request**
-
-### Development Guidelines
-
-- **Code Style**: We use Prettier and ESLint for consistent formatting
-- **Type Safety**: All code must be fully typed with TypeScript
-- **Testing**: New features require comprehensive test coverage
-- **Documentation**: Update relevant documentation for new features
-- **Commits**: Use conventional commit messages
+| Document | Contents |
+|---|---|
+| [System Design](./docs/architecture/system-design.md) | Brand, design tokens, component contracts, accessibility |
+| [Backend TCD](./docs/architecture/backend-tcd.md) | Backend architecture, data model and API reference |
+| [Frontend TCD](./docs/architecture/frontend-tcd.md) | Frontend architecture, routing, rendering and state |
+| [Project Structure](./docs/architecture/project-structure.md) | Monorepo organisation |
+| [Development Guide](./docs/architecture/dev-guide.md) | Requirements, local setup, commands and workflow |
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](LICENSE) file.
 
 ## Acknowledgments
 
-- **Letterboxd** for inspiration on social media for media consumption
-- **RAWG API** and **IGDB** for comprehensive game databases
-- **NestJS** and **Astro** communities for excellent frameworks
-- **The gaming community** for feedback and feature requests
-
-## Support
-
-- **Documentation**: Check the [docs folder](./docs/) for detailed guides
-- **Issues**: Report bugs or request features via [GitHub Issues](https://github.com/dracudev/glitch-app/issues)
-- **Discussions**: Join community discussions in [GitHub Discussions](https://github.com/dracudev/glitch-app/discussions)
+- **Letterboxd**, for the inspiration of a social network built around media you consume.
+- **IGDB** and **Twitch**, for the game catalog and data API.
+- The **NestJS** and **Astro** communities.
 
 ---
 
-Built with care for the gaming community
+Built with care for the gaming community.

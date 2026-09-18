@@ -1,264 +1,200 @@
-# Glitch - Project Structure
+# Glitch — Project Structure
 
-**Last Updated:** November 4, 2025
+**Last Updated:** September 2026
 
-This document provides a comprehensive overview of the Glitch monorepo structure, explaining the organization of applications, packages, and supporting files.
+This document maps the Glitch monorepo: what each directory is for, what actually exists
+today, and where new code belongs.
 
 ## Repository Overview
 
-Glitch uses a **PNPM monorepo** architecture with the following top-level structure:
+Glitch is a **PNPM monorepo** with two applications and a small set of shared packages:
 
-```
+```tree
 glitch-app/
-├── apps/          # Main applications (frontend, backend, e2e)
-├── packages/      # Shared packages and libraries
+├── apps/          # Applications (backend, frontend, reserved e2e)
+├── packages/      # Shared packages
+├── docker/        # Docker configuration
 ├── docs/          # Project documentation
-├── docker/        # Docker configuration files
-├── scripts/       # Utility scripts
-└── [config files] # Root configuration files
+├── scripts/       # Helper scripts
+└── [config files]
 ```
 
-## Directory Structure
+## Root Level Files
 
-### Root Level Files
-
-```
-├── package.json                  # Root package.json with workspace scripts
-├── pnpm-workspace.yaml          # PNPM workspace configuration
-├── pnpm-lock.yaml               # PNPM lockfile
-├── .gitignore                   # Git ignore rules
-├── LICENSE                      # MIT License
-├── README.md                    # Project overview and quick start
-├── docker-compose.dev.yml       # Development environment setup
-└── docker-compose.prod.yml      # Production environment setup
+```tree
+├── package.json              # Workspace scripts (dev, build, db:*, docker:*, lint, type-check)
+├── pnpm-workspace.yaml       # Workspace globs: apps/*, packages/*
+├── pnpm-lock.yaml            # Lockfile (packageManager: pnpm@10.15.0)
+├── docker-compose.dev.yml    # Local infra + apps
+├── docker-compose.prod.yml   # Production-style stack
+├── README.md                 # Product overview
+├── LICENSE                   # MIT
+└── domains.csv               # Domain research scratch file (not part of the app)
 ```
 
-### `/apps` Directory
+Local secrets live in `apps/backend/.env` and `apps/frontend/.env` and are not committed.
 
-Main applications of the project:
+## `/apps` Directory
 
-#### `apps/backend/` - NestJS API Server
+### `apps/backend/` — NestJS REST API
 
-```
+```tree
 backend/
 ├── package.json
 ├── nest-cli.json
-├── tsconfig.json
-├── tsconfig.build.json
+├── tsconfig.json / tsconfig.build.json
 ├── eslint.config.js
 ├── prisma/
-│   ├── schema.prisma            # Database schema
-│   ├── migrations/              # Database migrations
-│   ├── seeds/                   # Database seed scripts
-│   │   └── seed.ts
-│   └── init.sql/               # Initial SQL scripts
+│   ├── schema.prisma          # Data model (11 models, 2 enums)
+│   ├── migrations/            # 20250826…, 20250828…, 20260916153104_igdb_catalog_cleanup
+│   ├── seeds/seed.ts          # Demo dataset (users, games, reviews, follows, likes)
+│   └── init.sql               # Initial SQL
 └── src/
-    ├── main.ts                  # Application entry point
-    ├── app.module.ts            # Root module
-    ├── auth/                    # Authentication & authorization
-    │   ├── auth.module.ts
-    │   ├── auth.service.ts
-    │   ├── auth.controller.ts
-    │   ├── strategies/          # Passport strategies
-    │   ├── guards/             # Auth guards
-    │   ├── decorators/         # Custom decorators
-    │   ├── dto/                # Data transfer objects
-    │   ├── interfaces/         # Type interfaces
-    │   └── constants/          # Auth constants
-    ├── users/                   # User management
-    ├── games/                   # Game catalog
-    │   ├── developers/         # Game developers
-    │   ├── publishers/         # Game publishers
-    │   ├── genres/            # Game genres
-    │   └── platforms/         # Gaming platforms
-    ├── reviews/                # Review system
-    ├── social/                 # Social features
-    ├── health/                 # Health check endpoints
-    ├── common/                 # Shared utilities
-    │   ├── constants/
-    │   ├── dto/
-    │   ├── filters/           # Exception filters
-    │   └── interceptors/      # Response interceptors
-    └── database/              # Database configuration
-        ├── database.module.ts
-        └── prisma.service.ts
+    ├── main.ts                # Bootstrap: CORS, Helmet, cookies, validation,
+    │                          #   versioning, /api prefix, Swagger, shutdown hooks
+    ├── app.module.ts          # Root module
+    ├── auth/                  # register/login/refresh/logout/password/me
+    │   ├── constants/ decorators/ dto/ guards/ interfaces/ strategies/
+    ├── users/                 # profiles, followers, following, update profile
+    │   ├── constants/ dto/
+    ├── games/                 # public catalog reads (filters, slug, similar)
+    │   ├── constants/ dto/
+    ├── reviews/               # review CRUD, likes, moderation
+    │   ├── constants/ decorators/ dto/
+    ├── social/                # follow, feed, stats, suggestions, mutual
+    │   ├── constants/ dto/
+    ├── admin/                 # stats + user administration (ADMIN only)
+    │   └── dto/
+    ├── igdb/                  # IGDB integration (auth, client, mapper, types)
+    ├── health/                # GET /health
+    ├── common/                # pagination DTOs, filters, interceptors, constants
+    │   ├── constants/ dto/ filters/ interceptors/
+    └── database/              # PrismaService + DatabaseModule
 ```
 
-#### `apps/frontend/` - Astro + React Application
+There is **no GraphQL** layer and no `developers/`, `genres/`, `platforms/` or
+`publishers/` submodules — games are read from IGDB and genres/platforms are filter
+options, not local tables.
 
-```
+### `apps/frontend/` — Astro + React
+
+```tree
 frontend/
 ├── package.json
-├── astro.config.mjs            # Astro configuration
-├── tsconfig.json
-├── eslint.config.js
-├── public/                     # Static assets
+├── astro.config.mjs           # site, output: 'server', vercel adapter, react, tailwind
+├── vercel.json                # /api/* rewrite to the Render backend
+├── tsconfig.json / eslint.config.js
+├── public/
+│   ├── favicon/               # Rendered icons + site.webmanifest
+│   ├── images/                # glitch-mark.svg, game-placeholder.svg
 │   ├── manifest.json
-│   └── images/
+│   ├── og-image.jpg
+│   └── robots.txt             # Generated/crawl rules + sitemap reference
 └── src/
-    ├── components/             # React components
-    │   ├── ui/                # Base UI components
-    │   ├── auth/              # Authentication
-    │   ├── games/             # Game components
-    │   ├── reviews/           # Review components
-    │   ├── social/            # Social features
-    │   ├── profile/           # Profile components
-    │   └── layout/            # Layout components
-    ├── pages/                 # Astro pages (routes)
-    │   ├── index.astro        # Home page
-    │   ├── feed/
-    │   │   └── index.astro    # Activity feed
-    │   ├── games/
-    │   │   ├── index.astro    # Games catalog
-    │   │   └── [slug].astro   # Game details
-    │   ├── profile/
-    │   │   └── [username].astro # User profiles
-    │   ├── reviews/
-    │   │   ├── index.astro    # Reviews listing
-    │   │   └── [id].astro     # Review details
-    │   └── auth/              # Auth pages
-    │       ├── login.astro
-    │       └── register.astro
-    ├── layouts/               # Page layouts
-    │   └── MainLayout.astro
-    ├── stores/                # State management
-    │   ├── auth.ts
-    │   ├── games.ts
-    │   ├── reviews.ts
-    │   ├── social.ts
-    │   └── users.ts
-    ├── services/              # API client services
-    │   ├── api.ts            # Base API client
-    │   ├── auth.ts
-    │   ├── games.ts
-    │   ├── reviews.ts
-    │   ├── social.ts
-    │   └── users.ts
-    ├── hooks/                 # React hooks
-    │   ├── useAuth.ts
-    │   ├── useGames.ts
-    │   ├── useReviews.ts
-    │   └── useSocial.ts
-    ├── utils/                 # Utility functions
-    ├── types/                 # Frontend-specific types
-    ├── scripts/               # Client-side scripts
-    │   └── client-redirect.ts
-    └── styles/                # Global styles
-        └── global.css
+    ├── components/
+    │   ├── admin/             # AdminUsersPage, AdminUserDialog, AdminReviewsPage,
+    │   │                      #   AdminReviewDialog, AdminConfirmDialog
+    │   ├── auth/              # LoginForm, RegisterForm
+    │   ├── fallbacks/         # NoScriptFallback
+    │   ├── games/             # ExplorePage, FilterSidebar, GameCard, GameHeader,
+    │   │                      #   GameTabs, GameResultsList, GameReviewList,
+    │   │                      #   SimilarGamesSection, ReviewFormDialog, MobileFilterButton
+    │   ├── profile/           # ProfilePage, ProfileHeader, ProfileTabs, FollowButton,
+    │   │                      #   FollowList, ReviewList, EditProfileDialog
+    │   ├── reviews/           # ReviewsPage, ReviewDetailPage, ReviewCard, ReviewList,
+    │   │                      #   ReviewActions, ReviewContent, ReviewHeader, ReviewFilters
+    │   ├── social/            # ActivityFeedPage, ActivityFeedList, FeedItem, FeedItemSkeleton
+    │   ├── ui/                # Button, Card, Dialog, Input, Select, StarRating,
+    │   │                      #   Navbar, Footer, ThemeToggle, Notifications, Button.stories
+    │   ├── layout/            # (empty — reserved)
+    │   └── search/            # (empty — reserved)
+    ├── layouts/               # BaseLayout, MainLayout, AuthLayout, AdminLayout
+    ├── lib/                   # avatar.ts, review-title.ts
+    ├── pages/                 # File-based routes (see below)
+    ├── services/              # api.ts (client), auth, games, reviews, social, users,
+    │                          #   admin, ssr-auth
+    ├── stores/                # nanostores: auth, games, reviews, social, users,
+    │                          #   explore, notifications
+    ├── hooks/                 # useAuth, useGames, useReviews, useSocial, useUsers
+    ├── styles/                # global.css (design tokens), questlog-preview.png
+    └── types/                 # env.d.ts
 ```
 
-#### `apps/e2e/` - End-to-End Tests
+Routes under `src/pages/`:
 
-```
-e2e/
-├── package.json
-└── [test files]               # Future: Cypress/Playwright tests
-```
-
-### `/packages` Directory
-
-Shared packages used across applications:
-
-#### `packages/shared-types/` - TypeScript Type Definitions
-
-```
-shared-types/
-├── package.json
-├── tsconfig.json
-├── README.md
-└── src/
-    ├── index.ts              # Barrel exports
-    ├── api/                  # API types
-    ├── auth/                 # Authentication types
-    ├── games/                # Game types
-    ├── users/                # User types
-    ├── reviews/              # Review types
-    ├── social/               # Social types
-    ├── admin/                # Admin types
-    └── utils/                # Utility types
+```tree
+├── index.astro                # Home
+├── 404.astro
+├── feed/index.astro           # Prerendered
+├── games/index.astro          # Catalog
+├── games/[slug].astro         # Game detail
+├── reviews/index.astro
+├── reviews/[id].astro
+├── profile/[username].astro
+├── auth/login.astro
+├── auth/signup.astro
+├── admin/index.astro          # Admin only
+├── admin/users.astro
+├── admin/reviews.astro
+├── indie/                     # (empty — reserved for the indie showcase)
+├── users/                     # (empty — reserved)
+└── sitemap.xml.ts             # Server-rendered sitemap
 ```
 
-**Purpose**: Ensures type safety across frontend and backend by sharing TypeScript definitions.
+### `apps/e2e/` — Reserved
 
-#### `packages/utils/` - Shared Utilities
+The directory exists as a placeholder for an end-to-end suite. It currently has no tests.
 
-```
-utils/
-├── package.json
-└── src/
-    └── [utility functions]   # Shared helper functions
-```
+## `/packages` Directory
 
-#### `packages/config/` - Shared Configuration
-
-```
-config/
-├── package.json
-├── tsconfig.json
-└── src/
-    ├── eslint/
-    │   └── eslint.config.mjs
-    ├── prettier/             # Prettier configs
-    └── typescript/           # TypeScript configs
-        └── tsconfig.base.json
+```tree
+packages/
+├── shared-types/   # TypeScript types shared by frontend and backend (@glitch/shared-types)
+│   ├── src/        # api, auth, games, users, reviews, social, admin, utils
+│   └── README.md
+├── utils/          # Shared helpers (@glitch/utils); depends on zod
+├── config/         # Shared ESLint / Prettier / TypeScript config (@glitch/config)
+│   ├── eslint/ prettier/ typescript/
+└── [reserved, empty]  analytics/ · game-apis/ · indie-sdk/ · steam-integration/
 ```
 
-**Purpose**: Centralized configuration for linting, formatting, and TypeScript across all packages.
+`shared-types`, `utils` and `config` are real, consumed workspace packages. The four
+reserved folders contain no files and represent planned work only.
 
-#### Future Packages
+## `/docs` Directory
 
-- **`packages/game-apis/`**: External API integration clients (RAWG, IGDB, Steam)
-- **`packages/indie-sdk/`**: SDK for indie developers
-- **`packages/analytics/`**: Analytics and tracking utilities
-- **`packages/steam-integration/`**: Steam platform integration
-
-### `/docs` Directory
-
-Project documentation:
-
-```
+```tree
 docs/
-├── agent/                    # Agent/copilot working docs
-│   ├── button-migration-guide.md
-│   ├── core-layout/
-│   └── user-profile/
-├── api/                      # API documentation (future)
-├── architecture/             # Architecture documentation
-│   ├── backend-tcd.md       # Backend technical context
-│   ├── dev-guide.md         # Development guide
-│   ├── frontend-tcd.md      # Frontend technical context
-│   ├── project-structure.md # This file
-│   └── system-design.md     # Design system documentation
-└── deployment/               # Deployment guides (future)
+├── architecture/
+│   ├── backend-tcd.md         # Backend technical context
+│   ├── frontend-tcd.md        # Frontend technical context
+│   ├── dev-guide.md           # Requirements, local setup, workflow
+│   ├── project-structure.md   # This file
+│   └── system-design.md       # Brand + design system
+├── api/                       # (empty — reserved)
+└── deployment/                # (empty — reserved)
 ```
 
-### `/docker` Directory
+## `/docker` Directory
 
-Docker configuration files:
-
-```
+```tree
 docker/
-├── nginx/
-│   └── dev.conf             # Nginx reverse proxy config
-├── redis/                    # Redis configuration (future)
-├── prometheus/               # Monitoring configuration (future)
-└── fluentd/                  # Log aggregation (future)
+├── nginx/dev.conf             # Reverse proxy config for local development
+├── redis/                     # (empty — reserved)
+├── fluentd/                   # (empty — reserved)
+└── prometheus/                # (empty — reserved)
 ```
 
-### `/scripts` Directory
+## `/scripts` Directory
 
-Utility scripts for development:
-
-```
+```tree
 scripts/
-└── docker-dev.sh            # Docker development helper script
+└── docker-dev.sh              # Docker development helper
 ```
 
 ## Workspace Configuration
 
-### PNPM Workspaces
-
-Defined in `pnpm-workspace.yaml`:
+`pnpm-workspace.yaml`:
 
 ```yaml
 packages:
@@ -266,9 +202,7 @@ packages:
   - 'packages/*'
 ```
 
-### Cross-Package Dependencies
-
-Packages reference each other using the workspace protocol:
+Packages reference each other with the workspace protocol:
 
 ```json
 {
@@ -279,103 +213,17 @@ Packages reference each other using the workspace protocol:
 }
 ```
 
-## Key Features of This Structure
+## Where things belong
 
-### 1. **Monorepo Benefits**
-
-- Shared code and types across applications
-- Consistent tooling and configuration
-- Atomic commits across related changes
-- Simplified dependency management
-
-### 2. **Type Safety**
-
-- Shared TypeScript definitions ensure API contract adherence
-- Type checking across entire codebase
-- Reduced runtime errors
-
-### 3. **Modularity**
-
-- Clear separation of concerns
-- Independent package versioning
-- Easy to add new applications or packages
-
-### 4. **Developer Experience**
-
-- Single command to start entire stack
-- Hot reload for both frontend and backend
-- Consistent linting and formatting
-
-## Implementation Status
-
-### ✅ Fully Implemented
-
-- Backend NestJS application with complete API
-- Frontend Astro + React application
-- Shared types package with comprehensive types
-- Config package with shared configurations
-- Docker development environment
-- Complete authentication and authorization
-- Game catalog system
-- Review system
-- Social features
-
-### 🚧 In Progress
-
-- E2E testing suite
-- Admin panel UI improvements
-- Advanced search and filtering
-
-### 📋 Planned
-
-- External API integration packages (game-apis)
-- Indie developer SDK (indie-sdk)
-- Analytics package
-- Steam integration package
-- Comprehensive API documentation
-- Deployment guides
-
-## Development Commands
-
-From the root directory:
-
-```bash
-# Start entire stack
-pnpm dev
-
-# Start specific app
-pnpm dev:backend
-pnpm dev:frontend
-
-# Build all apps
-pnpm build
-
-# Run tests
-pnpm test
-
-# Database operations
-pnpm db:migrate
-pnpm db:seed
-pnpm db:studio
-
-# Docker operations
-pnpm docker:dev
-pnpm docker:dev:down
-```
-
-## Contributing
-
-When adding new features:
-
-1. Determine if code belongs in an app or shared package
-2. Place shared types in `packages/shared-types`
-3. Place shared utilities in `packages/utils`
-4. Keep app-specific logic in respective app directories
-5. Update this documentation when adding new packages
+1. Decide whether code is app-specific or shared; keep app logic inside its app.
+2. Put cross-cutting TypeScript types in `packages/shared-types`.
+3. Put cross-cutting helpers in `packages/utils`.
+4. Reuse the shared lint/format/TS config from `packages/config`.
+5. Update the relevant document in `docs/architecture/` when structure changes.
 
 ## References
 
-- [Backend Technical Context](./backend-tcd.md)
-- [Frontend Technical Context](./frontend-tcd.md)
+- [Backend TCD](./backend-tcd.md)
+- [Frontend TCD](./frontend-tcd.md)
 - [System Design](./system-design.md)
 - [Development Guide](./dev-guide.md)
