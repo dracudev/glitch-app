@@ -14,7 +14,7 @@ const isBuild = process.argv.includes('build');
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://glitch-app.vercel.app',
+  site: 'https://glitch-for-gamers.vercel.app',
   output: 'server',
 
   adapter: vercel(),

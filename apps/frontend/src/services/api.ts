@@ -14,17 +14,18 @@ interface CacheEntry {
 // Configuration
 // ============================================================================
 
-// Server-side (SSR/build): always need absolute URL — Node.js can't resolve relative paths.
-// Client-side dev: use Vite proxy (same-origin, no CORS, cookies work natively).
-// Client-side prod: use absolute URL (no Vite proxy available, CORS handles cross-origin).
+// Server-side (SSR/build): always need an absolute URL — Node.js can't resolve
+// relative paths. These calls go straight to the backend with the request's
+// cookies forwarded by hand.
+// Browser: always same-origin. The auth cookie is host-only for whoever sets it,
+// so a browser pointed at an absolute cross-site URL gets a cookie the server
+// render can never read back. Vite proxies /api in dev and the Vercel rewrite
+// in vercel.json proxies it in prod, both keeping it first-party.
 export const API_BASE_URL = (() => {
   if (typeof window === 'undefined') {
     return import.meta.env.PUBLIC_API_URL || 'http://localhost:3000/api/v1';
   }
-  if (import.meta.env.DEV) {
-    return '/api/v1';
-  }
-  return import.meta.env.PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+  return '/api/v1';
 })();
 
 const API_CONFIG = {
