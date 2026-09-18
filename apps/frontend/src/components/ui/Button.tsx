@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Slot } from '@radix-ui/react-slot';
+import { Slot, Slottable } from '@radix-ui/react-slot';
 import { Loader2 } from 'lucide-react';
 
 /**
@@ -90,7 +90,12 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             </span>
           )
         )}
-        {children}
+        {/* `Slot` counts children with `React.Children.count`, so the two icon
+            slots below (undefined most of the time) already make it more than
+            one and it throws. `Slottable` is the escape hatch: it marks the
+            element that receives the button's props and lets the icons be
+            injected as its children instead. */}
+        {asChild ? <Slottable>{children}</Slottable> : children}
         {!isLoading && rightIcon && (
           <span className="shrink-0" aria-hidden="true">
             {rightIcon}
