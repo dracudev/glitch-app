@@ -11,11 +11,9 @@ interface FeedItemProps {
 export default function FeedItem({ activity }: FeedItemProps) {
   const { type, user, createdAt } = activity;
 
-  // Normalize createdAt to a string for formatting helper
   const createdAtStr =
     typeof createdAt === 'string' ? createdAt : createdAt ? new Date(createdAt).toISOString() : '';
 
-  // Format relative timestamp
   const formatTimestamp = (date: string) => {
     const now = new Date();
     const past = new Date(date);
@@ -31,7 +29,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
     return past.toLocaleDateString();
   };
 
-  // Render content based on activity type
   const renderActivityContent = () => {
     const activityType = String(type);
 
@@ -47,7 +44,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
 
         return (
           <div className="flex gap-4">
-            {/* Game Cover */}
             {review.game?.coverImage && (
               <a href={`/games/${review.game?.slug}`} className="shrink-0">
                 <img
@@ -58,7 +54,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
               </a>
             )}
 
-            {/* Review Content */}
             <div className="min-w-0 flex-1">
               <div className="mb-2">
                 <a
@@ -69,17 +64,14 @@ export default function FeedItem({ activity }: FeedItemProps) {
                 </a>
               </div>
 
-              {/* Rating */}
               {review.rating !== null && review.rating !== undefined && (
                 <div className="mb-2">
                   <StarRating value={review.rating} size={16} />
                 </div>
               )}
 
-              {/* Review snippet */}
               {snippet && <p className="mb-2 text-base text-foreground-secondary">{snippet}</p>}
 
-              {/* Read more link */}
               <a
                 href={`/reviews/${review.id}`}
                 className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
@@ -99,7 +91,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
 
         return (
           <div className="flex items-center gap-4">
-            {/* Followed User Avatar */}
             <a href={`/profile/${followedUser.username}`}>
               <Avatar.Root className="inline-flex size-12 items-center justify-center overflow-hidden rounded-full">
                 <Avatar.Image
@@ -113,7 +104,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
               </Avatar.Root>
             </a>
 
-            {/* Followed User Info */}
             <div className="flex-1">
               <p className="text-base text-foreground-secondary">
                 started following{' '}
@@ -139,7 +129,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
 
         return (
           <div className="flex gap-4">
-            {/* Game Cover */}
             {review.game?.coverImage && (
               <a href={`/games/${review.game?.slug}`} className="shrink-0">
                 <img
@@ -150,7 +139,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
               </a>
             )}
 
-            {/* Review Content */}
             <div className="min-w-0 flex-1">
               <div className="mb-2">
                 <a
@@ -161,17 +149,14 @@ export default function FeedItem({ activity }: FeedItemProps) {
                 </a>
               </div>
 
-              {/* Rating */}
               {review.rating !== null && review.rating !== undefined && (
                 <div className="mb-2">
                   <StarRating value={review.rating} size={16} />
                 </div>
               )}
 
-              {/* Review snippet */}
               {snippet && <p className="mb-2 text-base text-foreground-secondary">{snippet}</p>}
 
-              {/* Read more link */}
               <a
                 href={`/reviews/${review.id}`}
                 className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
@@ -184,7 +169,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
         );
       }
 
-      // Placeholder for future activity types
       default:
         return <p className="text-base text-foreground-secondary">Activity type not yet implemented</p>;
     }
@@ -192,9 +176,7 @@ export default function FeedItem({ activity }: FeedItemProps) {
 
   return (
     <article className="rounded-lg border border-border bg-card p-6 interactive-surface hover:border-border-hover">
-      {/* Activity Header */}
       <div className="mb-4 flex items-start gap-4">
-        {/* User Avatar */}
         <a href={`/profile/${user.username}`} className="shrink-0">
           <Avatar.Root className="inline-flex size-10 items-center justify-center overflow-hidden rounded-full">
             <Avatar.Image
@@ -208,7 +190,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
           </Avatar.Root>
         </a>
 
-        {/* User Info & Timestamp */}
         <div className="min-w-0 flex-1">
           <a
             href={`/profile/${user.username}`}
@@ -220,7 +201,6 @@ export default function FeedItem({ activity }: FeedItemProps) {
         </div>
       </div>
 
-      {/* Activity Content */}
       {renderActivityContent()}
     </article>
   );

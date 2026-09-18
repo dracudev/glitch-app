@@ -15,7 +15,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  // Enable CORS
   const frontendUrl = configService.get<string>('FRONTEND_URL');
 
   if (!frontendUrl) {
@@ -27,7 +26,6 @@ async function bootstrap() {
     credentials: true,
   });
 
-  // Security middleware
   app.use(
     helmet({
       crossOriginEmbedderPolicy: false,
@@ -42,12 +40,10 @@ async function bootstrap() {
     }),
   );
 
-  // Compression
   app.use(compression());
 
   app.use(cookieParser());
 
-  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -59,16 +55,13 @@ async function bootstrap() {
     }),
   );
 
-  // API versioning
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: '1',
   });
 
-  // Global prefix
   app.setGlobalPrefix('api');
 
-  // Swagger documentation
   if (configService.get('NODE_ENV') !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('Glitch API')

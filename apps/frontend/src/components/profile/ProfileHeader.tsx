@@ -11,55 +11,31 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { getAvatarUrl } from '@/lib/avatar';
 
-// ============================================================================
 // Props Interface
-// ============================================================================
-
 interface ProfileHeaderProps {
   profile: UserProfile;
 }
 
-// ============================================================================
 // ProfileHeader Component
-// ============================================================================
-
-/**
- * Profile header displaying avatar, bio, stats, and action buttons
- *
- * @example
- * ```tsx
- * <ProfileHeader profile={userProfile} />
- * ```
- */
 export default function ProfileHeader({ profile }: ProfileHeaderProps) {
   const currentUser = useStore($currentUser);
   const viewedProfile = useStore($viewedProfile);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  // `$currentUser` only exists client-side: it is read from localStorage by the
-  // navbar after mount. Branching on it during the first render would let a
-  // store-primed client paint the owner state while the server painted the
-  // non-owner state — a guaranteed hydration mismatch. Gate the check until
-  // after mount so both renders agree; the store then takes over and the owner
-  // sees "Edit profile". No network fetch is involved: localStorage is
-  // synchronous, so this always resolves.
+  // `$currentUser` is client-only (localStorage); gating until after mount avoids a hydration mismatch.
   const [isClient, setIsClient] = useState(false);
   useEffect(() => setIsClient(true), []);
 
-  // Use the store version if available (for real-time updates), otherwise use the prop
   const displayProfile = viewedProfile || profile;
 
-  // Check if current user is viewing their own profile
   const isOwnProfile = isClient && currentUser?.id === displayProfile.id;
 
-  // Generate avatar URL with fallback
   const avatarUrl = getAvatarUrl(displayProfile, 128);
 
   return (
     <>
       <Card className="p-6">
         <div className="lg:grid lg:grid-cols-3 lg:gap-8">
-          {/* Column 1: Avatar*/}
           <div className="flex flex-col items-center lg:items-start">
             <div className="relative">
               <Avatar.Root className="inline-flex size-24 select-none items-center justify-center overflow-hidden rounded-full border border-border align-middle lg:size-32">
@@ -87,20 +63,16 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
             </div>
           </div>
 
-          {/* Column 2: Profile Info  */}
           <div className="mt-6 text-center lg:col-span-1 lg:mt-0 lg:text-left">
-            {/* Username */}
             <h1 className="text-2xl tracking-tight sm:text-3xl">
               {displayProfile.displayName || displayProfile.username}
             </h1>
             <p className="text-base text-muted-foreground lg:text-lg">@{displayProfile.username}</p>
 
-            {/* Bio */}
             {displayProfile.bio && (
               <p className="mt-4 whitespace-pre-wrap text-foreground">{displayProfile.bio}</p>
             )}
 
-            {/* Additional Info */}
             <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-muted-foreground lg:justify-start">
               {displayProfile.location && (
                 <span className="flex items-center gap-1">
@@ -132,7 +104,6 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
               </span>
             </div>
 
-            {/* Stats */}
             <div className="mt-6 flex justify-center gap-8 lg:justify-start">
               <div className="text-center lg:text-left">
                 <div className="font-mono text-2xl font-semibold text-foreground">
@@ -155,7 +126,6 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
             </div>
           </div>
 
-          {/* Column 3: Action Buttons */}
           <div className="mt-6 flex flex-col items-stretch lg:mt-0 lg:items-end lg:justify-start">
             {isOwnProfile ? (
               <Button
@@ -177,7 +147,6 @@ export default function ProfileHeader({ profile }: ProfileHeaderProps) {
         </div>
       </Card>
 
-      {/* Edit Profile Dialog */}
       {isOwnProfile && (
         <EditProfileDialog
           profile={displayProfile}

@@ -7,40 +7,32 @@ import { gamesService } from '@/services/games';
 import { reviewsService } from '@/services/reviews';
 import type { GameDetail, PaginatedReviewsResponse, GameResponse } from '@glitch/shared-types';
 
-// ============================================================================
-// SERVER-SIDE DATA FETCHING
-// ============================================================================
+// Server-Side Data Fetching
 
 const { slug } = Astro.params;
 
-// Validate slug format (alphanumeric with hyphens)
 if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
   return Astro.redirect('/404', 404);
 }
 
-// Fetch primary game data
 let game: GameDetail;
 try {
   game = await gamesService.getGameBySlug(slug);
 } catch (error) {
-  // Log error for monitoring
   console.error(`[GameDetail] Failed to fetch game with slug: ${slug}`, {
     error: error instanceof Error ? error.message : 'Unknown error',
     slug,
     timestamp: new Date().toISOString()
   });
-  
-  // Return 404 if game not found
+
   return Astro.redirect('/404', 404);
 }
 
-// Parallel fetch of related data for optimal performance
 const [reviewsResult, similarGamesResult] = await Promise.allSettled([
   reviewsService.getReviewsByGame(game.game.id, { page: 1, limit: 10 }),
   gamesService.getSimilarGames(game.game.id, 6)
 ]);
 
-// Extract results with fallback values
 const reviews: PaginatedReviewsResponse = reviewsResult.status === 'fulfilled'
   ? reviewsResult.value
   : { items: [], meta: { total: 0, page: 1, limit: 10, totalPages: 0 } };
@@ -49,7 +41,6 @@ const similarGames: GameResponse[] = similarGamesResult.status === 'fulfilled'
   ? similarGamesResult.value
   : [];
 
-// Log errors for failed parallel requests (non-blocking)
 if (reviewsResult.status === 'rejected') {
   console.error(`[GameDetail] Failed to fetch reviews for game: ${game.game.id}`, {
     error: reviewsResult.reason,
@@ -68,9 +59,7 @@ if (similarGamesResult.status === 'rejected') {
   });
 }
 
-// ============================================================================
-// SEO META TAGS
-// ============================================================================
+// SEO Meta Tags
 
 const pageTitle = `${game.game.title} - Game Reviews & Details | Glitch`;
 const pageDescription = game.summary
@@ -98,7 +87,6 @@ function safeUrl(pathOrUrl: string) {
 
 const canonicalUrl = safeUrl(`/games/${slug}`);
 
-// Structured data for search engines (Schema.org JSON-LD)
 const structuredData = {
   "@context": "https://schema.org",
   "@type": "VideoGame",
@@ -109,9 +97,7 @@ const structuredData = {
   "publisher": game.publisher?.name,
   "gamePlatform": game.platforms?.map(p => p.name).join(", "),
   "datePublished": game.game.releaseDate,
-  // aggregateRating must describe THIS site's reviews, never IGDB's borrowed
-  // score — so it comes from the local Glitch aggregate and is omitted when
-  // nobody here has reviewed the game yet.
+  // aggregateRating must describe THIS site's reviews, never IGDB's borrowed score.
   "aggregateRating": game.game.reviewCount > 0 && game.game.averageRating != null ? {
     "@type": "AggregateRating",
     "ratingValue": game.game.averageRating,
@@ -121,7 +107,6 @@ const structuredData = {
   } : undefined
 };
 
-// Breadcrumb structured data for navigation
 const breadcrumbData = {
   "@context": "https://schema.org",
   "@type": "BreadcrumbList",
@@ -146,31 +131,25 @@ const breadcrumbData = {
   title={pageTitle}
   description={pageDescription}
 >
-  <!-- SEO Meta Tags -->
   <Fragment slot="head">
-    <!-- Canonical URL -->
     <link rel="canonical" href={canonicalUrl} />
     
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={pageDescription} />
     <meta property="og:image" content={coverImageUrl} />
     
-    <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content={canonicalUrl} />
     <meta property="twitter:title" content={pageTitle} />
     <meta property="twitter:description" content={pageDescription} />
     <meta property="twitter:image" content={coverImageUrl} />
     
-    <!-- Structured Data -->
     <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
     <script type="application/ld+json" set:html={JSON.stringify(breadcrumbData)} />
   </Fragment>
 
-  <!-- Hydrate React Island with server-fetched data -->
   <GameDetailPage 
     initialGame={game}
     initialReviews={reviews}

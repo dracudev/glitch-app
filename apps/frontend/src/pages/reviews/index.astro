@@ -7,9 +7,7 @@ import { getAllReviews } from '@/services/reviews';
 import { ssrCookieHeader } from '@/services/ssr-auth';
 import type { PaginatedReviewsResponse } from '@glitch/shared-types';
 
-// ============================================================================
 // Server-Side Data Fetching
-// ============================================================================
 
 let reviewsData: PaginatedReviewsResponse | null = null;
 const cookieHeader = await ssrCookieHeader(Astro.request.headers.get('cookie') || undefined);
@@ -26,28 +24,20 @@ try {
     cookieHeader ? { cookie: cookieHeader } : undefined,
   );
 } catch (err: any) {
-  // Log error but continue to render page
   console.error('Error fetching reviews:', err);
 }
 
-// ============================================================================
 // SEO Meta Tags
-// ============================================================================
 
 const pageTitle = 'Reviews | Glitch';
 const pageDescription =
   'Browse the latest game reviews from the Glitch community. Discover honest opinions, detailed critiques, and recommendations for your next gaming adventure.';
 
-// Open Graph image (you can replace with a custom reviews page image)
-// Path only: BaseLayout resolves it against the site URL. The previous
-// concatenation produced a double slash and referenced an asset that does not
-// exist, so review-page shares had no image at all.
+// Path only: BaseLayout resolves it against the site URL.
 const pageImage = '/og-image.jpg';
 
-// Canonical URL
 const canonicalURL = new URL('/reviews', Astro.site || Astro.url.origin).toString();
 
-// Structured data for rich results
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'CollectionPage',
@@ -67,10 +57,8 @@ const structuredData = {
   image={pageImage}
   canonicalURL={canonicalURL}
 >
-  <!-- Structured Data -->
   <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
-  <!-- Reviews Page Content -->
   <ReviewsPage 
     initialData={reviewsData}
     client:load

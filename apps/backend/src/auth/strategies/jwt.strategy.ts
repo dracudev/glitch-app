@@ -12,11 +12,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private authService: AuthService,
     private configService: ConfigService,
   ) {
-    // Extractor that falls back to cookie if Authorization header is not present
     const cookieExtractor = (req: Request): string | null => {
       if (!req) return null;
-      // req.cookies is populated by cookie-parser middleware
-      // Return the authToken cookie when present
       return (req.cookies && (req.cookies['authToken'] as string)) || null;
     };
 

@@ -7,15 +7,13 @@ const tabTriggerStyles =
   'cursor-pointer whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[state=active]:font-semibold data-[state=active]:text-foreground';
 
 interface GameTabsProps {
-  /** Server-rendered game. Used for the first paint so the SSR HTML carries
-   * real content; the store is still the source of truth after mount. */
+  /** Server-rendered for the first paint; the store wins after mount. */
   game?: GameDetail;
 }
 
 export default function GameTabs({ game: initialGame }: GameTabsProps) {
   const { game: storeGame } = useGameDetail();
-  // Store-first, but only when the store is actually holding THIS game - on a
-  // client-side navigation it can still hold the previous one for a render.
+  // Store-first only when it holds THIS game; it can still hold the previous one during navigation.
   const storeIsThisGame =
     storeGame != null && (initialGame == null || storeGame.game.slug === initialGame.game.slug);
   const game = storeIsThisGame ? storeGame : initialGame;
@@ -51,7 +49,6 @@ export default function GameTabs({ game: initialGame }: GameTabsProps) {
 
       <Tabs.Content value="details">
         <div className="space-y-6">
-          {/* Genres */}
           {game.genres && game.genres.length > 0 && (
             <div>
               <h3 className="mb-3 text-lg font-semibold">Genres</h3>
@@ -69,7 +66,6 @@ export default function GameTabs({ game: initialGame }: GameTabsProps) {
             </div>
           )}
 
-          {/* Platforms */}
           {game.platforms && game.platforms.length > 0 && (
             <div>
               <h3 className="mb-3 text-lg font-semibold">Platforms</h3>
@@ -87,7 +83,6 @@ export default function GameTabs({ game: initialGame }: GameTabsProps) {
             </div>
           )}
 
-          {/* Release Date */}
           {game.game.releaseDate && (
             <div>
               <h3 className="mb-3 text-lg font-semibold">Release date</h3>
@@ -109,13 +104,11 @@ export default function GameTabs({ game: initialGame }: GameTabsProps) {
 function GameTabsSkeleton() {
   return (
     <div className="mb-12 animate-pulse">
-      {/* Three triggers, matching the real tab list's gap and control height. */}
       <div className="mb-6 flex gap-1 overflow-x-auto border-b border-border no-scrollbar">
         <div className="h-9 w-20 rounded-md bg-muted" />
         <div className="h-9 w-24 rounded-md bg-muted" />
         <div className="h-9 w-20 rounded-md bg-muted" />
       </div>
-      {/* About tab body: prose-body lines. */}
       <div className="space-y-3">
         <div className="h-8 w-full rounded-md bg-muted" />
         <div className="h-8 w-11/12 rounded-md bg-muted" />

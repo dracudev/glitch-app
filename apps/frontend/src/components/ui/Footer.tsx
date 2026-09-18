@@ -47,12 +47,7 @@ const socialLinks = [
   },
 ];
 
-/**
- * Site footer.
- *
- * All styling is Tailwind token classes: no inline styles, no imperative
- * `onMouseEnter` colour mutation, so hover and keyboard focus behave the same.
- */
+/** Site footer; styling is Tailwind-only so hover and keyboard focus behave the same. */
 export default function Footer({ className = '' }: FooterProps) {
   const currentYear = new Date().getFullYear();
 
@@ -60,7 +55,6 @@ export default function Footer({ className = '' }: FooterProps) {
     <footer className={`border-t border-border bg-background ${className}`}>
       <div className="shell">
         <div className="grid grid-cols-2 gap-10 py-12 md:grid-cols-4 lg:grid-cols-[1.4fr_repeat(3,1fr)] lg:py-16">
-          {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <a
               href="/"
@@ -101,7 +95,6 @@ export default function Footer({ className = '' }: FooterProps) {
             </ul>
           </div>
 
-          {/* Link columns */}
           {linkGroups.map((group) => (
             <nav key={group.title} aria-labelledby={`footer-${group.title.toLowerCase()}`}>
               <h2

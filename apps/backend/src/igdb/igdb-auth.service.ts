@@ -15,7 +15,6 @@ export class IgdbAuthService {
   constructor(private readonly configService: ConfigService) {}
 
   async getAccessToken(): Promise<string> {
-    // Return cached if valid for at least 60s
     if (this.cache && this.cache.expiresAt - Date.now() > 60_000) {
       return this.cache.token;
     }

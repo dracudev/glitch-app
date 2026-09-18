@@ -6,27 +6,11 @@ import { useStore } from '@nanostores/react';
 import { Button } from '@/components/ui/Button';
 import { notify } from '@/stores/notifications';
 
-// ============================================================================
-// Props Interface
-// ============================================================================
-
 interface FollowButtonProps {
   userId: string;
   initialIsFollowing?: boolean;
 }
 
-// ============================================================================
-// FollowButton Component
-// ============================================================================
-
-/**
- * Follow/Unfollow button with optimistic updates
- *
- * @example
- * ```tsx
- * <FollowButton userId="user-123" initialIsFollowing={false} />
- * ```
- */
 export default function FollowButton({ userId, initialIsFollowing = false }: FollowButtonProps) {
   const { followUser, unfollowUser, followingStatus, loadingActions } =
     useFollowActions();
@@ -38,7 +22,6 @@ export default function FollowButton({ userId, initialIsFollowing = false }: Fol
     setFollowingStatus(userId, initialIsFollowing);
   }, [userId, initialIsFollowing]);
 
-  // Determine current following status
   const isFollowing = followingStatus[userId] ?? initialIsFollowing;
   const isLoading = loadingActions[userId] ?? false;
 

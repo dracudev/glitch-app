@@ -86,9 +86,7 @@ export class ReviewsQueryDto {
     description: 'Filter by published status',
   })
   @IsOptional()
-  // Pin the type to String: with `enableImplicitConversion` the global
-  // ValidationPipe would coerce "false" to `true` (Boolean('false') === true)
-  // before the transform below ever sees the raw query param.
+  // Pin to String so the global ValidationPipe does not coerce "false" to true before the transform below.
   @Type(() => String)
   @Transform(({ value }) => (value === 'true' ? true : value === 'false' ? false : value))
   @IsBoolean()

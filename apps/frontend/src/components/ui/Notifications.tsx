@@ -9,10 +9,7 @@ import {
   type NotificationTone,
 } from '@/stores/notifications';
 
-// ============================================================================
 // Tone styling
-// ============================================================================
-
 const TONE_ICON: Record<NotificationTone, typeof Info> = {
   info: Info,
   success: CheckCircle2,
@@ -27,10 +24,7 @@ const TONE_COLOR: Record<NotificationTone, string> = {
 
 const DEFAULT_DURATION = 6000;
 
-// ============================================================================
 // Single notification
-// ============================================================================
-
 function NotificationItem({ notification }: { notification: NotificationEntry }) {
   const {
     id,
@@ -43,15 +37,13 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
   const [settled, setSettled] = useState(false);
   const [paused, setPaused] = useState(false);
 
-  // Settle into place. Transform only: the notice is fully visible and readable
-  // at every frame, so a missed animation can never hide it.
+  // Transform-only entrance so a missed animation can never hide the notice.
   useEffect(() => {
     const frame = requestAnimationFrame(() => setSettled(true));
     return () => cancelAnimationFrame(frame);
   }, []);
 
-  // Auto-dismiss, paused while the pointer or focus is inside. ponytail: unpausing
-  // restarts the full duration instead of resuming the remainder — good enough.
+  // Auto-dismiss pauses on hover/focus; unpausing restarts the full duration rather than resuming the remainder.
   useEffect(() => {
     if (paused || duration <= 0) return;
     const timer = setTimeout(() => dismissNotification(id), duration);
@@ -83,8 +75,7 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
           asChild
           variant="secondary"
           size="sm"
-          // The `secondary` fill IS the notice surface, so without this the button
-          // has no presence of its own. Lift it one tonal step instead.
+          // The secondary fill matches the notice surface; lift one tonal step for contrast.
           className="shrink-0 bg-muted hover:bg-secondary-hover"
         >
           <a href={action.href}>{action.label}</a>
@@ -103,18 +94,8 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
   );
 }
 
-// ============================================================================
 // Notification stack
-// ============================================================================
-
-/**
- * Global notification stack. Sits below the 64px navbar, top-right.
- *
- * @example
- * ```ts
- * notify({ title: 'Sign in to follow people', action: { label: 'Sign in', href: '/auth/login' } });
- * ```
- */
+/** Global notification stack, top-right below the 64px navbar. */
 export default function Notifications() {
   const notifications = useStore($notifications);
 

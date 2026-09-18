@@ -1,7 +1,5 @@
-// Zod schemas and validation functions
 export * from "./validations";
 
-// Auth Response Types
 export interface AuthUser {
   id: string;
   email: string;
@@ -26,7 +24,6 @@ export interface JwtPayload {
   exp?: number;
 }
 
-// Auth Constants
 export type UserRole = "USER" | "ADMIN" | "MODERATOR";
 
 export interface TokenResponse {

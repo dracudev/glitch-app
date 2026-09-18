@@ -5,32 +5,15 @@ import { $viewedProfile } from '@/stores/users';
 import ReviewList from './ReviewList';
 import FollowList from './FollowList';
 
-// ============================================================================
-// Props Interface
-// ============================================================================
-
 interface ProfileTabsProps {
   profile: UserProfile;
 }
 
-// ============================================================================
-// ProfileTabs Component
-// ============================================================================
-
-/**
- * Tabbed navigation for profile sections (Reviews, Followers, Following)
- *
- * @example
- * ```tsx
- * <ProfileTabs profile={userProfile} />
- * ```
- */
 export default function ProfileTabs({ profile }: ProfileTabsProps) {
   const viewedProfile = useStore($viewedProfile);
   const displayProfile = viewedProfile || profile;
   return (
     <Tabs.Root defaultValue="reviews" className="w-full">
-      {/* Tab List */}
       <Tabs.List
         className="mb-6 flex gap-1 overflow-x-auto border-b border-border no-scrollbar"
         aria-label="Profile sections"
@@ -66,7 +49,6 @@ export default function ProfileTabs({ profile }: ProfileTabsProps) {
         </Tabs.Trigger>
       </Tabs.List>
 
-      {/* Tab Content */}
       <Tabs.Content value="reviews">
         <ReviewList userId={displayProfile.id} />
       </Tabs.Content>

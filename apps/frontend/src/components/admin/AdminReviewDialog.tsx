@@ -28,12 +28,7 @@ interface AdminReviewDialogProps {
   onSaved: () => void;
 }
 
-/**
- * Moderation form for a single review.
- *
- * Editing runs through the public `PATCH /reviews/:id`, which the backend
- * allows an admin to call on someone else's review.
- */
+/** Moderation form; edits go through the public `PATCH /reviews/:id` (admins may call it on others' reviews). */
 export default function AdminReviewDialog({ target, onClose, onSaved }: AdminReviewDialogProps) {
   const [form, setForm] = useState<FormState | null>(null);
   const [isSaving, setIsSaving] = useState(false);

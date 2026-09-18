@@ -7,9 +7,7 @@ import { getAdminUsers } from '@/services/admin';
 import { getSessionRole, ssrCookieHeader } from '@/services/ssr-auth';
 import type { AdminUser, PaginatedResponse } from '@glitch/shared-types';
 
-// ============================================================================
 // Access Control
-// ============================================================================
 
 // The API enforces ADMIN; this only keeps non-admins from seeing an empty shell.
 const cookieHeader = Astro.request.headers.get('cookie') || undefined;
@@ -18,9 +16,7 @@ if ((await getSessionRole(cookieHeader)) !== 'ADMIN') {
   return Astro.redirect('/');
 }
 
-// ============================================================================
 // Server-Side Data Fetching
-// ============================================================================
 
 const ssrHeaders = await ssrCookieHeader(cookieHeader);
 

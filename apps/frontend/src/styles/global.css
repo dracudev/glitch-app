@@ -235,9 +235,7 @@
 }
 
 /* ---------------------------------------------------------------------------
-   3. LIGHT THEME — explicit opt-in, same variable names, no second source of
-   truth. Because both themes set the SAME names, a token can never disagree
-   with itself depending on how the theme was reached.
+   3. LIGHT THEME — explicit opt-in; same variable names as dark.
    --------------------------------------------------------------------------- */
 :root.light {
   color-scheme: light;
@@ -372,10 +370,7 @@
    5. UTILITIES
    --------------------------------------------------------------------------- */
 
-/* THE page shell. One class governs every gutter and the content rail, so the
-   navbar, the footer and every page align by construction.
-   Usage: <div class="shell">…</div>
-   Narrow reading pages nest <div class="mx-auto max-w-3xl"> inside it. */
+/* THE page shell: governs every gutter and the content rail for the whole app. */
 @utility shell {
   margin-inline: auto;
   width: 100%;

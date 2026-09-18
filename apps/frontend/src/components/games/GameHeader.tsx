@@ -11,15 +11,13 @@ import { Button } from '@/components/ui/Button';
 import { notify } from '@/stores/notifications';
 
 interface GameHeaderProps {
-  /** Server-rendered game. Used for the first paint so the SSR HTML carries
-   * real content; the store is still the source of truth after mount. */
+  /** Server-rendered for the first paint; the store wins after mount. */
   game?: GameDetail;
 }
 
 export default function GameHeader({ game: initialGame }: GameHeaderProps) {
   const { game: storeGame } = useGameDetail();
-  // Store-first, but only when the store is actually holding THIS game - on a
-  // client-side navigation it can still hold the previous one for a render.
+  // Store-first only when it holds THIS game; it can still hold the previous one during navigation.
   const storeIsThisGame =
     storeGame != null && (initialGame == null || storeGame.game.slug === initialGame.game.slug);
   const game = storeIsThisGame ? storeGame : initialGame;
@@ -40,7 +38,6 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
       })
     : 'TBA';
 
-  // Fallback placeholder for missing cover images
   const coverSrc = game.game.coverImage || '/images/game-placeholder.svg';
 
   return (
@@ -57,7 +54,6 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
           />
         </div>
 
-        {/* Title and Meta */}
         <div>
           <h1 className="mb-2 text-2xl tracking-tight sm:text-3xl">{game.game.title}</h1>
 
@@ -84,7 +80,6 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
 
         <GameScores game={game} />
 
-        {/* Action Buttons */}
         <ActionButtons
           onWriteReview={() => setIsReviewDialogOpen(true)}
           hasReview={Boolean(myReview)}
@@ -93,7 +88,6 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
 
       {/* Desktop Layout: Horizontal */}
       <div className="hidden gap-8 lg:flex">
-        {/* Cover Image (show placeholder if missing) */}
         <div className="aspect-[3/4] w-64 shrink-0 overflow-hidden rounded-lg border border-border bg-muted">
           <img
             src={coverSrc}
@@ -103,7 +97,6 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
           />
         </div>
 
-        {/* Info and Actions */}
         <div className="flex flex-1 flex-col justify-between">
           <div>
             <h1 className="mb-4 text-2xl tracking-tight sm:text-3xl">{game.game.title}</h1>
@@ -137,7 +130,6 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
 
             <GameScores game={game} />
 
-            {/* Platforms */}
             {game.platforms && game.platforms.length > 0 && (
               <div className="mb-6 flex flex-wrap gap-2">
                 {game.platforms.map((platform) => (
@@ -160,7 +152,6 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
         </div>
       </div>
 
-      {/* Review Dialog */}
       <ReviewFormDialog
         gameId={game.game.id}
         isOpen={isReviewDialogOpen}
@@ -267,7 +258,6 @@ function GameScores({ game }: { game: GameDetail }) {
 function GameHeaderSkeleton() {
   return (
     <header className="mb-8 animate-pulse">
-      {/* Mobile: vertical — mirrors the real header's mobile layout. */}
       <div className="flex flex-col gap-6 lg:hidden">
         <div className="aspect-video w-full rounded-lg border border-border bg-card" />
         <div className="space-y-2">
@@ -281,7 +271,6 @@ function GameHeaderSkeleton() {
         </div>
       </div>
 
-      {/* Desktop: horizontal — same cover ratio, meta lines and button row. */}
       <div className="hidden gap-8 lg:flex">
         <div className="aspect-[3/4] w-64 shrink-0 rounded-lg border border-border bg-card" />
         <div className="flex flex-1 flex-col justify-between">

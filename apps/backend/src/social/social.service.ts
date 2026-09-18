@@ -26,13 +26,11 @@ export class SocialService {
       throw new BadRequestException('You cannot follow yourself');
     }
 
-    // Check if target user exists
     const targetUser = await this.usersService.findById(followingId);
     if (!targetUser) {
       throw new NotFoundException('User not found');
     }
 
-    // Check if already following
     const existingFollow = await this.prisma.follow.findUnique({
       where: {
         followerId_followingId: {
@@ -107,7 +105,6 @@ export class SocialService {
 
     const skip = (page - 1) * limit;
 
-    // Get user's following list
     const following = await this.prisma.follow.findMany({
       where: { followerId: userId },
       select: { followingId: true },
@@ -115,10 +112,8 @@ export class SocialService {
 
     const followingIds = following.map((f) => f.followingId);
 
-    // Include the user's own activities
     followingIds.push(userId);
 
-    // Get recent reviews from followed users
     const reviewsQuery = this.prisma.review.findMany({
       where: {
         userId: { in: followingIds },
@@ -154,7 +149,6 @@ export class SocialService {
       skip,
     });
 
-    // Get recent follows if requested
     const followsQuery =
       type === SOCIAL_CONSTANTS.ACTIVITY_TYPES.FOLLOW || !type
         ? this.prisma.follow.findMany({
@@ -187,10 +181,8 @@ export class SocialService {
 
     const [reviews, follows] = await Promise.all([reviewsQuery, followsQuery]);
 
-    // Combine and sort activities
     const activities: ActivityItemDto[] = [];
 
-    // Add review activities
     reviews.forEach((review) => {
       activities.push({
         id: `review_${review.id}`,
@@ -214,7 +206,6 @@ export class SocialService {
       });
     });
 
-    // Add follow activities
     follows.forEach((follow) => {
       activities.push({
         id: `follow_${follow.followerId}_${follow.followingId}`,
@@ -228,10 +219,8 @@ export class SocialService {
       });
     });
 
-    // Sort by creation date
     activities.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
-    // Paginate the combined results
     const paginatedActivities = activities.slice(0, limit);
     const total = activities.length;
 
@@ -290,8 +279,7 @@ export class SocialService {
   }
 
   async getFollowSuggestions(userId: string, limit: number = 10): Promise<any[]> {
-    // Get users that the current user's follows are following
-    // but the current user is not following yet
+    // Follows of the user's follows that the user does not already follow.
     const suggestions = await this.prisma.$queryRaw`
       SELECT DISTINCT u.id, u.username, u."displayName", u.avatar, 
              COUNT(f2.id) as mutual_follows_count

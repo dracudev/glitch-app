@@ -17,9 +17,7 @@ import { useReviewActions } from '@/hooks/useReviews';
 import { notify } from '@/stores/notifications';
 import type { ReviewResponse } from '@glitch/shared-types';
 
-// ============================================================================
 // Props
-// ============================================================================
 
 interface ReviewFormDialogProps {
   gameId: string;
@@ -28,10 +26,6 @@ interface ReviewFormDialogProps {
   /** If provided, dialog operates in edit mode */
   existingReview?: ReviewResponse | null;
 }
-
-// ============================================================================
-// ReviewFormDialog Component
-// ============================================================================
 
 export default function ReviewFormDialog({
   gameId,
@@ -51,7 +45,6 @@ export default function ReviewFormDialog({
 
   const error = localError || actionError;
 
-  // Reset form when dialog opens for a new review
   const handleOpenChange = (open: boolean) => {
     if (!open) {
       // Reset after close animation
@@ -68,7 +61,6 @@ export default function ReviewFormDialog({
     }
   };
 
-  // Sync state when existingReview changes (edit mode)
   useEffect(() => {
     if (existingReview) {
       setTitle(existingReview.title || '');
@@ -131,7 +123,6 @@ export default function ReviewFormDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Title */}
           <div className="space-y-2">
             <Label htmlFor="review-title">
               Title <span className="font-normal text-muted-foreground">(optional)</span>
@@ -146,7 +137,6 @@ export default function ReviewFormDialog({
             />
           </div>
 
-          {/* Rating */}
           <div className="space-y-2">
             <Label htmlFor="review-rating">Rating</Label>
             <StarRating
@@ -158,7 +148,6 @@ export default function ReviewFormDialog({
             />
           </div>
 
-          {/* Content */}
           <div className="space-y-2">
             <Label htmlFor="review-content">Your review</Label>
             <Textarea
@@ -171,7 +160,6 @@ export default function ReviewFormDialog({
             />
           </div>
 
-          {/* Spoiler Toggle */}
           <div className="flex items-center gap-3">
             <input
               type="checkbox"
@@ -185,14 +173,12 @@ export default function ReviewFormDialog({
             </label>
           </div>
 
-          {/* Error */}
           {error && (
             <div className="rounded-md border border-error bg-error/10 p-3">
               <p className="text-sm text-error">{error}</p>
             </div>
           )}
 
-          {/* Actions */}
           <DialogFooter className="mt-0">
             <DialogClose asChild>
               <Button type="button" variant="secondary" disabled={isLoading}>

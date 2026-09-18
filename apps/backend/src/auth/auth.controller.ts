@@ -57,10 +57,8 @@ export class AuthController {
     const sameSiteOption: 'none' | 'lax' = isProd ? 'none' : 'lax';
     const accessTokenOptions = {
       httpOnly: true,
-      // Secure MUST be true if SameSite=None. Use secure in prod only.
+      // Secure must be true when SameSite=None; prod uses None for cross-site (Vercel-Render), dev uses Lax.
       secure: isProd,
-      // SameSite=None is required for cross-site cookies (Vercel - Render).
-      // In development keep Lax for convenience.
       sameSite: sameSiteOption,
       path: '/',
       maxAge: 15 * 60 * 1000, // 15 minutes
@@ -125,7 +123,6 @@ export class AuthController {
     res.clearCookie('authToken', cookieOptions);
     res.clearCookie('refreshToken', cookieOptions);
 
-    // No content response
     return;
   }
 

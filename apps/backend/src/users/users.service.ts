@@ -176,9 +176,7 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    // Check if profile is private and user is not the owner
     if (user.isPrivate && currentUserId !== user.id) {
-      // Return limited profile for private users
       return {
         id: user.id,
         username: user.username,
@@ -319,7 +317,6 @@ export class UsersService {
   }
 
   async clearResetToken(id: string): Promise<void> {
-    // Clear all password reset tokens for this user
     await this.prisma.userSession.deleteMany({
       where: {
         userId: id,

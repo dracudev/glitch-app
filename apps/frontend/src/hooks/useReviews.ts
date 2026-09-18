@@ -51,9 +51,7 @@ import { clearActivityFeedState } from '@/stores/social';
 import { adjustViewedProfileReviewsCount } from '@/stores/users';
 import { refreshGameAggregate } from '@/stores/games';
 
-// ============================================================================
-// Types
-// ============================================================================
+// ── Types
 
 interface UseReviewsReturn {
   // State
@@ -147,56 +145,14 @@ interface UseReviewActionsReturn {
   clearError: () => void;
 }
 
-// ============================================================================
-// Reviews List Hook
-// ============================================================================
+// ── Reviews List Hook
 
-/**
- * Hook for managing reviews list with filtering, searching, and pagination
- *
- * @example
- * ```tsx
- * function ReviewsList() {
- *   const {
- *     data,
- *     isLoading,
- *     error,
- *     fetchReviews,
- *     searchReviews,
- *     clearError
- *   } = useReviews();
- *
- *   useEffect(() => {
- *     fetchReviews({ page: 1, limit: 12, sortBy: 'rating', sortOrder: 'desc' });
- *   }, []);
- *
- *   const handleSearch = (searchTerm: string) => {
- *     searchReviews(searchTerm, { limit: 20 });
- *   };
- *
- *   if (error) return <ErrorMessage message={error} onClose={clearError} />;
- *   if (isLoading) return <Loading />;
- *
- *   return (
- *     <div>
- *       {data?.items.map(review => (
- *         <ReviewCard key={review.id} review={review} />
- *       ))}
- *       <Pagination meta={data?.meta} />
- *     </div>
- *   );
- * }
- * ```
- */
 export function useReviews(): UseReviewsReturn {
-  // Subscribe to global reviews stores
   const data = useStore($reviewsData);
   const isLoading = useStore($reviewsLoading);
   const error = useStore($reviewsError);
 
-  // ============================================================================
-  // API Actions
-  // ============================================================================
+  // ── API Actions
 
   const fetchReviews = useCallback(
     async (query: ReviewsQuery = {}): Promise<PaginatedReviewsResponse> => {
@@ -308,7 +264,6 @@ export function useReviews(): UseReviewsReturn {
     const currentData = data;
     const currentIsLoading = isLoading;
 
-    // Don't load if already loading or no more pages
     if (currentIsLoading || !currentData || currentData.meta.page >= currentData.meta.totalPages) {
       return;
     }
@@ -332,9 +287,7 @@ export function useReviews(): UseReviewsReturn {
     }
   }, [data, isLoading]);
 
-  // ============================================================================
-  // Utility Actions
-  // ============================================================================
+  // ── Utility Actions
 
   const clearError = useCallback(() => {
     setReviewsError(null);
@@ -345,7 +298,6 @@ export function useReviews(): UseReviewsReturn {
   }, []);
 
   const refetch = useCallback(async (): Promise<void> => {
-    // Basic refetch implementation
     if (data) {
       await fetchReviews();
     }
@@ -372,51 +324,14 @@ export function useReviews(): UseReviewsReturn {
   };
 }
 
-// ============================================================================
-// Review Detail Hook
-// ============================================================================
+// ── Review Detail Hook
 
-/**
- * Hook for managing individual review details
- *
- * @example
- * ```tsx
- * function ReviewDetailPage({ reviewId }: { reviewId: string }) {
- *   const {
- *     review,
- *     isLoading,
- *     error,
- *     fetchReviewDetail,
- *     clearError
- *   } = useReviewDetail();
- *
- *   useEffect(() => {
- *     fetchReviewDetail(reviewId);
- *   }, [reviewId]);
- *
- *   if (error) return <ErrorMessage message={error} onClose={clearError} />;
- *   if (isLoading) return <Loading />;
- *   if (!review) return <NotFound />;
- *
- *   return (
- *     <div>
- *       <ReviewHeader review={review} />
- *       <ReviewContent content={review.content} />
- *       <ReviewStats stats={review.stats} />
- *     </div>
- *   );
- * }
- * ```
- */
 export function useReviewDetail(): UseReviewDetailReturn {
-  // Subscribe to global review detail stores
   const review = useStore($reviewDetail);
   const isLoading = useStore($reviewDetailLoading);
   const error = useStore($reviewDetailError);
 
-  // ============================================================================
-  // API Actions
-  // ============================================================================
+  // ── API Actions
 
   const fetchReviewDetail = useCallback(async (reviewId: string): Promise<ReviewResponse> => {
     setReviewDetailLoading(true);
@@ -436,9 +351,7 @@ export function useReviewDetail(): UseReviewDetailReturn {
     }
   }, []);
 
-  // ============================================================================
-  // Utility Actions
-  // ============================================================================
+  // ── Utility Actions
 
   const clearError = useCallback(() => {
     setReviewDetailError(null);
@@ -475,54 +388,14 @@ export function useReviewDetail(): UseReviewDetailReturn {
   };
 }
 
-// ============================================================================
-// User Reviews Hook
-// ============================================================================
+// ── User Reviews Hook
 
-/**
- * Hook for managing user's reviews
- *
- * @example
- * ```tsx
- * function UserReviewsSection({ userId }: { userId: string }) {
- *   const {
- *     reviews,
- *     isLoading,
- *     error,
- *     fetchUserReviews,
- *     clearError
- *   } = useUserReviews();
- *
- *   useEffect(() => {
- *     fetchUserReviews(userId, { limit: 10, sortBy: 'createdAt', sortOrder: 'desc' });
- *   }, [userId]);
- *
- *   if (error) return <ErrorMessage message={error} onClose={clearError} />;
- *   if (isLoading) return <Loading />;
- *   if (!reviews?.items.length) return <EmptyState />;
- *
- *   return (
- *     <section>
- *       <h3>User Reviews</h3>
- *       <div className="space-y-4">
- *         {reviews.items.map(review => (
- *           <ReviewCard key={review.id} review={review} />
- *         ))}
- *       </div>
- *     </section>
- *   );
- * }
- * ```
- */
 export function useUserReviews(): UseUserReviewsReturn {
-  // Subscribe to global user reviews stores
   const reviews = useStore($userReviews);
   const isLoading = useStore($userReviewsLoading);
   const error = useStore($reviewsError); // Reuse main reviews error state
 
-  // ============================================================================
-  // API Actions
-  // ============================================================================
+  // ── API Actions
 
   const fetchUserReviews = useCallback(
     async (
@@ -530,7 +403,7 @@ export function useUserReviews(): UseUserReviewsReturn {
       query: Omit<ReviewsQuery, 'userId'> = {},
     ): Promise<PaginatedReviewsResponse> => {
       setUserReviewsLoading(true);
-      setReviewsError(null); // Clear any existing errors
+      setReviewsError(null);
 
       try {
         const response = await reviewsService.getReviewsByUser(userId, query);
@@ -554,11 +427,11 @@ export function useUserReviews(): UseUserReviewsReturn {
       query: Omit<ReviewsQuery, 'userId'> = {},
     ): Promise<PaginatedReviewsResponse> => {
       setUserReviewsLoading(true);
-      setReviewsError(null); // Clear any existing errors
+      setReviewsError(null);
 
       try {
         const response = await reviewsService.getReviewsByUser(userId, query);
-        appendUserReviews(response); // Append instead of replace
+        appendUserReviews(response);
         return response;
       } catch (error) {
         const errorMessage =
@@ -572,9 +445,7 @@ export function useUserReviews(): UseUserReviewsReturn {
     [],
   );
 
-  // ============================================================================
-  // Utility Actions
-  // ============================================================================
+  // ── Utility Actions
 
   const clearError = useCallback(() => {
     setReviewsError(null);
@@ -586,7 +457,6 @@ export function useUserReviews(): UseUserReviewsReturn {
 
   const refetch = useCallback(
     async (userId?: string): Promise<void> => {
-      // Basic refetch implementation
       if (userId && reviews) {
         await fetchUserReviews(userId);
       }
@@ -611,54 +481,14 @@ export function useUserReviews(): UseUserReviewsReturn {
   };
 }
 
-// ============================================================================
-// Game Reviews Hook
-// ============================================================================
+// ── Game Reviews Hook
 
-/**
- * Hook for managing game's reviews
- *
- * @example
- * ```tsx
- * function GameReviewsSection({ gameId }: { gameId: string }) {
- *   const {
- *     reviews,
- *     isLoading,
- *     error,
- *     fetchGameReviews,
- *     clearError
- *   } = useGameReviews();
- *
- *   useEffect(() => {
- *     fetchGameReviews(gameId, { limit: 10, sortBy: 'rating', sortOrder: 'desc' });
- *   }, [gameId]);
- *
- *   if (error) return <ErrorMessage message={error} onClose={clearError} />;
- *   if (isLoading) return <Loading />;
- *   if (!reviews?.items.length) return <EmptyState />;
- *
- *   return (
- *     <section>
- *       <h3>Game Reviews</h3>
- *       <div className="space-y-4">
- *         {reviews.items.map(review => (
- *           <ReviewCard key={review.id} review={review} />
- *         ))}
- *       </div>
- *     </section>
- *   );
- * }
- * ```
- */
 export function useGameReviews(): UseGameReviewsReturn {
-  // Subscribe to global game reviews stores
   const reviews = useStore($gameReviews);
   const isLoading = useStore($gameReviewsLoading);
   const error = useStore($reviewsError); // Reuse main reviews error state
 
-  // ============================================================================
-  // API Actions
-  // ============================================================================
+  // ── API Actions
 
   const fetchGameReviews = useCallback(
     async (
@@ -666,12 +496,11 @@ export function useGameReviews(): UseGameReviewsReturn {
       query: Omit<ReviewsQuery, 'gameId'> = {},
     ): Promise<PaginatedReviewsResponse> => {
       setGameReviewsLoading(true);
-      setReviewsError(null); // Clear any existing errors
+      setReviewsError(null);
 
       try {
         const response = await reviewsService.getReviewsByGame(gameId, query);
-        // No slug here: the game page owns the key, so paginating must not
-        // overwrite it with the anchor id passed in.
+        // No slug: the game page owns the key, so paginating must not overwrite it here.
         setGameReviews(response);
         return response;
       } catch (error) {
@@ -686,9 +515,7 @@ export function useGameReviews(): UseGameReviewsReturn {
     [],
   );
 
-  // ============================================================================
-  // Utility Actions
-  // ============================================================================
+  // ── Utility Actions
 
   const clearError = useCallback(() => {
     setReviewsError(null);
@@ -700,7 +527,6 @@ export function useGameReviews(): UseGameReviewsReturn {
 
   const refetch = useCallback(
     async (gameId?: string): Promise<void> => {
-      // Basic refetch implementation
       if (gameId && reviews) {
         await fetchGameReviews(gameId);
       }
@@ -724,13 +550,7 @@ export function useGameReviews(): UseGameReviewsReturn {
   };
 }
 
-/**
- * The current user's own review for a game, if they have one.
- *
- * Reads the cached game reviews first (instant, and already updated by
- * create/update), then falls back to a targeted fetch for a review that is not
- * on the first page of the game's reviews.
- */
+// Reads cached game reviews first, then falls back to a fetch for reviews off page 1.
 export function useMyReviewForGame(gameId?: string): ReviewResponse | null {
   const user = useStore($currentUser);
   const gameReviews = useStore($gameReviews);
@@ -763,58 +583,13 @@ export function useMyReviewForGame(gameId?: string): ReviewResponse | null {
   return fromStore ?? fetched;
 }
 
-// ============================================================================
-// Review Actions Hook (CRUD + Like/Unlike)
-// ============================================================================
-/**
- * Hook for managing review actions (create, update, delete, like, unlike)
- *
- * @example
- * ```tsx
- * function ReviewActionsProvider({ children }) {
- *   const {
- *     isLoading,
- *     error,
- *     createReview,
- *     updateReview,
- *     deleteReview,
- *     likeReview,
- *     clearError
- *   } = useReviewActions();
- *
- *   const handleCreateReview = async (reviewData) => {
- *     try {
- *       const newReview = await createReview(reviewData);
- *       // Handle success
- *     } catch (err) {
- *       // Error is already in state
- *     }
- *   };
- *
- *   return (
- *     <ReviewActionsContext.Provider value={{
- *       createReview: handleCreateReview,
- *       updateReview,
- *       deleteReview,
- *       likeReview,
- *       isLoading,
- *       error,
- *       clearError
- *     }}>
- *       {children}
- *     </ReviewActionsContext.Provider>
- *   );
- * }
- * ```
- */
+// ── Review Actions Hook (CRUD + Like/Unlike)
+
 export function useReviewActions(): UseReviewActionsReturn {
-  // Subscribe to global review action stores
   const isLoading = useStore($reviewActionLoading);
   const error = useStore($reviewActionError);
 
-  // ============================================================================
-  // API Actions
-  // ============================================================================
+  // ── API Actions
 
   const createReview = useCallback(
     async (reviewData: CreateReviewRequest): Promise<ReviewResponse> => {
@@ -866,8 +641,7 @@ export function useReviewActions(): UseReviewActionsReturn {
     setReviewActionError(null);
 
     try {
-      // Read the review before it is removed from the caches - its game slug is
-      // what tells us whose aggregate rating went stale.
+      // Read before removal: its game slug tells us whose aggregate rating went stale.
       const affected = findReviewById(reviewId);
       await reviewsService.deleteReview(reviewId);
       removeReviewFromList(reviewId);
@@ -884,14 +658,12 @@ export function useReviewActions(): UseReviewActionsReturn {
   }, []);
 
   const likeReview = useCallback(async (reviewId: string): Promise<void> => {
-    // Optimistic update
     optimisticLikeUpdate(reviewId, true);
 
     try {
       await reviewsService.likeReview(reviewId);
       clearActivityFeedState();
     } catch (error) {
-      // Revert optimistic update on error
       optimisticLikeUpdate(reviewId, false);
       const errorMessage = error instanceof Error ? error.message : 'Failed to like review';
       setReviewActionError(errorMessage);
@@ -900,14 +672,12 @@ export function useReviewActions(): UseReviewActionsReturn {
   }, []);
 
   const unlikeReview = useCallback(async (reviewId: string): Promise<void> => {
-    // Optimistic update
     optimisticLikeUpdate(reviewId, false);
 
     try {
       await reviewsService.unlikeReview(reviewId);
       clearActivityFeedState();
     } catch (error) {
-      // Revert optimistic update on error
       optimisticLikeUpdate(reviewId, true);
       const errorMessage = error instanceof Error ? error.message : 'Failed to unlike review';
       setReviewActionError(errorMessage);
@@ -915,9 +685,7 @@ export function useReviewActions(): UseReviewActionsReturn {
     }
   }, []);
 
-  // ============================================================================
-  // Utility Actions
-  // ============================================================================
+  // ── Utility Actions
 
   const clearError = useCallback(() => {
     setReviewActionError(null);
@@ -938,13 +706,8 @@ export function useReviewActions(): UseReviewActionsReturn {
   };
 }
 
-// ============================================================================
-// Specialized Review Hooks
-// ============================================================================
+// ── Specialized Review Hooks
 
-/**
- * Hook for fetching and managing featured reviews (top-rated)
- */
 export function useFeaturedReviews(limit: number = 12) {
   const { data, isLoading, error, getTopRatedReviews, clearError } = useReviews();
 
@@ -971,9 +734,6 @@ export function useFeaturedReviews(limit: number = 12) {
   };
 }
 
-/**
- * Hook for fetching and managing latest reviews
- */
 export function useLatestReviews(limit: number = 12) {
   const { data, isLoading, error, getRecentReviews, clearError } = useReviews();
 
@@ -999,9 +759,6 @@ export function useLatestReviews(limit: number = 12) {
   };
 }
 
-/**
- * Hook for fetching and managing trending reviews (most liked)
- */
 export function useTrendingReviews(limit: number = 12) {
   const { data, isLoading, error, getPopularReviews, clearError } = useReviews();
 

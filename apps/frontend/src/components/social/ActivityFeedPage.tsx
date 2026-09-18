@@ -5,10 +5,7 @@ import ActivityFeedList from './ActivityFeedList';
 import FeedItemSkeleton from './FeedItemSkeleton';
 import { Button } from '@/components/ui/Button';
 
-/**
- * One shell for every state this page can be in, so the page rail, the reading
- * column and the heading never drift between the four early returns below.
- */
+/** Shared shell so the rail, column and heading stay put across states. */
 function PageShell({ children, centered = false }: { children: ReactNode; centered?: boolean }) {
   return (
     <div className={centered ? 'shell py-8 text-center lg:py-10' : 'shell py-8 lg:py-10'}>

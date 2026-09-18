@@ -6,27 +6,13 @@ interface StarRatingProps {
   /** Pass a handler to make the rating editable; omit it for a read-only display. */
   onChange?: (value: number) => void;
   max?: number;
-  /** Maximum slot width in px. The row shrinks uniformly when the container is
-   *  tighter than ten slots, so it never forces its parent wider than it is. */
+  /** Maximum slot width in px; the stars shrink uniformly when the container is tighter. */
   size?: number;
   disabled?: boolean;
   className?: string;
 }
 
-/**
- * StarRating — the one star renderer in the app, control and display alike.
- *
- * Every surface (game detail, reviews list, review detail, profile, feed, the
- * review form) renders the same geometry: a `border-strong` track with a
- * `primary` overlay clipped to a percentage, so 7.5 is exactly seven and a half
- * stars. Pass `onChange` to get the interactive half-star picker with its value
- * label; omit it for a plain display.
- *
- * The row is width-driven: `size` is a maximum, and the stars shrink together
- * when the parent is too narrow for all of them. Giving it a fixed width would
- * make it the min-content floor of whatever column it sits in, which is how it
- * used to push a card's rating number out past the card's clipped edge.
- */
+/** StarRating — the one star renderer; width-driven, `size` is a maximum and the stars shrink together so it never forces its parent wider. */
 export default function StarRating({
   value,
   onChange,
@@ -87,10 +73,7 @@ export default function StarRating({
               size={size}
               className="pointer-events-none absolute inset-0 w-full h-full fill-border-strong text-border-strong"
             />
-            {/* Value overlay. The glyph fills the slot and the wrapper is clipped
-                to a percentage, so a half star is exactly half of the star beside
-                it at any slot width. Clipping the wrapper (rather than letting
-                the glyph shrink inside it) is what keeps that proportion. */}
+            {/* Value overlay clipped to a percentage so a half star stays exactly half at any slot width. */}
             <span
               className="pointer-events-none absolute inset-0"
               style={{ clipPath: `inset(0 ${100 - fillPercent}% 0 0)` }}

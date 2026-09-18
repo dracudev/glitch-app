@@ -2,35 +2,15 @@ import type { ReviewResponse } from '@glitch/shared-types';
 import StarRating from '@/components/ui/StarRating';
 import { getAvatarUrl } from '@/lib/avatar';
 
-// ============================================================================
 // Props Interface
-// ============================================================================
 
 interface ReviewHeaderProps {
   review: ReviewResponse;
 }
 
-// ============================================================================
-// ReviewHeader Component
-// ============================================================================
-
-/**
- * Review header component displaying the review masthead
- *
- * Shows game cover, game title, user avatar, username, and star rating.
- * All elements are linked to their respective pages.
- *
- * @example
- * ```tsx
- * <ReviewHeader review={reviewData} />
- * ```
- */
 export default function ReviewHeader({ review }: ReviewHeaderProps) {
-  // ============================================================================
   // Helpers
-  // ============================================================================
 
-  // Format date for display
   const formatDate = (date: Date) => {
     const d = new Date(date);
     return d.toLocaleDateString('en-US', {
@@ -43,16 +23,10 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
   // Generate avatar URL (using the shared DiceBear fallback)
   const avatarUrl = getAvatarUrl(review.user);
 
-  // Generate game cover URL
   const coverUrl = review.game.coverImage || '/images/game-placeholder.svg';
-
-  // ============================================================================
-  // Render
-  // ============================================================================
 
   return (
     <header className="overflow-hidden rounded-lg border border-border bg-card">
-      {/* Mobile-First Layout: Stacked on mobile, Grid on larger screens */}
       <div className="flex flex-col gap-4 p-4 md:flex-row md:items-start md:gap-6 md:p-6">
         {/* Game Cover Image — above the fold, so decode eagerly but don't defer. */}
         <a
@@ -67,7 +41,6 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
               className="size-full object-cover"
               decoding="async"
             />
-            {/* Spoiler Badge */}
             {review.isSpoiler && (
               <div className="absolute right-2 top-2 rounded-full border border-border bg-background/85 px-2 py-0.5 text-xs text-muted-foreground backdrop-blur-sm">
                 SPOILER
@@ -76,9 +49,7 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
           </div>
         </a>
 
-        {/* Review Metadata */}
         <div className="min-w-0 flex-1">
-          {/* Game Title */}
           <a
             href={`/games/${review.game.slug}`}
             className="mb-4 block"
@@ -87,7 +58,6 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
             <h1 className="text-2xl tracking-tight sm:text-3xl">{review.game.title}</h1>
           </a>
 
-          {/* User Information */}
           <a
             href={`/profile/${review.user.username}`}
             className="mb-4 flex items-center gap-3 transition-opacity hover:opacity-80"
@@ -107,7 +77,6 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
             </div>
           </a>
 
-          {/* Star Rating */}
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <StarRating value={review.rating} size={20} />
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -119,7 +88,6 @@ export default function ReviewHeader({ review }: ReviewHeaderProps) {
             </div>
           </div>
 
-          {/* Publication Date */}
           <div className="mt-4 text-sm text-muted-foreground">
             <time className="font-mono" dateTime={new Date(review.createdAt).toISOString()}>
               {formatDate(review.createdAt)}

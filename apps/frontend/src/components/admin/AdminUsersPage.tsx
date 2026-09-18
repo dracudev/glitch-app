@@ -46,12 +46,7 @@ interface AdminUsersPageProps {
   initialData: PaginatedResponse<AdminUser> | null;
 }
 
-/**
- * User administration table.
- *
- * `initialData` comes from the Astro SSR pass so the first paint already has
- * rows; every later change (filters, paging, mutations) refetches here.
- */
+/** User administration table; `initialData` is the SSR first paint, later changes refetch. */
 export default function AdminUsersPage({ initialData }: AdminUsersPageProps) {
   const [data, setData] = useState<PaginatedResponse<AdminUser> | null>(initialData);
   const [isLoading, setIsLoading] = useState(false);

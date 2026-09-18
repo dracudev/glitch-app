@@ -2,14 +2,7 @@ import * as React from 'react';
 import { Slot, Slottable } from '@radix-ui/react-slot';
 import { Loader2 } from 'lucide-react';
 
-/**
- * Button — the single action primitive.
- *
- * Hover is a tonal fill shift, never an opacity fade or a lift, so the button
- * reads as the same object in a new state. Focus comes from the global
- * `:focus-visible` rule in global.css — do not add ring utilities here, or the
- * app ends up with two competing focus languages again.
- */
+/** Button — the single action primitive; hover is a tonal fill shift and focus comes from global.css's `:focus-visible` (no ring utilities here). */
 const variantStyles = {
   primary: 'bg-primary text-primary-foreground hover:bg-primary-hover',
   secondary:
@@ -90,11 +83,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
             </span>
           )
         )}
-        {/* `Slot` counts children with `React.Children.count`, so the two icon
-            slots below (undefined most of the time) already make it more than
-            one and it throws. `Slottable` is the escape hatch: it marks the
-            element that receives the button's props and lets the icons be
-            injected as its children instead. */}
+        {/* `Slot` counts children, so the icon slots make it throw; `Slottable` is the escape hatch. */}
         {asChild ? <Slottable>{children}</Slottable> : children}
         {!isLoading && rightIcon && (
           <span className="shrink-0" aria-hidden="true">

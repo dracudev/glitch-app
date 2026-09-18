@@ -34,7 +34,6 @@ export class AuthService {
   async register(registerDto: RegisterDto): Promise<AuthResponse> {
     const { email, username, password } = registerDto;
 
-    // Check if user already exists
     const existingUser = await this.usersService.findByEmailOrUsername(email, username);
     if (existingUser) {
       if (existingUser.email === email) {
@@ -45,17 +44,14 @@ export class AuthService {
       }
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
 
-    // Create user
     const user = await this.usersService.create({
       email,
       username,
       password: hashedPassword,
     });
 
-    // Generate tokens
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
     return {
@@ -85,10 +81,8 @@ export class AuthService {
       throw new UnauthorizedException(AUTH_MESSAGES.INVALID_CREDENTIALS);
     }
 
-    // Update last login
     await this.usersService.updateLastLogin(user.id);
 
-    // Generate tokens
     const tokens = await this.generateTokens(user.id, user.email, user.role);
 
     return {
@@ -140,7 +134,6 @@ export class AuthService {
       return;
     }
 
-    // Generate reset token (expires in 1 hour)
     const resetToken = this.jwtService.sign(
       { userId: user.id, type: JWT_TOKEN_TYPE.RESET },
       {
@@ -149,7 +142,6 @@ export class AuthService {
       },
     );
 
-    // Store reset token hash in database
     const resetTokenHash = await bcrypt.hash(resetToken, BCRYPT_RESET_TOKEN_ROUNDS);
     await this.usersService.updateResetToken(user.id, resetTokenHash);
 
@@ -179,7 +171,6 @@ export class AuthService {
         throw new BadRequestException(AUTH_MESSAGES.INVALID_OR_EXPIRED_TOKEN);
       }
 
-      // Update password and clear reset token
       const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_SALT_ROUNDS);
       await this.usersService.updatePassword(user.id, hashedPassword);
       await this.usersService.clearResetToken(user.id);

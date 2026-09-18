@@ -1,12 +1,7 @@
 import { z } from "zod";
 
-// ============================================================================
-// Validation Schemas
-// ============================================================================
+// Validation schemas
 
-/**
- * Login form validation schema
- */
 export const loginSchema = z.object({
   email: z
     .string()
@@ -18,9 +13,6 @@ export const loginSchema = z.object({
     .min(6, "Password must be at least 6 characters"),
 });
 
-/**
- * Registration form validation schema
- */
 export const registerSchema = z.object({
   email: z
     .string()
@@ -56,9 +48,6 @@ export const registerSchema = z.object({
     ),
 });
 
-/**
- * Change password form validation schema
- */
 export const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
   newPassword: z
@@ -74,9 +63,6 @@ export const changePasswordSchema = z.object({
     ),
 });
 
-/**
- * Forgot password form validation schema
- */
 export const forgotPasswordSchema = z.object({
   email: z
     .string()
@@ -84,9 +70,6 @@ export const forgotPasswordSchema = z.object({
     .email("Please enter a valid email address"),
 });
 
-/**
- * Reset password form validation schema
- */
 export const resetPasswordSchema = z.object({
   token: z.string().min(1, "Reset token is required"),
   newPassword: z
@@ -102,52 +85,32 @@ export const resetPasswordSchema = z.object({
     ),
 });
 
-// ============================================================================
-// Type Inference
-// ============================================================================
+// Type inference
 
-// Export inferred types from schemas
 export type LoginRequest = z.infer<typeof loginSchema>;
 export type RegisterRequest = z.infer<typeof registerSchema>;
 export type ChangePasswordRequest = z.infer<typeof changePasswordSchema>;
 export type ForgotPasswordRequest = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordRequest = z.infer<typeof resetPasswordSchema>;
 
-// ============================================================================
-// Validation Functions
-// ============================================================================
+// Validation functions
 
-/**
- * Validate login form data
- */
 export function validateLogin(data: unknown) {
   return loginSchema.safeParse(data);
 }
 
-/**
- * Validate registration form data
- */
 export function validateRegister(data: unknown) {
   return registerSchema.safeParse(data);
 }
 
-/**
- * Validate change password form data
- */
 export function validateChangePassword(data: unknown) {
   return changePasswordSchema.safeParse(data);
 }
 
-/**
- * Validate forgot password form data
- */
 export function validateForgotPassword(data: unknown) {
   return forgotPasswordSchema.safeParse(data);
 }
 
-/**
- * Validate reset password form data
- */
 export function validateResetPassword(data: unknown) {
   return resetPasswordSchema.safeParse(data);
 }

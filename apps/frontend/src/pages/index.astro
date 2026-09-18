@@ -7,20 +7,14 @@ import { getAllReviews } from '@/services/reviews';
 import { ssrCookieHeader, hasSession } from '@/services/ssr-auth';
 import type { GameResponse, PaginatedReviewsResponse } from '@glitch/shared-types';
 
-// ============================================================================
-// Server-Side Data Fetching
-// The landing page shows real catalogue entries and real reviews. If the API is
-// unavailable the page degrades to the hero and the way-in links.
-// ============================================================================
+// Landing page degrades to the hero and way-in links when the API is unavailable.
 
 let topGames: GameResponse[] = [];
 let latestReviews: PaginatedReviewsResponse | null = null;
 
 const cookieHeader = await ssrCookieHeader(Astro.request.headers.get('cookie') || undefined);
 
-// A signed-in visitor already has an account, so the hero offers the thing they
-// actually want next instead of a sign-up prompt. Read from the request cookies
-// during this SSR render, so there is no signed-out flash to correct on the client.
+// Signed-in visitors get a feed CTA; read server-side to avoid a signed-out flash.
 const isSignedIn = hasSession(cookieHeader);
 
 const [gamesResult, reviewsResult] = await Promise.allSettled([
@@ -69,9 +63,7 @@ const pageDescription =
 ---
 
 <MainLayout title={pageTitle} description={pageDescription}>
-  <!-- ── Hero ──────────────────────────────────────────────────────────────
-       A single left-aligned statement owning the fold, closed by the real
-       catalogue below it rather than a decorative panel. -->
+  <!-- Hero -->
   <section class="shell pt-12 lg:pt-16">
     <h1 class="max-w-5xl text-4xl leading-[0.98] tracking-tight text-foreground sm:text-5xl lg:text-6xl">
       Find your next favourite game.

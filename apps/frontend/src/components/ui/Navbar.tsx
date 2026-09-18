@@ -33,13 +33,7 @@ const navigationItems: NavigationItem[] = [
 const dropdownItem =
   'flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm text-muted-foreground outline-none transition-colors hover:bg-secondary hover:text-foreground focus:bg-secondary focus:text-foreground';
 
-/**
- * Main navigation bar.
- *
- * Layout is a three-column grid (`1fr / auto / 1fr`) rather than
- * `justify-between`, which is what makes the nav links land on the true page
- * centre instead of the centre of whatever space is left over.
- */
+/** Main navigation bar; the 1fr/auto/1fr grid keeps nav links on the true page centre. */
 export default function Navbar({ currentPath }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [authInitialized, setAuthInitialized] = useState(false);
@@ -75,7 +69,6 @@ export default function Navbar({ currentPath }: NavbarProps) {
   return (
     <nav className="sticky top-0 z-nav h-16 border-b border-border bg-background/85 backdrop-blur-md">
       <div className="shell grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-4">
-        {/* Left — brand */}
         <a
           href="/"
           className="col-start-1 flex items-center gap-2 text-foreground transition-colors hover:text-accent"
@@ -85,9 +78,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
           <span className="font-display text-lg font-semibold tracking-tight">Glitch</span>
         </a>
 
-        {/* Centre — primary navigation, centred on the page. col-start-2 is
-            explicit so that hiding this list on mobile does not let the
-            utilities block slide into its column. */}
+        {/* col-start-2 is explicit so hiding this list on mobile doesn't shift the utilities column. */}
         <ul className="col-start-2 hidden items-center gap-1 lg:flex">
           {navigationItems.map((item) => {
             const isActive = isActiveRoute(item.href);
@@ -109,7 +100,6 @@ export default function Navbar({ currentPath }: NavbarProps) {
           })}
         </ul>
 
-        {/* Right — utilities */}
         <div className="col-start-3 flex items-center justify-end gap-2">
           <ThemeToggle />
 
@@ -197,7 +187,6 @@ export default function Navbar({ currentPath }: NavbarProps) {
             )}
           </div>
 
-          {/* Mobile trigger */}
           <Dialog open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
             <DialogTrigger asChild>
               <button

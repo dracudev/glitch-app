@@ -17,7 +17,6 @@ export default function GameDetailPage({
   initialReviews,
   initialSimilarGames,
 }: GameDetailPageProps) {
-  // Hydrate stores on mount with server-fetched data
   useEffect(() => {
     setGameDetailWithCache(initialGame, initialGame.game.slug);
     setGameReviews(initialReviews, initialGame.game.slug);

@@ -15,13 +15,11 @@ import { AdminModule } from '@/admin/admin.module';
 
 @Module({
   imports: [
-    // Configuration
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env.local', '.env'],
     }),
 
-    // Rate limiting
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 1 minute
@@ -29,11 +27,9 @@ import { AdminModule } from '@/admin/admin.module';
       },
     ]),
 
-    // Core modules
     DatabaseModule,
     CommonModule,
 
-    // Feature modules
     AuthModule,
     UsersModule,
     GamesModule,
@@ -43,7 +39,6 @@ import { AdminModule } from '@/admin/admin.module';
   ],
   controllers: [HealthController],
   providers: [
-    // Global guards
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,

@@ -24,9 +24,7 @@ import { useStore } from '@nanostores/react';
 import { $reviewDetail } from '@/stores/reviews';
 import { $currentUser } from '@/stores/auth';
 
-// ============================================================================
 // Props Interface
-// ============================================================================
 
 interface ReviewActionsProps {
   review: ReviewResponse;
@@ -36,52 +34,27 @@ interface ReviewActionsProps {
   onDeleted?: () => void;
 }
 
-// ============================================================================
-// ReviewActions Component
-// ============================================================================
-
-/**
- * Review actions component with social interactions
- *
- * Provides like/unlike functionality with optimistic updates.
- * Uses Radix UI tooltips for accessibility.
- *
- * @example
- * ```tsx
- * <ReviewActions review={reviewData} />
- * ```
- */
 export default function ReviewActions({
   review: initialReview,
   onEdit,
   onDeleted,
 }: ReviewActionsProps) {
-  // ============================================================================
   // State & Hooks
-  // ============================================================================
 
-  // Get current user for ownership check
   const currentUser = useStore($currentUser);
   const isOwner = currentUser?.id === initialReview.user.id;
 
   // Get current review from store (for optimistic updates)
   const currentReview = useStore($reviewDetail) || initialReview;
 
-  // Review actions hook
   const { likeReview, unlikeReview, deleteReview, isLoading, error } = useReviewActions();
 
-  // Local loading states
   const [isLiking, setIsLiking] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // ============================================================================
   // Handlers
-  // ============================================================================
 
-  /**
-   * Handle like/unlike toggle
-   */
   const handleLikeToggle = async () => {
     if (isLiking) return;
     if (!currentUser) {
@@ -107,9 +80,6 @@ export default function ReviewActions({
     }
   };
 
-  /**
-   * Handle review deletion with confirmation
-   */
   const handleDelete = async () => {
     if (isDeleting) return;
     setIsDeleting(true);
@@ -125,16 +95,10 @@ export default function ReviewActions({
     }
   };
 
-  // ============================================================================
-  // Render
-  // ============================================================================
-
   return (
     <Tooltip.Provider delayDuration={300}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        {/* Social Stats */}
         <div className="flex items-center gap-6 text-sm text-muted-foreground">
-          {/* Likes Count */}
           <div className="flex items-center gap-2">
             <Heart className="w-5 h-5" aria-hidden="true" />
             <span className="font-medium">
@@ -143,7 +107,6 @@ export default function ReviewActions({
             </span>
           </div>
 
-          {/* Comments Count */}
           <div className="flex items-center gap-2">
             <MessageSquare className="size-5" aria-hidden="true" />
             <span className="font-medium">
@@ -153,12 +116,9 @@ export default function ReviewActions({
           </div>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex items-center gap-3">
-          {/* Owner Actions: Edit + Delete */}
           {isOwner && (
             <>
-              {/* Edit Button */}
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
                   <Button
@@ -182,7 +142,6 @@ export default function ReviewActions({
                 </Tooltip.Portal>
               </Tooltip.Root>
 
-              {/* Delete Button */}
               <Tooltip.Root>
                 <Tooltip.Trigger asChild>
                   <Button
@@ -210,7 +169,6 @@ export default function ReviewActions({
             </>
           )}
 
-          {/* Like Button with Tooltip */}
           <Tooltip.Root>
             <Tooltip.Trigger asChild>
               <Button
@@ -241,7 +199,6 @@ export default function ReviewActions({
             </Tooltip.Portal>
           </Tooltip.Root>
 
-          {/* Share Button with Tooltip */}
           <Tooltip.Root>
             <Tooltip.Trigger asChild>
               <Button
@@ -262,7 +219,6 @@ export default function ReviewActions({
                         navigator.clipboard.writeText(url);
                       });
                   } else {
-                    // Fallback to clipboard
                     navigator.clipboard.writeText(url);
                   }
                 }}
@@ -283,7 +239,6 @@ export default function ReviewActions({
         </div>
       </div>
 
-      {/* Error Display */}
       {error && (
         <div className="mt-4 p-3 bg-error/10 border border-error rounded-md">
           <div className="flex items-start gap-2">
@@ -293,8 +248,7 @@ export default function ReviewActions({
         </div>
       )}
 
-      {/* Delete Confirmation — a real dialog: focus trap, Escape, scroll lock,
-          restore-focus, role/aria-modal, all from the shared primitive. */}
+      {/* Delete confirmation — a real dialog from the shared primitive. */}
       <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <DialogContent size="sm">
           <DialogHeader>

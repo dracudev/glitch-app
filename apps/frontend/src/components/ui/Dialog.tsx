@@ -2,19 +2,7 @@ import * as React from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { X } from 'lucide-react';
 
-/**
- * Dialog — the single overlay + panel contract for the whole app.
- *
- * Rules this encodes, so no call site has to remember them:
- *  - Backdrop is the page colour at 60% plus a real blur. Never solid black.
- *  - Overlay sits at `z-overlay` (50), the panel at `z-modal` (60) — both above
- *    the navbar (`z-nav`, 40), so the backdrop actually covers the header.
- *  - Focus trap, Escape, scroll lock and focus restore come from Radix.
- *  - The close control is always present and always labelled.
- *
- * Entrance motion animates `scale`/`translate` as standalone properties, so it
- * composes with the centring `-translate-*` utilities instead of fighting them.
- */
+/** Dialog — single overlay + panel contract; overlay z-50 / panel z-60 sit above the navbar (z-40). */
 const Dialog = DialogPrimitive.Root;
 const DialogTrigger = DialogPrimitive.Trigger;
 const DialogClose = DialogPrimitive.Close;

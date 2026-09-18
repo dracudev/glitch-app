@@ -13,13 +13,7 @@ export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
   variant?: keyof typeof surfaceStyles;
 }
 
-/**
- * Card — the one surface primitive.
- *
- * Every card in the app is this: a raised surface, a single hairline border, no
- * default shadow bloom. Depth comes from surface tone and radius, not from a
- * symmetric shadow on every box.
- */
+/** Card — the one surface primitive; depth comes from surface tone and radius, not shadow. */
 const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, variant = 'flat', ...props }, ref) => (
     <div

@@ -15,7 +15,6 @@ export default function GameResultsList() {
     fetchGames(selectedFilters);
   }, [selectedFilters, fetchGames]);
 
-  // Loading state (initial load)
   if (isLoading && !data?.data.length) {
     return (
       <div>
@@ -25,7 +24,6 @@ export default function GameResultsList() {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="rounded-lg border border-error/30 bg-error/10 p-8 text-center">
@@ -39,7 +37,6 @@ export default function GameResultsList() {
     );
   }
 
-  // Empty state
   if (!data?.data.length) {
     return (
       <div className="rounded-lg border border-border bg-card p-12 text-center">
@@ -61,7 +58,6 @@ export default function GameResultsList() {
     <div>
       <ResultsHeader total={data.total} page={data.page} totalPages={data.totalPages} />
 
-      {/* Game Grid  */}
       <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {data.data.map((game: GameResponse) => (
           <GameCard key={game.game.id} game={game} />
@@ -73,7 +69,6 @@ export default function GameResultsList() {
   );
 }
 
-// Results Header Component
 function ResultsHeader({
   total,
   page,
@@ -143,7 +138,6 @@ function Pagination({ page, totalPages }: { page: number; totalPages: number }) 
   );
 }
 
-// Loading Skeleton
 function GameGridSkeleton() {
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">

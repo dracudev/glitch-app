@@ -28,7 +28,6 @@ export class ReviewsService {
 
     const anchor = await this.gamesService.resolveAnchor(gameId);
 
-    // Check if user already has a review for this game
     const existingReview = await this.prisma.review.findUnique({
       where: {
         userId_gameId: {
@@ -44,7 +43,6 @@ export class ReviewsService {
 
     try {
       const review = await this.prisma.$transaction(async (tx) => {
-        // Create the review
         const newReview = await tx.review.create({
           data: {
             ...reviewData,
@@ -79,7 +77,6 @@ export class ReviewsService {
           },
         });
 
-        // Update game rating if review is published
         if (newReview.isPublished) {
           await this.gamesService.updateRating(anchor.id, tx);
         }
@@ -122,7 +119,6 @@ export class ReviewsService {
 
     const skip = (page - 1) * limit;
 
-    // Sanitize search term
     const sanitizedSearch = search?.trim().replace(/[<>\"']/g, '');
 
     let anchorId: string | undefined;
@@ -131,11 +127,9 @@ export class ReviewsService {
       if (!anchorId) return PaginatedReviewsResponseDto.from([], page, limit, 0);
     }
 
-    // Build where clause
     const where: Prisma.ReviewWhereInput = {
       AND: [
-        // Only show published reviews — except to an admin moderating, or to the
-        // author viewing their own drafts.
+        // Only published, unless an admin moderates or the author views their own drafts.
         isPublished !== undefined
           ? { isPublished }
           : isAdmin || (userId && userId === currentUserId)
@@ -157,7 +151,6 @@ export class ReviewsService {
       ],
     };
 
-    // Build orderBy clause
     const orderBy: Prisma.ReviewOrderByWithRelationInput = {};
     switch (sortBy) {
       case REVIEWS_CONSTANTS.SORT_OPTIONS.RATING:
@@ -257,7 +250,6 @@ export class ReviewsService {
       throw new NotFoundException('Review not found');
     }
 
-    // Check if user can access this review
     if (!review.isPublished && (!currentUserId || review.userId !== currentUserId)) {
       throw new ForbiddenException('This review is not published');
     }
@@ -358,7 +350,6 @@ export class ReviewsService {
           },
         });
 
-        // Update game rating if publication status changed or rating changed
         if (
           wasPublished !== willBePublished ||
           (willBePublished && updateReviewDto.rating !== undefined)
@@ -399,7 +390,6 @@ export class ReviewsService {
         where: { id },
       });
 
-      // Update game rating after deletion if review was published
       if (review.isPublished) {
         await this.gamesService.updateRating(review.gameId, tx);
       }

@@ -1,6 +1,5 @@
 import type { UserRole } from "../auth";
 
-// Admin dashboard counters
 export interface AdminStats {
   totalUsers: number;
   totalGames: number;

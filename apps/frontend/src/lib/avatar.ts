@@ -1,16 +1,4 @@
-/**
- * Shared avatar URL resolution.
- *
- * DiceBear avatars are fetched over HTTP at render time, so they add no bundle
- * weight. The `initials` style is deliberately avoided: two letters on a
- * coloured circle is the generic placeholder look. `bottts` gives every player
- * an actual generated character, and the flat brand-tinted backgrounds keep it
- * on-palette.
- *
- * `format` exists for social cards. In-app rendering wants `svg` (crisp at every
- * pixel density, tiny). Open Graph tags must use `png`, because a large share of
- * scrapers cannot rasterise an SVG at all and render the card with no image.
- */
+// PNG for Open Graph: many scrapers can't rasterise an SVG and render no image.
 export function getAvatarUrl(
   user: { username?: string | null; avatar?: string | null } | null | undefined,
   size = 64,

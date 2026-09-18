@@ -29,7 +29,6 @@ export default function RegisterForm({ redirectTo = '/feed', className = '' }: R
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Mark all fields as touched on submit
     setTouched({ email: true, username: true, password: true });
 
     clearError();
@@ -52,7 +51,6 @@ export default function RegisterForm({ redirectTo = '/feed', className = '' }: R
   return (
     <Card className={`p-6 sm:p-8 ${className}`}>
       <Form.Root onSubmit={handleSubmit} className="space-y-6">
-        {/* Global auth error from $authError store */}
         {error && (
           <div
             role="alert"
@@ -76,7 +74,6 @@ export default function RegisterForm({ redirectTo = '/feed', className = '' }: R
           </div>
         )}
 
-        {/* Email field */}
         <Form.Field name="email" className="space-y-2">
           <Form.Label className="block text-sm font-medium text-foreground">
             Email address
@@ -105,7 +102,6 @@ export default function RegisterForm({ redirectTo = '/feed', className = '' }: R
           )}
         </Form.Field>
 
-        {/* Username field */}
         <Form.Field name="username" className="space-y-2">
           <Form.Label className="block text-sm font-medium text-foreground">
             Username
@@ -149,7 +145,6 @@ export default function RegisterForm({ redirectTo = '/feed', className = '' }: R
           </p>
         </Form.Field>
 
-        {/* Password field */}
         <Form.Field name="password" className="space-y-2">
           <Form.Label className="block text-sm font-medium text-foreground">
             Password
@@ -212,7 +207,6 @@ export default function RegisterForm({ redirectTo = '/feed', className = '' }: R
           )}
         </Form.Field>
 
-        {/* Terms and Privacy Policy */}
         <div className="flex items-start space-x-3">
           <div className="flex items-center h-5">
             <input
@@ -247,7 +241,6 @@ export default function RegisterForm({ redirectTo = '/feed', className = '' }: R
           </div>
         </div>
 
-        {/* Submit button */}
         <Form.Submit asChild>
           <Button type="submit" isLoading={isLoading} fullWidth>
             Create account

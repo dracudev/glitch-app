@@ -96,9 +96,7 @@ export class GamesService {
     }
   }
 
-  // The catalogue is served live from IGDB, which knows nothing about our
-  // reviews. Look up the DB anchors for the whole page in one query and overlay
-  // the real Glitch score, leaving IGDB's own score in its labeled field.
+  // Overlay the local Glitch score onto live IGDB results with one anchor query per page.
   private async attachLocalRatings(games: GameResponseDto[]): Promise<GameResponseDto[]> {
     const igdbIds = games.map((g) => Number(g.game.id)).filter((id) => Number.isInteger(id));
     if (igdbIds.length === 0) return games;
@@ -190,9 +188,7 @@ export class GamesService {
     }
   }
 
-  // Callers inside a $transaction must pass `tx`: this.prisma is a separate
-  // connection and would not see the uncommitted write, leaving the aggregate
-  // one mutation behind.
+  // Pass `tx` from inside a $transaction — this.prisma is a separate connection and would miss uncommitted writes.
   async updateRating(
     gameId: string,
     client: Prisma.TransactionClient = this.prisma,

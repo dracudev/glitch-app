@@ -10,9 +10,7 @@ import type {
 } from '@glitch/shared-types';
 import { apiClient } from './api';
 
-// ============================================================================
-// Configuration
-// ============================================================================
+// ── Configuration
 
 const SOCIAL_ENDPOINTS = {
   FOLLOW_USER: (userId: string) => `social/follow/${userId}`,
@@ -25,22 +23,10 @@ const SOCIAL_ENDPOINTS = {
   MUTUAL_FOLLOWS: (userId: string) => `social/mutual/${userId}`,
 } as const;
 
-// ============================================================================
-// Social Service Class
-// ============================================================================
+// ── Social Service Class
 
 class SocialService {
-  /**
-   * Follow a user (requires authentication)
-   *
-   * @param userId - The user's unique identifier to follow
-   * @returns Promise resolving when user is followed
-   *
-   * @example
-   * ```typescript
-   * await socialService.followUser('user-id');
-   * ```
-   */
+  /** Follow a user (requires authentication). */
   async followUser(userId: string): Promise<void> {
     if (!userId) {
       throw new Error('User ID is required');
@@ -49,17 +35,7 @@ class SocialService {
     return apiClient.post<void>(SOCIAL_ENDPOINTS.FOLLOW_USER(userId));
   }
 
-  /**
-   * Unfollow a user (requires authentication)
-   *
-   * @param userId - The user's unique identifier to unfollow
-   * @returns Promise resolving when user is unfollowed
-   *
-   * @example
-   * ```typescript
-   * await socialService.unfollowUser('user-id');
-   * ```
-   */
+  /** Unfollow a user (requires authentication). */
   async unfollowUser(userId: string): Promise<void> {
     if (!userId) {
       throw new Error('User ID is required');
@@ -68,18 +44,7 @@ class SocialService {
     return apiClient.delete<void>(SOCIAL_ENDPOINTS.UNFOLLOW_USER(userId));
   }
 
-  /**
-   * Check if current user is following a specific user
-   *
-   * @param userId - The user's unique identifier to check
-   * @returns Promise resolving to follow status
-   *
-   * @example
-   * ```typescript
-   * const result = await socialService.isFollowing('user-id');
-   * console.log(result.isFollowing); // true/false
-   * ```
-   */
+  /** Check whether the current user follows a specific user. */
   async isFollowing(userId: string): Promise<FollowResponse> {
     if (!userId) {
       throw new Error('User ID is required');
@@ -88,25 +53,12 @@ class SocialService {
     return apiClient.get<FollowResponse>(SOCIAL_ENDPOINTS.CHECK_FOLLOWING(userId));
   }
 
-  /**
-   * Get the activity feed for the current user
-   *
-   * @param query - Optional query parameters for pagination and filtering
-   * @returns Promise resolving to activity feed response
-   *
-   * @example
-   * ```typescript
-   * const feed = await socialService.getActivityFeed({ page: 1, limit: 20 });
-   * console.log(feed.items.length); // Number of activity items
-   * ```
-   */
   async getActivityFeed(
     query: ActivityFeedQuery = {},
     ssrHeaders?: HeadersInit,
   ): Promise<ActivityFeedResponse> {
     const searchParams = new URLSearchParams();
 
-    // Add query parameters
     Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         if (value instanceof Date) {
@@ -124,20 +76,6 @@ class SocialService {
     return apiClient.get<ActivityFeedResponse>(endpoint, {}, ssrHeaders);
   }
 
-  /**
-   * Get activity feed filtered by activity type
-   *
-   * @param activityType - The type of activity to filter by
-   * @param options - Additional query options
-   * @returns Promise resolving to filtered activity feed
-   *
-   * @example
-   * ```typescript
-   * const reviews = await socialService.getActivityFeedByType('REVIEW_CREATED', {
-   *   limit: 10
-   * });
-   * ```
-   */
   async getActivityFeedByType(
     activityType: ActivityType,
     options: Omit<ActivityFeedQuery, 'type'> = {},
@@ -148,17 +86,7 @@ class SocialService {
     });
   }
 
-  /**
-   * Get recent activity feed (last 24 hours)
-   *
-   * @param options - Query options excluding time filters
-   * @returns Promise resolving to recent activity feed
-   *
-   * @example
-   * ```typescript
-   * const recent = await socialService.getRecentActivity({ limit: 20 });
-   * ```
-   */
+  /** Get recent activity feed (last 24 hours). */
   async getRecentActivity(
     options: Omit<ActivityFeedQuery, 'since' | 'until'> = {},
   ): Promise<ActivityFeedResponse> {
@@ -171,33 +99,10 @@ class SocialService {
     });
   }
 
-  /**
-   * Get social stats for the current user
-   *
-   * @returns Promise resolving to current user's social statistics
-   *
-   * @example
-   * ```typescript
-   * const stats = await socialService.getCurrentUserSocialStats();
-   * console.log(`${stats.followersCount} followers`);
-   * ```
-   */
   async getCurrentUserSocialStats(): Promise<SocialStats> {
     return apiClient.get<SocialStats>(SOCIAL_ENDPOINTS.SOCIAL_STATS);
   }
 
-  /**
-   * Get social stats for a specific user
-   *
-   * @param userId - The user's unique identifier
-   * @returns Promise resolving to user's social statistics
-   *
-   * @example
-   * ```typescript
-   * const stats = await socialService.getUserSocialStats('user-id');
-   * console.log(`${stats.reviewsCount} reviews`);
-   * ```
-   */
   async getUserSocialStats(userId: string): Promise<SocialStats> {
     if (!userId) {
       throw new Error('User ID is required');
@@ -206,22 +111,9 @@ class SocialService {
     return apiClient.get<SocialStats>(SOCIAL_ENDPOINTS.USER_SOCIAL_STATS(userId));
   }
 
-  /**
-   * Get follow suggestions for the current user
-   *
-   * @param query - Optional query parameters for customizing suggestions
-   * @returns Promise resolving to array of follow suggestions
-   *
-   * @example
-   * ```typescript
-   * const suggestions = await socialService.getFollowSuggestions({ limit: 10 });
-   * console.log(`Found ${suggestions.length} suggestions`);
-   * ```
-   */
   async getFollowSuggestions(query: FollowSuggestionsQuery = {}): Promise<FollowSuggestion[]> {
     const searchParams = new URLSearchParams();
 
-    // Add query parameters
     Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, value.toString());
@@ -235,18 +127,6 @@ class SocialService {
     return apiClient.get<FollowSuggestion[]>(endpoint);
   }
 
-  /**
-   * Get mutual follows between current user and specified user
-   *
-   * @param userId - The user's unique identifier to check mutual follows with
-   * @returns Promise resolving to mutual follows response
-   *
-   * @example
-   * ```typescript
-   * const mutual = await socialService.getMutualFollows('user-id');
-   * console.log(`${mutual.mutualFollows.length} mutual follows`);
-   * ```
-   */
   async getMutualFollows(userId: string): Promise<MutualFollowsResponse> {
     if (!userId) {
       throw new Error('User ID is required');
@@ -255,18 +135,6 @@ class SocialService {
     return apiClient.get<MutualFollowsResponse>(SOCIAL_ENDPOINTS.MUTUAL_FOLLOWS(userId));
   }
 
-  /**
-   * Batch check following status for multiple users
-   *
-   * @param userIds - Array of user IDs to check
-   * @returns Promise resolving to object mapping user IDs to follow status
-   *
-   * @example
-   * ```typescript
-   * const statuses = await socialService.batchCheckFollowing(['user1', 'user2']);
-   * console.log(statuses['user1']); // true/false
-   * ```
-   */
   async batchCheckFollowing(userIds: string[]): Promise<Record<string, boolean>> {
     if (!userIds.length) {
       return {};
@@ -289,17 +157,6 @@ class SocialService {
     );
   }
 
-  /**
-   * Follow multiple users at once
-   *
-   * @param userIds - Array of user IDs to follow
-   * @returns Promise resolving when all users are followed
-   *
-   * @example
-   * ```typescript
-   * await socialService.followMultipleUsers(['user1', 'user2', 'user3']);
-   * ```
-   */
   async followMultipleUsers(userIds: string[]): Promise<void> {
     if (!userIds.length) {
       return;
@@ -308,17 +165,6 @@ class SocialService {
     await Promise.all(userIds.map((userId) => this.followUser(userId)));
   }
 
-  /**
-   * Unfollow multiple users at once
-   *
-   * @param userIds - Array of user IDs to unfollow
-   * @returns Promise resolving when all users are unfollowed
-   *
-   * @example
-   * ```typescript
-   * await socialService.unfollowMultipleUsers(['user1', 'user2']);
-   * ```
-   */
   async unfollowMultipleUsers(userIds: string[]): Promise<void> {
     if (!userIds.length) {
       return;
@@ -328,15 +174,11 @@ class SocialService {
   }
 }
 
-// ============================================================================
-// Singleton Instance
-// ============================================================================
+// ── Singleton Instance
 
 export const socialService = new SocialService();
 
-// ============================================================================
-// Individual Function Exports
-// ============================================================================
+// ── Individual Function Exports
 
 export const {
   followUser,

@@ -4,37 +4,20 @@ import { $viewedFollowers, $viewedFollowing } from '@/stores/users';
 import type { UserResponse } from '@glitch/shared-types';
 import { getAvatarUrl } from '@/lib/avatar';
 
-// ============================================================================
 // Props Interface
-// ============================================================================
-
 interface FollowListProps {
   type: 'followers' | 'following';
   username: string;
 }
 
-// ============================================================================
 // FollowList Component
-// ============================================================================
-
-/**
- * Reusable component for displaying followers or following lists
- *
- * @example
- * ```tsx
- * <FollowList type="followers" username="john_doe" />
- * <FollowList type="following" username="jane_smith" />
- * ```
- */
 export default function FollowList({ type, username }: FollowListProps) {
   const followers = useStore($viewedFollowers);
   const following = useStore($viewedFollowing);
 
-  // Select the appropriate data based on type
   const data = type === 'followers' ? followers : following;
   const users = data?.items || [];
 
-  // Loading state
   if (!data) {
     return (
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
@@ -45,7 +28,6 @@ export default function FollowList({ type, username }: FollowListProps) {
     );
   }
 
-  // Empty state
   if (users.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-12 text-center">
@@ -61,7 +43,6 @@ export default function FollowList({ type, username }: FollowListProps) {
     );
   }
 
-  // User list
   return (
     <>
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
@@ -70,7 +51,6 @@ export default function FollowList({ type, username }: FollowListProps) {
         ))}
       </div>
 
-      {/* Pagination info */}
       {data.meta && data.meta.totalPages > 1 && (
         <div className="pt-4 text-center text-sm text-muted-foreground">
           Page <span className="font-mono">{data.meta.page}</span> of{' '}
@@ -81,16 +61,12 @@ export default function FollowList({ type, username }: FollowListProps) {
   );
 }
 
-// ============================================================================
 // UserCard Component
-// ============================================================================
-
 interface UserCardProps {
   user: UserResponse;
 }
 
 function UserCard({ user }: UserCardProps) {
-  // Generate avatar URL with fallback
   const avatarUrl = getAvatarUrl(user, 64);
 
   return (
@@ -98,7 +74,6 @@ function UserCard({ user }: UserCardProps) {
       href={`/profile/${user.username}`}
       className="flex items-center gap-4 rounded-lg border border-border bg-card p-4 interactive-surface hover:border-border-hover"
     >
-      {/* Avatar with Radix UI */}
       <Avatar.Root className="inline-flex size-12 select-none items-center justify-center overflow-hidden rounded-full align-middle">
         <Avatar.Image
           className="size-full object-cover"
@@ -115,7 +90,6 @@ function UserCard({ user }: UserCardProps) {
         </Avatar.Fallback>
       </Avatar.Root>
 
-      {/* User Info */}
       <div className="min-w-0 flex-1">
         <h3 className="truncate text-sm font-medium text-foreground">
           {user.displayName || user.username}
@@ -123,7 +97,6 @@ function UserCard({ user }: UserCardProps) {
         <p className="truncate text-sm text-muted-foreground">@{user.username}</p>
       </div>
 
-      {/* Arrow icon */}
       <svg
         className="size-5 shrink-0 text-muted-foreground"
         fill="none"
@@ -136,23 +109,17 @@ function UserCard({ user }: UserCardProps) {
   );
 }
 
-// ============================================================================
 // UserSkeleton Component
-// ============================================================================
-
 function UserSkeleton() {
   return (
     <div className="flex animate-pulse items-center gap-4 rounded-lg border border-border bg-card p-4">
-      {/* Avatar skeleton */}
       <div className="size-12 rounded-full bg-muted" />
 
-      {/* Content skeleton */}
       <div className="flex-1 space-y-2">
         <div className="h-5 w-32 rounded-md bg-muted" />
         <div className="h-4 w-24 rounded-md bg-muted" />
       </div>
 
-      {/* Arrow skeleton */}
       <div className="size-5 rounded-md bg-muted" />
     </div>
   );

@@ -18,9 +18,8 @@ export default function GameCard({ game }: GameCardProps) {
       className="group block"
       aria-label={`View details for ${basic.title}`}
     >
-      {/* Game Cover */}
       <div className="relative aspect-[3/4] overflow-hidden rounded-lg border border-border bg-muted transition-colors group-hover:border-border-hover">
-        {/* Always render an img; if there's no coverImage use the local placeholder. Add onError to guard against broken remote URLs. */}
+        {/* Always render an img; onError guards broken remote URLs. */}
         <img
           src={basic.coverImage || '/images/game-placeholder.svg'}
           alt={basic.coverImage ? `${basic.title} cover` : `${basic.title} placeholder cover`}
@@ -49,7 +48,6 @@ export default function GameCard({ game }: GameCardProps) {
           <div className={`${badgeStyles} right-2 top-2 text-muted-foreground`}>No reviews</div>
         )}
 
-        {/* Review Count Badge */}
         {basic.reviewCount > 0 && (
           <div className={`${badgeStyles} bottom-2 left-2 text-foreground-secondary`}>
             {basic.reviewCount} {basic.reviewCount === 1 ? 'review' : 'reviews'}
@@ -68,7 +66,6 @@ export default function GameCard({ game }: GameCardProps) {
         )}
       </div>
 
-      {/* Game Info */}
       <div className="mt-3 space-y-1">
         <h3 className="line-clamp-2 min-h-10 text-sm font-medium text-foreground transition-colors group-hover:text-primary">
           {basic.title}
@@ -90,7 +87,6 @@ export default function GameCard({ game }: GameCardProps) {
           )}
         </div>
 
-        {/* Genres */}
         {game.genres && game.genres.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
             {game.genres.slice(0, 3).map((genre) => (

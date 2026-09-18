@@ -1,12 +1,6 @@
 import * as React from 'react';
 
-/**
- * The single text-field contract. Replaces the three competing focus
- * treatments (ring-2, border-primary, outline-none) that were previously
- * hand-rolled per form.
- *
- * Focus needs no classes here: global.css owns :focus-visible.
- */
+/** The single text-field contract; focus comes from global.css's :focus-visible rule. */
 export const fieldStyles = [
   'w-full rounded-md border border-border bg-background px-3 py-2 text-sm text-foreground',
   'transition-colors placeholder:text-muted-foreground hover:border-border-hover',

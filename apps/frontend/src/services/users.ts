@@ -9,9 +9,7 @@ import { apiClient } from './api';
 // Aliased: this module re-exports its own `getAvatarUrl` wrapper below.
 import { getAvatarUrl as resolveAvatarUrl } from '@/lib/avatar';
 
-// ============================================================================
-// Configuration
-// ============================================================================
+// ── Configuration
 
 const USERS_ENDPOINTS = {
   GET_USERS: 'users',
@@ -25,27 +23,12 @@ const USERS_ENDPOINTS = {
   GET_USER_FOLLOWING: (username: string) => `users/profile/${username}/following`,
 } as const;
 
-// ============================================================================
-// Users Service Class
-// ============================================================================
+// ── Users Service Class
 
 class UsersService {
-  /**
-   * Get paginated list of users
-   *
-   * @param query - Optional query parameters for pagination and filtering
-   * @returns Promise resolving to paginated users response
-   *
-   * @example
-   * ```typescript
-   * const users = await usersService.getUsers({ page: 1, limit: 20, search: 'john' });
-   * console.log(users.items.length); // Number of users
-   * ```
-   */
   async getUsers(query: UsersQuery = {}): Promise<PaginatedResponse<UserResponse>> {
     const searchParams = new URLSearchParams();
 
-    // Add query parameters
     Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, value.toString());
@@ -59,18 +42,6 @@ class UsersService {
     return apiClient.get<PaginatedResponse<UserResponse>>(endpoint);
   }
 
-  /**
-   * Get user by ID
-   *
-   * @param userId - The user's unique identifier
-   * @returns Promise resolving to user response
-   *
-   * @example
-   * ```typescript
-   * const user = await usersService.getUserById('user-id');
-   * console.log(user.username);
-   * ```
-   */
   async getUserById(userId: string): Promise<UserResponse> {
     if (!userId) {
       throw new Error('User ID is required');
@@ -79,18 +50,6 @@ class UsersService {
     return apiClient.get<UserResponse>(USERS_ENDPOINTS.GET_USER_BY_ID(userId));
   }
 
-  /**
-   * Get user by username
-   *
-   * @param username - The user's username
-   * @returns Promise resolving to user response
-   *
-   * @example
-   * ```typescript
-   * const user = await usersService.getUserByUsername('johndoe');
-   * console.log(user.displayName);
-   * ```
-   */
   async getUserByUsername(username: string): Promise<UserResponse> {
     if (!username) {
       throw new Error('Username is required');
@@ -99,35 +58,12 @@ class UsersService {
     return apiClient.get<UserResponse>(USERS_ENDPOINTS.GET_USER_BY_USERNAME(username));
   }
 
-  /**
-   * Get current user's detailed profile (requires authentication)
-   *
-   * @returns Promise resolving to current user's profile
-   *
-   * @example
-   * ```typescript
-   * const profile = await usersService.getCurrentUserProfile();
-   * console.log(profile.email); // Only available for current user
-   * ```
-   */
+  /** Get current user's detailed profile (requires authentication). */
   async getCurrentUserProfile(): Promise<UserProfile> {
     return apiClient.get<UserProfile>(USERS_ENDPOINTS.GET_CURRENT_USER_PROFILE);
   }
 
-  /**
-   * Update current user's profile (requires authentication)
-   *
-   * @param profileData - Profile data to update
-   * @returns Promise resolving to updated user profile
-   *
-   * @example
-   * ```typescript
-   * const updated = await usersService.updateProfile({
-   *   displayName: 'John Doe',
-   *   bio: 'Gaming enthusiast',
-   * });
-   * ```
-   */
+  /** Update current user's profile (requires authentication). */
   async updateProfile(profileData: UpdateProfileRequest): Promise<UserProfile> {
     if (!profileData || Object.keys(profileData).length === 0) {
       throw new Error('Profile data is required');
@@ -136,18 +72,7 @@ class UsersService {
     return apiClient.patch<UserProfile>(USERS_ENDPOINTS.UPDATE_PROFILE, profileData);
   }
 
-  /**
-   * Get user's public profile
-   *
-   * @param userId - The user's unique identifier
-   * @returns Promise resolving to user's public profile
-   *
-   * @example
-   * ```typescript
-   * const profile = await usersService.getUserProfile('user-id');
-   * console.log(profile.isFollowing); // Relationship status with current user
-   * ```
-   */
+  /** Get a user's public profile. */
   async getUserProfile(userId: string): Promise<UserProfile> {
     if (!userId) {
       throw new Error('User ID is required');
@@ -156,18 +81,6 @@ class UsersService {
     return apiClient.get<UserProfile>(USERS_ENDPOINTS.GET_USER_PROFILE(userId));
   }
 
-  /**
-   * Fetch user profile by username (for User Profile feature)
-   *
-   * @param username - The user's username
-   * @returns Promise resolving to user's public profile
-   *
-   * @example
-   * ```typescript
-   * const profile = await usersService.fetchUserProfile('johndoe');
-   * console.log(profile.displayName);
-   * ```
-   */
   async fetchUserProfile(username: string): Promise<UserProfile> {
     if (!username) {
       throw new Error('Username is required');
@@ -176,18 +89,6 @@ class UsersService {
     return apiClient.get<UserProfile>(USERS_ENDPOINTS.GET_USER_PROFILE_BY_USERNAME(username));
   }
 
-  /**
-   * Fetch user followers by username
-   *
-   * @param username - The user's username
-   * @returns Promise resolving to paginated list of followers
-   *
-   * @example
-   * ```typescript
-   * const followers = await usersService.fetchUserFollowers('johndoe');
-   * console.log(followers.items.length); // Number of followers
-   * ```
-   */
   async fetchUserFollowers(username: string): Promise<PaginatedResponse<UserResponse>> {
     if (!username) {
       throw new Error('Username is required');
@@ -198,18 +99,6 @@ class UsersService {
     );
   }
 
-  /**
-   * Fetch users that this user follows by username
-   *
-   * @param username - The user's username
-   * @returns Promise resolving to paginated list of following users
-   *
-   * @example
-   * ```typescript
-   * const following = await usersService.fetchUserFollowing('johndoe');
-   * console.log(following.items.length); // Number of users being followed
-   * ```
-   */
   async fetchUserFollowing(username: string): Promise<PaginatedResponse<UserResponse>> {
     if (!username) {
       throw new Error('Username is required');
@@ -220,19 +109,6 @@ class UsersService {
     );
   }
 
-  /**
-   * Search users by query
-   *
-   * @param searchQuery - Search term
-   * @param options - Additional query options
-   * @returns Promise resolving to paginated search results
-   *
-   * @example
-   * ```typescript
-   * const results = await usersService.searchUsers('john', { limit: 10 });
-   * console.log(`Found ${results.meta.total} users`);
-   * ```
-   */
   async searchUsers(
     searchQuery: string,
     options: Omit<UsersQuery, 'search'> = {},
@@ -247,19 +123,6 @@ class UsersService {
     });
   }
 
-  /**
-   * Get users with pagination support
-   *
-   * @param page - Page number (1-based)
-   * @param limit - Number of items per page
-   * @returns Promise resolving to paginated users
-   *
-   * @example
-   * ```typescript
-   * const firstPage = await usersService.getUsersPage(1, 20);
-   * const secondPage = await usersService.getUsersPage(2, 20);
-   * ```
-   */
   async getUsersPage(
     page: number = 1,
     limit: number = 20,
@@ -267,20 +130,6 @@ class UsersService {
     return this.getUsers({ page, limit });
   }
 
-  /**
-   * Check if a username is available
-   *
-   * @param username - Username to check
-   * @returns Promise resolving to availability status
-   *
-   * @example
-   * ```typescript
-   * const isAvailable = await usersService.isUsernameAvailable('newuser');
-   * if (isAvailable) {
-   *   console.log('Username is available!');
-   * }
-   * ```
-   */
   async isUsernameAvailable(username: string): Promise<boolean> {
     if (!username.trim()) {
       throw new Error('Username is required');
@@ -288,28 +137,16 @@ class UsersService {
 
     try {
       await this.getUserByUsername(username);
-      return false; // User exists, username not available
+      return false;
     } catch (error) {
       // If user not found (404), username is available
       if (error && typeof error === 'object' && 'status' in error && error.status === 404) {
         return true;
       }
-      throw error; // Re-throw other errors
+      throw error;
     }
   }
 
-  /**
-   * Batch get users by IDs
-   *
-   * @param userIds - Array of user IDs to fetch
-   * @returns Promise resolving to array of users
-   *
-   * @example
-   * ```typescript
-   * const users = await usersService.getBatchUsers(['user1', 'user2', 'user3']);
-   * console.log(`Retrieved ${users.length} users`);
-   * ```
-   */
   async getBatchUsers(userIds: string[]): Promise<UserResponse[]> {
     if (!userIds.length) {
       return [];
@@ -331,18 +168,7 @@ class UsersService {
     }
   }
 
-  /**
-   * Get user's display name with fallback
-   *
-   * @param user - User object or ID
-   * @returns Display name or username fallback
-   *
-   * @example
-   * ```typescript
-   * const displayName = usersService.getDisplayName(user);
-   * // Returns displayName if available, otherwise username
-   * ```
-   */
+  /** Get a user's display name, falling back to username. */
   getDisplayName(user: UserResponse | string): string {
     if (typeof user === 'string') {
       // If only ID provided, we can't get display name without API call
@@ -352,32 +178,17 @@ class UsersService {
     return user.displayName || user.username || 'Anonymous User';
   }
 
-  /**
-   * Get user's avatar URL with fallback
-   *
-   * @param user - User object
-   * @param size - Avatar size in pixels
-   * @returns Avatar URL
-   *
-   * @example
-   * ```typescript
-   * const avatarUrl = usersService.getAvatarUrl(user, 64);
-   * ```
-   */
+  /** Get a user's avatar URL; size is in pixels. */
   getAvatarUrl(user: UserResponse, size: number = 40): string {
     return resolveAvatarUrl(user, size);
   }
 }
 
-// ============================================================================
-// Singleton Instance
-// ============================================================================
+// ── Singleton Instance
 
 export const usersService = new UsersService();
 
-// ============================================================================
-// Individual Function Exports
-// ============================================================================
+// ── Individual Function Exports
 
 export const {
   getUsers,

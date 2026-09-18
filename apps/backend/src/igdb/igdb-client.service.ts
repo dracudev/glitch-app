@@ -47,7 +47,7 @@ export class IgdbClientService {
   private readonly logger = new Logger(IgdbClientService.name);
   private lastRequestAt = 0;
 
-  // ponytail: naive 250ms throttle for IGDB 4 req/s limit, per-instance lock if concurrency matters
+  // Naive 250ms throttle for the IGDB 4 req/s limit; per-instance lock if concurrency matters.
   private async throttle() {
     const now = Date.now();
     const elapsed = now - this.lastRequestAt;

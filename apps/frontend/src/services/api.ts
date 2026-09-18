@@ -1,26 +1,16 @@
 import type { ApiResponse, ApiError } from '@glitch/shared-types';
 import { $authToken, $refreshToken, clearAuthState, updateAuthTokens } from '@/stores/auth';
 
-// ============================================================================
-// Types
-// ============================================================================
+// ── Types
 
 interface CacheEntry {
   data: unknown;
   expiry: number;
 }
 
-// ============================================================================
-// Configuration
-// ============================================================================
+// ── Configuration
 
-// Server-side (SSR/build): always need an absolute URL — Node.js can't resolve
-// relative paths. These calls go straight to the backend with the request's
-// cookies forwarded by hand.
-// Browser: always same-origin. The auth cookie is host-only for whoever sets it,
-// so a browser pointed at an absolute cross-site URL gets a cookie the server
-// render can never read back. Vite proxies /api in dev and the Vercel rewrite
-// in vercel.json proxies it in prod, both keeping it first-party.
+// SSR needs an absolute URL; the browser stays same-origin so the auth cookie is first-party.
 export const API_BASE_URL = (() => {
   if (typeof window === 'undefined') {
     return import.meta.env.PUBLIC_API_URL || 'http://localhost:3000/api/v1';
@@ -35,9 +25,7 @@ const API_CONFIG = {
   retryDelay: 1000, // 1 second
 } as const;
 
-// ============================================================================
-// Types
-// ============================================================================
+// ── Types
 
 interface RequestConfig extends RequestInit {
   timeout?: number;
@@ -51,9 +39,7 @@ interface ApiClientOptions {
   defaultHeaders?: Record<string, string>;
 }
 
-// ============================================================================
-// Core API Client Class
-// ============================================================================
+// ── Core API Client Class
 
 class ApiClient {
   private baseURL: string;
@@ -73,32 +59,21 @@ class ApiClient {
     };
   }
 
-  /**
-   * Make a type-safe HTTP request to the API
-   */
-  // Add an optional parameter for SSR headers
   async request<T>(
     endpoint: string,
     config: RequestConfig = {},
     ssrHeaders?: HeadersInit,
   ): Promise<T> {
     const url = this.buildURL(endpoint);
-    // Pass ssrHeaders to buildRequestConfig
     const requestConfig = await this.buildRequestConfig(config, ssrHeaders);
 
     return this.executeRequest<T>(url, requestConfig);
   }
 
-  /**
-   * GET request
-   */
   async get<T>(endpoint: string, config: RequestConfig = {}, ssrHeaders?: HeadersInit): Promise<T> {
     return this.request<T>(endpoint, { ...config, method: 'GET' }, ssrHeaders);
   }
 
-  /**
-   * POST request
-   */
   async post<T>(
     endpoint: string,
     data?: unknown,
@@ -116,9 +91,6 @@ class ApiClient {
     );
   }
 
-  /**
-   * PATCH request
-   */
   async patch<T>(
     endpoint: string,
     data?: unknown,
@@ -136,9 +108,6 @@ class ApiClient {
     );
   }
 
-  /**
-   * DELETE request
-   */
   async delete<T>(
     endpoint: string,
     config: RequestConfig = {},
@@ -147,22 +116,14 @@ class ApiClient {
     return this.request<T>(endpoint, { ...config, method: 'DELETE' }, ssrHeaders);
   }
 
-  // ============================================================================
-  // Private Helper Methods
-  // ============================================================================
+  // ── Private Helper Methods
 
-  /**
-   * Build the full URL for the request
-   */
   private buildURL(endpoint: string): string {
     const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
     const cleanBaseURL = this.baseURL.endsWith('/') ? this.baseURL.slice(0, -1) : this.baseURL;
     return `${cleanBaseURL}/${cleanEndpoint}`;
   }
 
-  /**
-   * Build the request configuration with headers and authentication
-   */
   private async buildRequestConfig(
     config: RequestConfig,
     ssrHeaders?: HeadersInit,
@@ -175,7 +136,6 @@ class ApiClient {
       extra.forEach((value, key) => headers.set(key, value));
     }
 
-    // Add custom headers from config
     if (config.headers) {
       Object.entries(config.headers).forEach(([key, value]) => {
         headers.set(key, value);
@@ -183,8 +143,7 @@ class ApiClient {
     }
 
     if (!config.skipAuth && !ssrHeaders) {
-      // Only use $authToken if NOT SSR call
-      const token = await this.getValidToken(); // This uses client-side store
+      const token = await this.getValidToken();
       if (token) {
         headers.set('Authorization', `Bearer ${token}`);
       }
@@ -199,11 +158,7 @@ class ApiClient {
     };
   }
 
-  /**
-   * Cache key for a GET response, or null when the response must not be cached.
-   * SSR always returns null: the client is a process-wide singleton, so a
-   * cached SSR response leaks one visitor's auth-scoped data to the next.
-   */
+  /** GET cache key; null on SSR so one visitor's auth-scoped data never leaks to the next. */
   private cacheKey(url: string): string | null {
     if (typeof window === 'undefined') {
       return null;
@@ -212,16 +167,14 @@ class ApiClient {
     return `${url}|${$authToken.get() ?? ''}`;
   }
 
-  /**
-   * Execute the HTTP request with error handling and retries
-   */
+  /** Execute the HTTP request with error handling and retries. */
   private async executeRequest<T>(url: string, config: RequestConfig): Promise<T> {
     const maxRetries = config.retryAttempts || API_CONFIG.retryAttempts;
     const isGet = !config.method || config.method === 'GET';
     const cacheKey = isGet ? this.cacheKey(url) : null;
     let lastError: Error;
 
-    // ponytail: in-memory cache, add Redis if multi-instance or persistence matters
+    // In-memory cache; add Redis if multi-instance or persistence matters.
     if (cacheKey) {
       const cached = this.cache.get(cacheKey);
       if (cached && cached.expiry > Date.now()) {
@@ -258,34 +211,26 @@ class ApiClient {
     throw lastError!;
   }
 
-  /**
-   * Handle the response and parse JSON with error handling
-   */
   private async handleResponse<T>(response: Response, config: RequestConfig): Promise<T> {
-    // Handle authentication errors — except for requests that opted out of auth
-    // (login/register). There a 401 means "bad credentials", and the caller
-    // needs the backend's own message, not a refresh + redirect side effect.
+    // On skipAuth requests (login/register) a 401 means bad credentials — let the backend message through.
     if (response.status === 401 && !config.skipAuth) {
       await this.handleUnauthorized();
       throw new ApiClientError('Authentication required', 401);
     }
 
-    // Handle no-content responses (204/205) gracefully — some endpoints return 204 with no body
+    // Some endpoints return 204 with no body.
     if (response.status === 204 || response.status === 205) {
-      // Return undefined for callers expecting no data
       return undefined as unknown as T;
     }
 
-    // Parse response body
     let responseData: ApiResponse<T> | ApiError;
     try {
       responseData = await response.json();
     } catch {
-      // If response has no JSON body but isn't a no-content status, surface a helpful error
+      // No JSON body and not a no-content status.
       throw new ApiClientError(`HTTP ${response.status}: ${response.statusText}`, response.status);
     }
 
-    // Handle error responses
     if (!response.ok) {
       const errorData = responseData as ApiError;
       throw new ApiClientError(
@@ -295,14 +240,11 @@ class ApiClient {
       );
     }
 
-    // Return successful response data
     const successData = responseData as ApiResponse<T>;
     return successData.data;
   }
 
-  /**
-   * Get a valid authentication token, refreshing if necessary
-   */
+  /** Get a valid token, refreshing first if it is expiring soon. */
   private async getValidToken(): Promise<string | null> {
     const currentToken = $authToken.get();
 
@@ -310,7 +252,6 @@ class ApiClient {
       return null;
     }
 
-    // Check if token needs refresh (basic client-side check)
     if (this.isTokenExpiringSoon(currentToken)) {
       await this.refreshToken();
       return $authToken.get();
@@ -319,9 +260,6 @@ class ApiClient {
     return currentToken;
   }
 
-  /**
-   * Refresh the authentication token
-   */
   private async refreshToken(): Promise<void> {
     // Prevent multiple concurrent refresh attempts
     if (this.refreshPromise) {
@@ -337,9 +275,6 @@ class ApiClient {
     }
   }
 
-  /**
-   * Perform the actual token refresh
-   */
   private async performTokenRefresh(): Promise<void> {
     const refreshToken = $refreshToken.get();
 
@@ -365,29 +300,20 @@ class ApiClient {
       const data = await response.json();
       updateAuthTokens(data.data.accessToken, data.data.refreshToken);
     } catch {
-      // Refresh failed, clear auth state
       clearAuthState();
     }
   }
 
-  /**
-   * Handle unauthorized responses
-   */
   private async handleUnauthorized(): Promise<void> {
-    // Try to refresh token first
     try {
       await this.refreshToken();
     } catch {
-      // Refresh failed, redirect to login
       if (typeof window !== 'undefined') {
         window.location.href = '/auth/login';
       }
     }
   }
 
-  /**
-   * Check if token is expiring soon (basic client-side check)
-   */
   private isTokenExpiringSoon(token: string): boolean {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
@@ -403,9 +329,6 @@ class ApiClient {
     }
   }
 
-  /**
-   * Create an AbortSignal with timeout
-   */
   private createAbortSignal(timeout?: number): AbortSignal | undefined {
     if (typeof AbortController === 'undefined') {
       return undefined;
@@ -419,17 +342,12 @@ class ApiClient {
     return controller.signal;
   }
 
-  /**
-   * Delay utility for retries
-   */
   private delay(ms: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
 
-// ============================================================================
-// Custom Error Class
-// ============================================================================
+// ── Custom Error Class
 
 export class ApiClientError extends Error {
   constructor(
@@ -442,18 +360,10 @@ export class ApiClientError extends Error {
   }
 }
 
-// ============================================================================
-// Singleton Instance
-// ============================================================================
+// ── Singleton Instance
 
-/**
- * Default API client instance
- */
 export const apiClient = new ApiClient();
 
-/**
- * Create a new API client instance with custom configuration
- */
 export function createApiClient(options: ApiClientOptions): ApiClient {
   return new ApiClient(options);
 }

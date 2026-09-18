@@ -6,102 +6,55 @@ import { clearAllGamesState } from './games';
 import { clearSocialState } from './social';
 import { clearUsersState, clearViewedProfileState } from './users';
 
-// ============================================================================
-// Core Authentication State
-// ============================================================================
+// ── Core Authentication State
 
-/**
- * Current authenticated user information
- */
 export const $currentUser = atom<AuthUser | null>(null);
 
-/**
- * Authentication status - computed from currentUser state
- */
 export const $isAuthenticated = computed($currentUser, (user) => user !== null);
 
-/**
- * Current user's role - computed from currentUser state
- */
 export const $userRole = computed(
   $currentUser,
   (user): UserRole | null => (user?.role as UserRole) || null,
 );
 
-/**
- * JWT access token for API authentication
- */
 export const $authToken = atom<string | null>(null);
 
-/**
- * JWT refresh token for token renewal
- */
 export const $refreshToken = atom<string | null>(null);
 
-/**
- * Authentication loading state (for login/logout operations)
- */
 export const $authLoading = atom<boolean>(false);
 
-/**
- * Authentication error state
- */
 export const $authError = atom<string | null>(null);
 
-// ============================================================================
-// Computed State Selectors
-// ============================================================================
+// ── Computed State Selectors
 
-/**
- * Check if current user has admin privileges
- */
 export const $isAdmin = computed($userRole, (role) => role === 'ADMIN');
 
-/**
- * Check if current user has moderator or admin privileges
- */
 export const $isModerator = computed($userRole, (role) => role === 'MODERATOR' || role === 'ADMIN');
 
-/**
- * Check if user profile is complete (has required fields)
- */
 export const $isProfileComplete = computed($currentUser, (user) => {
   if (!user) return false;
   return !!(user.username && user.email);
 });
 
-/**
- * User's display name or username fallback
- */
 export const $displayName = computed($currentUser, (user) => user?.username || 'Anonymous');
 
-// ============================================================================
-// State Actions
-// ============================================================================
+// ── State Actions
 
-/**
- * Set the current authenticated user and tokens
- */
 export function setAuthenticatedUser(user: AuthUser, accessToken: string, refreshToken: string) {
   $currentUser.set(user);
   $authToken.set(accessToken);
   $refreshToken.set(refreshToken);
   $authError.set(null);
 
-  // Persist authentication data to localStorage
   persistAuthState(user, accessToken, refreshToken);
 }
 
-/**
- * Update current user information (e.g., after profile update)
- */
 export function updateCurrentUser(updates: Partial<AuthUser>) {
   const currentUser = $currentUser.get();
   if (currentUser) {
     const updatedUser = { ...currentUser, ...updates };
     $currentUser.set(updatedUser);
 
-    // Update persisted data
     const token = $authToken.get();
     const refreshToken = $refreshToken.get();
     if (token && refreshToken) {
@@ -110,23 +63,16 @@ export function updateCurrentUser(updates: Partial<AuthUser>) {
   }
 }
 
-/**
- * Update authentication tokens (e.g., after refresh)
- */
 export function updateAuthTokens(accessToken: string, refreshToken: string) {
   $authToken.set(accessToken);
   $refreshToken.set(refreshToken);
 
-  // Update persisted tokens
   const currentUser = $currentUser.get();
   if (currentUser) {
     persistAuthState(currentUser, accessToken, refreshToken);
   }
 }
 
-/**
- * Clear authentication state (logout)
- */
 export function clearAuthState() {
   $currentUser.set(null);
   $authToken.set(null);
@@ -134,11 +80,9 @@ export function clearAuthState() {
   $authError.set(null);
   $authLoading.set(false);
 
-  // Clear persisted data
   clearPersistedAuthState();
 
-  // The session is gone: drop every user-scoped cache too, or the next visitor
-  // sees the previous user's reviews, feed and profile.
+  // The session is gone: drop every user-scoped cache or the next visitor sees the previous user's data.
   clearAllReviewsState();
   clearAllGamesState();
   clearSocialState();
@@ -146,23 +90,15 @@ export function clearAuthState() {
   clearViewedProfileState();
 }
 
-/**
- * Set authentication loading state
- */
 export function setAuthLoading(loading: boolean) {
   $authLoading.set(loading);
 }
 
-/**
- * Set authentication error
- */
 export function setAuthError(error: string | null) {
   $authError.set(error);
 }
 
-// ============================================================================
-// Persistence Layer
-// ============================================================================
+// ── Persistence Layer
 
 const AUTH_STORAGE_KEY = 'glitch_auth';
 
@@ -173,9 +109,6 @@ interface PersistedAuthState {
   timestamp: number;
 }
 
-/**
- * Persist authentication state to localStorage
- */
 function persistAuthState(user: AuthUser, accessToken: string, refreshToken: string) {
   if (typeof window === 'undefined') return; // SSR safety
 
@@ -193,9 +126,6 @@ function persistAuthState(user: AuthUser, accessToken: string, refreshToken: str
   }
 }
 
-/**
- * Load authentication state from localStorage
- */
 export function loadPersistedAuthState(): PersistedAuthState | null {
   if (typeof window === 'undefined') return null; // SSR safety
 
@@ -205,7 +135,6 @@ export function loadPersistedAuthState(): PersistedAuthState | null {
 
     const authState: PersistedAuthState = JSON.parse(stored);
 
-    // Check if token is expired (basic client-side check)
     const tokenAge = Date.now() - authState.timestamp;
     const MAX_TOKEN_AGE = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
 
@@ -222,9 +151,6 @@ export function loadPersistedAuthState(): PersistedAuthState | null {
   }
 }
 
-/**
- * Clear persisted authentication state
- */
 function clearPersistedAuthState() {
   if (typeof window === 'undefined') return; // SSR safety
 
@@ -235,9 +161,6 @@ function clearPersistedAuthState() {
   }
 }
 
-/**
- * Initialize authentication state from localStorage on app start
- */
 export function initializeAuthState() {
   const persistedState = loadPersistedAuthState();
 
@@ -248,13 +171,8 @@ export function initializeAuthState() {
   }
 }
 
-// ============================================================================
-// Helper Functions
-// ============================================================================
+// ── Helper Functions
 
-/**
- * Check if user has specific role
- */
 export function hasRole(role: UserRole): boolean {
   const currentRole = $userRole.get();
   if (!currentRole) return false;
@@ -267,27 +185,17 @@ export function hasRole(role: UserRole): boolean {
     return true;
   }
 
-  // Exact role match
   return currentRole === role;
 }
 
-/**
- * Check if user can access admin features
- */
 export function canAccessAdmin(): boolean {
   return hasRole('ADMIN');
 }
 
-/**
- * Check if user can moderate content
- */
 export function canModerate(): boolean {
   return hasRole('MODERATOR') || hasRole('ADMIN');
 }
 
-/**
- * Get user's avatar URL with fallback
- */
 export function getUserAvatarUrl(size: number = 40): string {
   return getAvatarUrl($currentUser.get(), size);
 }

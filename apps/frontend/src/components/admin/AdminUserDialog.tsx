@@ -56,12 +56,7 @@ interface AdminUserDialogProps {
   onSaved: () => void;
 }
 
-/**
- * Create/edit form for a single user.
- *
- * `role` here is the only thing that grants panel access, so it is rendered as
- * plain radio-free options rather than anything playful.
- */
+/** Create/edit form; `role` is what grants panel access. */
 export default function AdminUserDialog({ target, onClose, onSaved }: AdminUserDialogProps) {
   const isOpen = target !== undefined;
   const editing = target ?? null;
@@ -70,7 +65,6 @@ export default function AdminUserDialog({ target, onClose, onSaved }: AdminUserD
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Reset the form each time the dialog opens on a different target.
   useEffect(() => {
     setForm(editing ? formFromUser(editing) : emptyForm);
     setError(null);

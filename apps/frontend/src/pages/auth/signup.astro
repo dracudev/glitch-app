@@ -6,7 +6,6 @@ import RegisterForm from '@/components/auth/RegisterForm';
 import NoScriptFallback from '@/components/fallbacks/NoScriptFallback';
 import { hasSession } from '@/services/ssr-auth';
 
-// Already signed in? There is nothing to sign up for.
 if (hasSession(Astro.request.headers.get('cookie') || undefined)) {
   return Astro.redirect('/feed');
 }
@@ -49,10 +48,8 @@ const pageDescription =
           </p>
         </div>
 
-        <!-- React Island -->
         <RegisterForm client:load />
 
-        <!-- Fallback content for no-JS users -->
         <NoScriptFallback client:load feature="registration form" />
       </div>
 

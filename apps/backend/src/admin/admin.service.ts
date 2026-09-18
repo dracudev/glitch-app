@@ -159,8 +159,7 @@ export class AdminService {
       throw new NotFoundException(`User ${id} not found`);
     }
 
-    // Reviews cascade with the user, so nothing recomputes the affected game
-    // aggregates unless we do it here. Collect before the delete.
+    // Reviews cascade on user delete, so recompute affected game aggregates before deleting.
     const games = await this.prisma.review.findMany({
       where: { userId: id, isPublished: true },
       select: { gameId: true },

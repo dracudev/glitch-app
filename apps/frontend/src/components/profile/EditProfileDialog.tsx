@@ -14,36 +14,15 @@ import {
   DialogTitle,
 } from '@/components/ui/Dialog';
 
-// ============================================================================
-// Props Interface
-// ============================================================================
-
 interface EditProfileDialogProps {
   profile: UserProfile;
   isOpen: boolean;
   onClose: () => void;
 }
 
-// ============================================================================
-// EditProfileDialog Component
-// ============================================================================
-
-/**
- * Modal dialog for editing user profile
- *
- * @example
- * ```tsx
- * <EditProfileDialog
- *   profile={currentProfile}
- *   isOpen={isDialogOpen}
- *   onClose={() => setIsDialogOpen(false)}
- * />
- * ```
- */
 export default function EditProfileDialog({ profile, isOpen, onClose }: EditProfileDialogProps) {
   const { updateProfile, updateLoading, updateError, clearUpdateError } = useCurrentUserProfile();
 
-  // Form state
   const [displayName, setDisplayName] = useState(profile.displayName || '');
   const [bio, setBio] = useState(profile.bio || '');
   const [location, setLocation] = useState(profile.location || '');
@@ -51,7 +30,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
   const [isPrivate, setIsPrivate] = useState(profile.isPrivate || false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Reset form when profile changes
   useEffect(() => {
     setDisplayName(profile.displayName || '');
     setBio(profile.bio || '');
@@ -60,7 +38,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
     setIsPrivate(profile.isPrivate || false);
   }, [profile]);
 
-  // Clear messages when dialog closes
   useEffect(() => {
     if (!isOpen) {
       setSuccessMessage(null);
@@ -101,7 +78,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Display Name */}
           <div className="space-y-2">
             <Label htmlFor="displayName">Display name</Label>
             <Input
@@ -114,7 +90,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
             />
           </div>
 
-          {/* Bio */}
           <div className="space-y-2">
             <Label htmlFor="bio">Bio</Label>
             <Textarea
@@ -128,7 +103,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
             <p className="text-right font-mono text-xs text-muted-foreground">{bio.length}/500</p>
           </div>
 
-          {/* Location */}
           <div className="space-y-2">
             <Label htmlFor="location">Location</Label>
             <Input
@@ -141,7 +115,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
             />
           </div>
 
-          {/* Website */}
           <div className="space-y-2">
             <Label htmlFor="website">Website</Label>
             <Input
@@ -153,7 +126,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
             />
           </div>
 
-          {/* Privacy Toggle */}
           <div className="flex items-center justify-between gap-4">
             <div>
               <Label htmlFor="isPrivate">Private profile</Label>
@@ -171,7 +143,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
             </Switch.Root>
           </div>
 
-          {/* Messages */}
           {updateError && (
             <div className="rounded-md border border-error bg-error/10 p-3 text-sm text-error">
               {updateError}
@@ -183,7 +154,6 @@ export default function EditProfileDialog({ profile, isOpen, onClose }: EditProf
             </div>
           )}
 
-          {/* Actions */}
           <DialogFooter className="mt-0 gap-3 sm:justify-stretch">
             <DialogClose asChild>
               <Button type="button" variant="secondary" disabled={updateLoading} className="flex-1">

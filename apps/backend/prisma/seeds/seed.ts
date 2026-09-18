@@ -8,12 +8,10 @@ const cover = (imageId: string) =>
 
 // Shared by every non-admin account.
 const DEFAULT_PASSWORD = 'password123';
-// ponytail: default is fine for local, set SEED_ADMIN_PASSWORD before seeding a public DB.
+// Default is fine for local, but set SEED_ADMIN_PASSWORD before seeding a public DB.
 const ADMIN_PASSWORD = process.env.SEED_ADMIN_PASSWORD ?? 'GlitchAdmin!2026';
 
-// ---------------------------------------------------------------------------
 // Seed data
-// ---------------------------------------------------------------------------
 
 type UserSeed = {
   username: string;
@@ -206,8 +204,7 @@ type ReviewSeed = {
   spoiler?: boolean;
 };
 
-// One review per (user, game) — enforced by @@unique([userId, gameId]).
-// Ratings are half-steps only: the API validates with @IsHalfStep.
+// One review per (user, game), enforced by @@unique([userId, gameId]); ratings must be half-steps (@IsHalfStep).
 const REVIEWS: ReviewSeed[] = [
   // The Witcher 3: Wild Hunt
   {
@@ -703,9 +700,7 @@ const ACHIEVEMENTS = [
   { name: 'Popular', description: 'Get 100 likes on your reviews', points: 50, icon: '⭐' },
 ];
 
-// ---------------------------------------------------------------------------
 // Helpers
-// ---------------------------------------------------------------------------
 
 function assertUniqueReviews() {
   const seen = new Set<string>();
@@ -734,9 +729,7 @@ async function wipeDatabase() {
   await prisma.user.deleteMany();
 }
 
-// ---------------------------------------------------------------------------
 // Main
-// ---------------------------------------------------------------------------
 
 async function main() {
   console.log('🌱 Starting database seed...');

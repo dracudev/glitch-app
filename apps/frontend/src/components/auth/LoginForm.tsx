@@ -28,7 +28,6 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Mark all fields as touched on submit
     setTouched({ email: true, password: true });
 
     clearError();
@@ -50,7 +49,6 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
   return (
     <Card className={`p-6 sm:p-8 ${className}`}>
       <Form.Root onSubmit={handleSubmit} className="space-y-6">
-        {/* Global auth error from $authError store */}
         {error && (
           <div
             role="alert"
@@ -74,7 +72,6 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
           </div>
         )}
 
-        {/* Email field */}
         <Form.Field name="email" className="space-y-2">
           <Form.Label className="block text-sm font-medium text-foreground">
             Email address
@@ -103,7 +100,6 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
           )}
         </Form.Field>
 
-        {/* Password field */}
         <Form.Field name="password" className="space-y-2">
           <Form.Label className="block text-sm font-medium text-foreground">
             Password
@@ -140,7 +136,6 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
           )}
         </Form.Field>
 
-        {/* Remember me and Forgot password */}
         <div className="flex items-center justify-between">
           <div className="flex items-center">
             <input
@@ -167,7 +162,6 @@ export default function LoginForm({ redirectTo = '/feed', className = '' }: Logi
           </div>
         </div>
 
-        {/* Submit button */}
         <Form.Submit asChild>
           <Button type="submit" isLoading={isLoading} fullWidth variant={'primary'}>
             Log in

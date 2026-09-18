@@ -1,8 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-// These shapes mirror the IGDB taxonomy, so ids are the numeric IGDB ids — the same
-// values the /games filters accept, which lets the UI filter by what it renders.
-
+// Shapes mirror the IGDB taxonomy: ids are numeric IGDB ids, the same values /games filters accept.
 export class GameGenreDto {
   @ApiProperty({ example: 12, description: 'IGDB genre id' })
   id: number;
@@ -106,8 +104,7 @@ export class GameResponseDto {
   updatedAt: Date;
 }
 
-// Served by GET /games/filters so the UI can build its filter sidebar from the
-// live IGDB taxonomy instead of a local copy that drifts out of sync.
+// Served by GET /games/filters so the UI builds its filter sidebar from the live IGDB taxonomy.
 export class GameFilterOptionsDto {
   @ApiProperty({ type: [GameGenreDto] })
   genres: GameGenreDto[];

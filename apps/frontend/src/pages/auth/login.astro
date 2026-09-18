@@ -6,7 +6,6 @@ import LoginForm from '@/components/auth/LoginForm';
 import NoScriptFallback from '@/components/fallbacks/NoScriptFallback';
 import { hasSession } from '@/services/ssr-auth';
 
-// Already signed in? There is nothing to log in to.
 if (hasSession(Astro.request.headers.get('cookie') || undefined)) {
   return Astro.redirect('/feed');
 }
@@ -49,10 +48,8 @@ const pageDescription =
           </p>
         </div>
         
-        <!-- React Island -->
         <LoginForm client:load />
         
-        <!-- Fallback content for no-JS users -->
         <NoScriptFallback client:load feature="login form" />
       </div>
   </div>

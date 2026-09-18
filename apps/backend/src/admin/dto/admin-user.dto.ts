@@ -9,10 +9,7 @@ export class AdminUserStatsDto {
   followersCount: number;
 }
 
-/**
- * Admin-facing user row. Unlike `UserResponseDto` this exposes `email` and
- * `role`, which is why it never leaves the ADMIN-guarded admin controller.
- */
+/** Exposes `email` and `role`, so it must only leave the ADMIN-guarded admin controller. */
 export class AdminUserDto {
   @ApiProperty({ example: 'cm2a3b4c5d6e7f8g9h0i' })
   id: string;

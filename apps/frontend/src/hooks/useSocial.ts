@@ -51,9 +51,7 @@ import {
   getUserMutualFollows,
 } from '@/stores/social';
 
-// ============================================================================
-// Types
-// ============================================================================
+// ── Types
 
 interface UseSocialStatsReturn {
   // State
@@ -122,23 +120,8 @@ interface UseMutualFollowsReturn {
   getMutualFollows: (userId: string) => MutualFollowsResponse | null;
 }
 
-// ============================================================================
-// Social Stats Hook
-// ============================================================================
+// ── Social Stats Hook
 
-/**
- * Hook for managing social statistics
- *
- * @example
- * ```typescript
- * const { currentUserStats, fetchCurrentUserStats, fetchUserStats } = useSocialStats();
- *
- * // Fetch current user's stats
- * useEffect(() => {
- *   fetchCurrentUserStats();
- * }, []);
- * ```
- */
 export function useSocialStats(): UseSocialStatsReturn {
   const currentUserStats = useStore($currentUserSocialStats);
   const isLoading = useStore($socialStatsLoading);
@@ -191,23 +174,8 @@ export function useSocialStats(): UseSocialStatsReturn {
   };
 }
 
-// ============================================================================
-// Activity Feed Hook
-// ============================================================================
+// ── Activity Feed Hook
 
-/**
- * Hook for managing activity feeds
- *
- * @example
- * ```typescript
- * const { feed, fetchFeed, loadMoreFeed } = useActivityFeed();
- *
- * // Fetch initial feed
- * useEffect(() => {
- *   fetchFeed();
- * }, []);
- * ```
- */
 export function useActivityFeed(): UseActivityFeedReturn {
   const feed = useStore($activityFeed);
   const isLoading = useStore($activityFeedLoading);
@@ -314,23 +282,8 @@ export function useActivityFeed(): UseActivityFeedReturn {
   };
 }
 
-// ============================================================================
-// Follow Suggestions Hook
-// ============================================================================
+// ── Follow Suggestions Hook
 
-/**
- * Hook for managing follow suggestions
- *
- * @example
- * ```typescript
- * const { suggestions, fetchSuggestions } = useFollowSuggestions();
- *
- * // Fetch suggestions
- * useEffect(() => {
- *   fetchSuggestions();
- * }, []);
- * ```
- */
 export function useFollowSuggestions(): UseFollowSuggestionsReturn {
   const suggestions = useStore($followSuggestions);
   const isLoading = useStore($followSuggestionsLoading);
@@ -371,29 +324,13 @@ export function useFollowSuggestions(): UseFollowSuggestionsReturn {
   };
 }
 
-// ============================================================================
-// Follow Actions Hook
-// ============================================================================
+// ── Follow Actions Hook
 
-/**
- * Hook for managing follow/unfollow actions
- *
- * @example
- * ```typescript
- * const { followUser, unfollowUser, followingStatus } = useFollowActions();
- *
- * // Follow a user
- * const handleFollow = async () => {
- *   await followUser('user-id');
- * };
- * ```
- */
 export function useFollowActions(): UseFollowActionsReturn {
   const followingStatus = useStore($followingStatus);
   const loadingActions = useStore($followActionsLoading);
 
   const followUser = useCallback(async (userId: string): Promise<void> => {
-    // Optimistic: update viewed profile counts immediately
     const { $viewedProfile, updateViewedProfile } = await import('@/stores/users');
     const viewedProfile = $viewedProfile.get();
 
@@ -414,7 +351,6 @@ export function useFollowActions(): UseFollowActionsReturn {
       // A follow is a feed event - drop the cached feed so /feed refetches.
       clearActivityFeedState();
 
-      // Refetch follow lists to show the new follower card
       if (viewedProfile) {
         const { loadUserFollowers, loadUserFollowing } = await import('@/stores/users');
         loadUserFollowers(viewedProfile.username);
@@ -423,7 +359,6 @@ export function useFollowActions(): UseFollowActionsReturn {
         }
       }
     } catch (err) {
-      // Rollback counts
       if (viewedProfile && viewedProfile.id === userId) {
         updateViewedProfile({
           isFollowing: false,
@@ -440,7 +375,6 @@ export function useFollowActions(): UseFollowActionsReturn {
   }, []);
 
   const unfollowUser = useCallback(async (userId: string): Promise<void> => {
-    // Optimistic: update viewed profile counts immediately
     const { $viewedProfile, updateViewedProfile } = await import('@/stores/users');
     const viewedProfile = $viewedProfile.get();
 
@@ -462,7 +396,6 @@ export function useFollowActions(): UseFollowActionsReturn {
       updateUserStatsAfterBeingFollowed(userId, false);
       clearActivityFeedState();
 
-      // Refetch follow lists to remove the follower card
       if (viewedProfile) {
         const { loadUserFollowers, loadUserFollowing } = await import('@/stores/users');
         loadUserFollowers(viewedProfile.username);
@@ -471,7 +404,6 @@ export function useFollowActions(): UseFollowActionsReturn {
         }
       }
     } catch (err) {
-      // Rollback counts
       if (viewedProfile && viewedProfile.id === userId) {
         updateViewedProfile({
           isFollowing: true,
@@ -524,14 +456,12 @@ export function useFollowActions(): UseFollowActionsReturn {
     try {
       await socialService.followMultipleUsers(userIds);
 
-      // Update following status for all users
       const newStatuses: Record<string, boolean> = {};
       userIds.forEach((userId) => {
         newStatuses[userId] = true;
       });
       setBatchFollowingStatus(newStatuses);
 
-      // Update current user's following count
       updateCurrentUserStatsAfterFollow(true);
     } catch (err) {
       throw err;
@@ -542,14 +472,12 @@ export function useFollowActions(): UseFollowActionsReturn {
     try {
       await socialService.unfollowMultipleUsers(userIds);
 
-      // Update following status for all users
       const newStatuses: Record<string, boolean> = {};
       userIds.forEach((userId) => {
         newStatuses[userId] = false;
       });
       setBatchFollowingStatus(newStatuses);
 
-      // Update current user's following count
       updateCurrentUserStatsAfterFollow(false);
     } catch (err) {
       throw err;
@@ -569,21 +497,8 @@ export function useFollowActions(): UseFollowActionsReturn {
   };
 }
 
-// ============================================================================
-// Mutual Follows Hook
-// ============================================================================
+// ── Mutual Follows Hook
 
-/**
- * Hook for managing mutual follows
- *
- * @example
- * ```typescript
- * const { fetchMutualFollows, getMutualFollows } = useMutualFollows();
- *
- * // Fetch mutual follows
- * const mutuals = await fetchMutualFollows('user-id');
- * ```
- */
 export function useMutualFollows(): UseMutualFollowsReturn {
   const fetchMutualFollows = useCallback(async (userId: string): Promise<MutualFollowsResponse> => {
     try {
@@ -605,21 +520,8 @@ export function useMutualFollows(): UseMutualFollowsReturn {
   };
 }
 
-// ============================================================================
-// Combined Social Hook
-// ============================================================================
+// ── Combined Social Hook
 
-/**
- * Combined hook that provides access to all social functionality
- *
- * @example
- * ```typescript
- * const social = useSocial();
- *
- * // Access all social features
- * const { stats, feed, suggestions, actions } = social;
- * ```
- */
 export function useSocial() {
   const stats = useSocialStats();
   const feed = useActivityFeed();
@@ -627,12 +529,10 @@ export function useSocial() {
   const actions = useFollowActions();
   const mutuals = useMutualFollows();
 
-  // Clear all social state
   const clearAll = useCallback((): void => {
     clearSocialState();
   }, []);
 
-  // Auto-fetch current user stats on mount
   useEffect(() => {
     stats.fetchCurrentUserStats().catch(console.error);
   }, []);

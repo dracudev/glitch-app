@@ -1,28 +1,11 @@
 import { TriangleAlert } from 'lucide-react';
 
 interface NoScriptFallbackProps {
-  /** The feature that requires JavaScript */
   feature: string;
-  /** Additional CSS classes to apply to the container */
   className?: string;
-  /** Custom message override */
   message?: string;
 }
 
-/**
- * NoScript fallback component that displays a warning message to users
- * who have JavaScript disabled, informing them about required functionality.
- *
- * @example
- * ```tsx
- * <NoScriptFallback feature="login form" />
- * <NoScriptFallback feature="registration form" />
- * <NoScriptFallback
- *   feature="interactive dashboard"
- *   message="Custom message here"
- * />
- * ```
- */
 export default function NoScriptFallback({
   feature,
   className = '',

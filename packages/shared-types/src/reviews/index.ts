@@ -1,4 +1,3 @@
-// Review-related User and Game DTOs
 export interface ReviewUser {
   id: string;
   username: string;
@@ -18,7 +17,6 @@ export interface ReviewStats {
   commentsCount: number;
 }
 
-// Review Response
 export interface ReviewResponse {
   id: string;
   title?: string;
@@ -34,7 +32,6 @@ export interface ReviewResponse {
   isLiked?: boolean; // Only present for authenticated users
 }
 
-// Review Request DTOs
 export interface CreateReviewRequest {
   title?: string;
   content: string;
@@ -52,7 +49,6 @@ export interface UpdateReviewRequest {
   isSpoiler?: boolean;
 }
 
-// Paginated Reviews Response
 export interface PaginatedReviewsResponse {
   items: ReviewResponse[];
   meta: {
@@ -63,7 +59,6 @@ export interface PaginatedReviewsResponse {
   };
 }
 
-// Review Query Types
 export interface ReviewsQuery {
   page?: number;
   limit?: number;
@@ -78,7 +73,6 @@ export interface ReviewsQuery {
   sortOrder?: "asc" | "desc";
 }
 
-// Review Filters
 export interface ReviewFilters {
   gameId?: string;
   userId?: string;
@@ -91,13 +85,11 @@ export interface ReviewFilters {
   dateTo?: Date;
 }
 
-// Review Actions
 export interface LikeReviewResponse {
   isLiked: boolean;
   likesCount: number;
 }
 
-// Delete Response
 export interface DeleteSuccessResponse {
   message: string;
   deletedAt: Date;

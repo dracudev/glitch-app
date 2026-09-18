@@ -29,9 +29,7 @@ import {
   clearGameDetailState,
 } from '@/stores/games';
 
-// ============================================================================
-// Types
-// ============================================================================
+// ── Types
 
 interface UseGamesReturn {
   // State
@@ -90,61 +88,14 @@ interface UseSimilarGamesReturn {
   clearData: () => void;
 }
 
-// ============================================================================
-// Games List Hook
-// ============================================================================
+// ── Games List Hook
 
-/**
- * Hook for managing games list with filtering, searching, and pagination
- *
- * @example
- * ```tsx
- * function GamesList() {
- *   const {
- *     data,
- *     isLoading,
- *     error,
- *     fetchGames,
- *     searchGames,
- *     clearError
- *   } = useGames();
- *
- *   useEffect(() => {
- *     fetchGames({ page: 1, limit: 12, sortBy: 'igdbRating', sortOrder: 'desc' });
- *   }, []);
- *
- *   const handleSearch = (searchTerm: string) => {
- *     searchGames(searchTerm, { limit: 20 });
- *   };
- *
- *   if (error) return <ErrorMessage message={error} onClose={clearError} />;
- *   if (isLoading) return <Loading />;
- *
- *   return (
- *     <div>
- *       {data?.data.map(game => (
- *         <GameCard key={game.game.id} game={game} />
- *       ))}
- *       <Pagination
- *         currentPage={data?.page || 1}
- *         totalPages={data?.totalPages || 1}
- *         hasNext={data?.hasNextPage}
- *         hasPrevious={data?.hasPreviousPage}
- *       />
- *     </div>
- *   );
- * }
- * ```
- */
 export function useGames(): UseGamesReturn {
-  // Subscribe to global games stores
   const data = useStore($gamesData);
   const isLoading = useStore($gamesLoading);
   const error = useStore($gamesError);
 
-  // ============================================================================
-  // API Actions
-  // ============================================================================
+  // ── API Actions
 
   const fetchGames = useCallback(
     async (query: GamesQuery = {}): Promise<PaginatedGamesResponse> => {
@@ -300,9 +251,7 @@ export function useGames(): UseGamesReturn {
     [],
   );
 
-  // ============================================================================
-  // Utility Actions
-  // ============================================================================
+  // ── Utility Actions
 
   const clearError = useCallback(() => {
     setGamesError(null);
@@ -313,8 +262,6 @@ export function useGames(): UseGamesReturn {
   }, []);
 
   const refetch = useCallback(async (): Promise<void> => {
-    // If we have existing data, refetch with the same query
-    // This is a basic implementation - you might want to store the last query
     if (data) {
       await fetchGames();
     }
@@ -342,51 +289,14 @@ export function useGames(): UseGamesReturn {
   };
 }
 
-// ============================================================================
-// Game Detail Hook
-// ============================================================================
+// ── Game Detail Hook
 
-/**
- * Hook for managing individual game details
- *
- * @example
- * ```tsx
- * function GameDetailPage({ slug }: { slug: string }) {
- *   const {
- *     game,
- *     isLoading,
- *     error,
- *     fetchGameDetail,
- *     clearError
- *   } = useGameDetail();
- *
- *   useEffect(() => {
- *     fetchGameDetail(slug);
- *   }, [slug]);
- *
- *   if (error) return <ErrorMessage message={error} onClose={clearError} />;
- *   if (isLoading) return <Loading />;
- *   if (!game) return <NotFound />;
- *
- *   return (
- *     <div>
- *       <GameHeader game={game} />
- *       <GameDescription description={game.description} />
- *       <GameReviews reviews={game.recentReviews} />
- *     </div>
- *   );
- * }
- * ```
- */
 export function useGameDetail(): UseGameDetailReturn {
-  // Subscribe to global game detail stores
   const game = useStore($gameDetail);
   const isLoading = useStore($gameDetailLoading);
   const error = useStore($gameDetailError);
 
-  // ============================================================================
-  // API Actions
-  // ============================================================================
+  // ── API Actions
 
   const fetchGameDetail = useCallback(async (slug: string): Promise<GameDetail> => {
     setGameDetailLoading(true);
@@ -405,9 +315,7 @@ export function useGameDetail(): UseGameDetailReturn {
     }
   }, []);
 
-  // ============================================================================
-  // Utility Actions
-  // ============================================================================
+  // ── Utility Actions
 
   const clearError = useCallback(() => {
     setGameDetailError(null);
@@ -419,7 +327,6 @@ export function useGameDetail(): UseGameDetailReturn {
 
   const refetch = useCallback(
     async (slug?: string): Promise<void> => {
-      // If slug is provided, use it; otherwise try to refetch current game
       if (slug) {
         await fetchGameDetail(slug);
       } else if (game) {
@@ -445,59 +352,19 @@ export function useGameDetail(): UseGameDetailReturn {
   };
 }
 
-// ============================================================================
-// Similar Games Hook
-// ============================================================================
+// ── Similar Games Hook
 
-/**
- * Hook for managing similar games
- *
- * @example
- * ```tsx
- * function SimilarGamesSection({ gameId }: { gameId: string }) {
- *   const {
- *     games,
- *     isLoading,
- *     error,
- *     fetchSimilarGames,
- *     clearError
- *   } = useSimilarGames();
- *
- *   useEffect(() => {
- *     fetchSimilarGames(gameId, 6);
- *   }, [gameId]);
- *
- *   if (error) return <ErrorMessage message={error} onClose={clearError} />;
- *   if (isLoading) return <Loading />;
- *   if (!games?.length) return null;
- *
- *   return (
- *     <section>
- *       <h3>Similar Games</h3>
- *       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
- *         {games.map(game => (
- *           <GameCard key={game.game.id} game={game} />
- *         ))}
- *       </div>
- *     </section>
- *   );
- * }
- * ```
- */
 export function useSimilarGames(): UseSimilarGamesReturn {
-  // Subscribe to global similar games stores
   const games = useStore($similarGames);
   const isLoading = useStore($similarGamesLoading);
   const error = useStore($gamesError); // Reuse main games error state
 
-  // ============================================================================
-  // API Actions
-  // ============================================================================
+  // ── API Actions
 
   const fetchSimilarGames = useCallback(
     async (gameId: string, limit?: number): Promise<GameResponse[]> => {
       setSimilarGamesLoading(true);
-      setGamesError(null); // Clear any existing errors
+      setGamesError(null);
 
       try {
         const response = await gamesService.getSimilarGames(gameId, limit);
@@ -515,9 +382,7 @@ export function useSimilarGames(): UseSimilarGamesReturn {
     [],
   );
 
-  // ============================================================================
-  // Utility Actions
-  // ============================================================================
+  // ── Utility Actions
 
   const clearError = useCallback(() => {
     setGamesError(null);
@@ -540,13 +405,8 @@ export function useSimilarGames(): UseSimilarGamesReturn {
   };
 }
 
-// ============================================================================
-// Specialized Games Hooks
-// ============================================================================
+// ── Specialized Games Hooks
 
-/**
- * Hook for fetching and managing featured games (top-rated)
- */
 export function useFeaturedGames(limit: number = 12) {
   const { data, isLoading, error, getTopRatedGames, clearError } = useGames();
 
@@ -572,9 +432,6 @@ export function useFeaturedGames(limit: number = 12) {
   };
 }
 
-/**
- * Hook for fetching and managing new releases
- */
 export function useNewReleases(limit: number = 12) {
   const { data, isLoading, error, getRecentGames, clearError } = useGames();
 
@@ -600,9 +457,6 @@ export function useNewReleases(limit: number = 12) {
   };
 }
 
-/**
- * Hook for fetching and managing trending games (popular)
- */
 export function useTrendingGames(limit: number = 12) {
   const { data, isLoading, error, getPopularGames, clearError } = useGames();
 

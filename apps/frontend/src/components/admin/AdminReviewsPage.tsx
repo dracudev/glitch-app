@@ -24,10 +24,7 @@ import Select from '@/components/ui/Select';
 import AdminConfirmDialog from './AdminConfirmDialog';
 import AdminReviewDialog from './AdminReviewDialog';
 
-// ============================================================================
 // Constants
-// ============================================================================
-
 const PAGE_SIZE = 20;
 
 type SortBy = NonNullable<ReviewsQuery['sortBy']>;
@@ -57,10 +54,7 @@ const SORTABLE: { field: SortBy; label: string }[] = [
 const headerCell = 'px-4 py-3 text-left text-xs font-medium text-muted-foreground';
 const bodyCell = 'px-4 py-3 align-middle';
 
-// ============================================================================
 // Helpers
-// ============================================================================
-
 /** A review with no title is identified by its opening line. */
 function excerpt(review: ReviewResponse): string {
   if (review.title) return review.title;
@@ -76,29 +70,15 @@ function formatDate(value: string | Date): string {
   });
 }
 
-// ============================================================================
 // Props Interface
-// ============================================================================
-
 interface AdminReviewsPageProps {
   initialData: PaginatedReviewsResponse | null;
 }
 
-// ============================================================================
 // AdminReviewsPage Component
-// ============================================================================
-
-/**
- * Review moderation table (React Island).
- *
- * Seeds from the server-rendered page and refetches on every filter change.
- * Moderation reuses the public review endpoints: the backend lets an admin past
- * the ownership check (PATCH/DELETE) and past the published-only filter (GET).
- */
+/** Moderation table; seeds from SSR, refetches on filter changes, and reuses the public review endpoints (admins bypass the ownership/published checks). */
 export default function AdminReviewsPage({ initialData }: AdminReviewsPageProps) {
-  // ============================================================================
   // State
-  // ============================================================================
 
   const [data, setData] = useState<PaginatedReviewsResponse | null>(initialData);
   const [isLoading, setIsLoading] = useState(false);
@@ -126,12 +106,9 @@ export default function AdminReviewsPage({ initialData }: AdminReviewsPageProps)
     };
   }, [page, search, status, sort]);
 
-  // ============================================================================
   // Data Loading
-  // ============================================================================
 
-  // Only the newest request may write state, so a slow keystroke cannot
-  // overwrite a fast one that landed after it.
+  // Only the newest request may write state, so a slow response can't overwrite a newer one.
   const requestId = useRef(0);
 
   const load = useCallback(async (nextQuery: ReviewsQuery) => {
@@ -171,9 +148,7 @@ export default function AdminReviewsPage({ initialData }: AdminReviewsPageProps)
     return () => clearTimeout(timer);
   }, [searchInput]);
 
-  // ============================================================================
   // Handlers
-  // ============================================================================
 
   const handleSort = (field: SortBy) => {
     const option = SORT_OPTIONS.find((item) => item.value === sort) ?? SORT_OPTIONS[0];
@@ -226,20 +201,15 @@ export default function AdminReviewsPage({ initialData }: AdminReviewsPageProps)
     }
   };
 
-  // ============================================================================
   // Derived
-  // ============================================================================
 
   const totalPages = data?.meta.totalPages ?? 1;
   const currentSort = SORT_OPTIONS.find((item) => item.value === sort) ?? SORT_OPTIONS[0];
 
-  // ============================================================================
   // Render
-  // ============================================================================
 
   return (
     <>
-      {/* Toolbar */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <Input
           type="search"
@@ -277,7 +247,6 @@ export default function AdminReviewsPage({ initialData }: AdminReviewsPageProps)
         </p>
       )}
 
-      {/* Table */}
       <div className="overflow-hidden rounded-lg border border-border bg-card">
         <div className="overflow-x-auto">
           <table
@@ -434,7 +403,6 @@ export default function AdminReviewsPage({ initialData }: AdminReviewsPageProps)
           </table>
         </div>
 
-        {/* Pagination */}
         <div className="flex flex-wrap items-center gap-3 border-t border-border px-4 py-3">
           <p className="font-mono text-xs text-muted-foreground">{data?.meta.total ?? 0} reviews</p>
 
@@ -464,7 +432,6 @@ export default function AdminReviewsPage({ initialData }: AdminReviewsPageProps)
         </div>
       </div>
 
-      {/* Dialogs */}
       <AdminReviewDialog
         target={editing}
         onClose={() => setEditing(null)}

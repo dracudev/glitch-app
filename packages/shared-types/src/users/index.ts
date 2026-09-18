@@ -1,6 +1,5 @@
 import type { UserRole } from "../auth";
 
-// User DTOs
 export interface UserStats {
   reviewsCount: number;
   followersCount: number;
@@ -62,12 +61,10 @@ export interface UpdateUserRequest {
   role?: UserRole;
 }
 
-// User Query Types
 export interface UsersQuery {
   page?: number;
   limit?: number;
   search?: string;
 }
 
-// Re-export from auth for convenience
 export type { UserRole } from "../auth";

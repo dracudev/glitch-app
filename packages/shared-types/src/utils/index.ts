@@ -1,4 +1,3 @@
-// Utility Types
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P];
 };
@@ -7,20 +6,17 @@ export type Optional<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;
 
 export type RequiredFields<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
-// Common Entity Base
 export interface BaseEntity {
   id: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Common Timestamps
 export interface Timestamps {
   createdAt: Date;
   updatedAt: Date;
 }
 
-// Image Upload Types
 export interface ImageUpload {
   file: any; // File object from browser or file data
   preview?: string;
@@ -34,7 +30,6 @@ export interface ImageResponse {
   size?: number;
 }
 
-// Form State Types
 export interface FormState<T = any> {
   data: T;
   errors: Record<string, string>;
@@ -42,7 +37,6 @@ export interface FormState<T = any> {
   isValid: boolean;
 }
 
-// Loading States
 export interface LoadingState {
   isLoading: boolean;
   isError: boolean;
@@ -53,7 +47,6 @@ export interface AsyncState<T> extends LoadingState {
   data: T | null;
 }
 
-// Filter and Sort Types
 export interface BaseFilter {
   search?: string;
   sortBy?: string;
@@ -70,7 +63,6 @@ export interface RangeFilter {
   max?: number;
 }
 
-// Notification Types
 export type NotificationType = "success" | "error" | "warning" | "info";
 
 export interface Notification {
@@ -85,16 +77,12 @@ export interface Notification {
   };
 }
 
-// Theme Types
 export type Theme = "light" | "dark" | "system";
 
-// Language Types
 export type Language = "en" | "es" | "fr" | "de" | "ja" | "ko" | "zh";
 
-// Device Types
 export type Device = "mobile" | "tablet" | "desktop";
 
-// Modal Types
 export interface Modal {
   id: string;
   component: string;

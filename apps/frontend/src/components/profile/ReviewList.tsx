@@ -4,26 +4,12 @@ import StarRating from '@/components/ui/StarRating';
 import { useEffect, useRef, useCallback } from 'react';
 import type { ReviewResponse } from '@glitch/shared-types';
 
-// ============================================================================
 // Props Interface
-// ============================================================================
-
 interface ReviewListProps {
   userId: string;
 }
 
-// ============================================================================
 // ReviewList Component
-// ============================================================================
-
-/**
- * Infinite scroll list of user reviews
- *
- * @example
- * ```tsx
- * <ReviewList userId="user-123" />
- * ```
- */
 export default function ReviewList({ userId }: ReviewListProps) {
   const { reviews, isLoading, error, fetchUserReviews, fetchMoreUserReviews } = useUserReviews();
   const observerTarget = useRef<HTMLDivElement>(null);
@@ -31,7 +17,6 @@ export default function ReviewList({ userId }: ReviewListProps) {
   const hasMore = useRef(true);
   const lastUserId = useRef<string | null>(null);
 
-  // Initial fetch - only when userId changes
   useEffect(() => {
     if (lastUserId.current !== userId) {
       currentPage.current = 1;
@@ -41,7 +26,6 @@ export default function ReviewList({ userId }: ReviewListProps) {
     }
   }, [userId, fetchUserReviews]);
 
-  // Infinite scroll callback
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
@@ -50,7 +34,6 @@ export default function ReviewList({ userId }: ReviewListProps) {
         currentPage.current = nextPage;
 
         fetchMoreUserReviews(userId, { page: nextPage, limit: 10 }).then((response) => {
-          // If we received fewer results than the limit, we've reached the end
           if (response && response.items.length < 10) {
             hasMore.current = false;
           }
@@ -60,7 +43,6 @@ export default function ReviewList({ userId }: ReviewListProps) {
     [userId, isLoading, fetchMoreUserReviews],
   );
 
-  // Set up IntersectionObserver
   useEffect(() => {
     const element = observerTarget.current;
     if (!element) return;
@@ -76,10 +58,8 @@ export default function ReviewList({ userId }: ReviewListProps) {
     return () => observer.disconnect();
   }, [handleObserver]);
 
-  // Get reviews items safely
   const reviewItems = reviews?.items || [];
 
-  // Loading state
   if (isLoading && reviewItems.length === 0) {
     return (
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
@@ -90,7 +70,6 @@ export default function ReviewList({ userId }: ReviewListProps) {
     );
   }
 
-  // Error state
   if (error) {
     return (
       <div className="rounded-lg border border-error/30 bg-error/10 p-8 text-center">
@@ -100,7 +79,6 @@ export default function ReviewList({ userId }: ReviewListProps) {
     );
   }
 
-  // Empty state
   if (reviewItems.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-12 text-center">
@@ -110,7 +88,6 @@ export default function ReviewList({ userId }: ReviewListProps) {
     );
   }
 
-  // Review list
   return (
     <>
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
@@ -119,10 +96,8 @@ export default function ReviewList({ userId }: ReviewListProps) {
         ))}
       </div>
 
-      {/* Infinite scroll trigger */}
       {hasMore.current && <div ref={observerTarget} className="h-10" />}
 
-      {/* Loading more indicator */}
       {isLoading && reviewItems.length > 0 && (
         <div className="flex justify-center py-4">
           <svg
@@ -148,7 +123,6 @@ export default function ReviewList({ userId }: ReviewListProps) {
         </div>
       )}
 
-      {/* End of list indicator */}
       {!hasMore.current && reviewItems.length > 0 && (
         <p className="py-4 text-center text-sm text-muted-foreground">You've reached the end</p>
       )}
@@ -156,10 +130,7 @@ export default function ReviewList({ userId }: ReviewListProps) {
   );
 }
 
-// ============================================================================
 // ReviewCard Component
-// ============================================================================
-
 interface ReviewCardProps {
   review: ReviewResponse;
 }
@@ -175,7 +146,6 @@ function ReviewCard({ review }: ReviewCardProps) {
       className="block rounded-lg border border-border bg-card p-4 interactive-surface hover:border-border-hover"
     >
       <div className="flex gap-4">
-        {/* Game Cover */}
         <div className="aspect-[3/4] w-20 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
           <img
             src={review.game.coverImage || '/images/game-placeholder.svg'}
@@ -186,15 +156,13 @@ function ReviewCard({ review }: ReviewCardProps) {
           />
         </div>
 
-        {/* Review Content — `min-w-0` lets the rating row shrink instead of
-            forcing this column wider than the card. */}
+        {/* `min-w-0` lets the rating row shrink instead of widening the card. */}
         <div className="min-w-0 flex-1">
           <h3 className="mb-1 line-clamp-2 text-sm font-medium text-foreground">
             {review.game.title}
           </h3>
 
-          {/* Rating — wraps so a narrow column drops the date onto its own line
-              instead of crushing the stars to fit beside it. */}
+          {/* flex-wrap drops the date to its own line instead of crushing the stars. */}
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <StarRating value={review.rating} size={16} />
             <span className="font-mono text-sm text-muted-foreground">
@@ -202,10 +170,8 @@ function ReviewCard({ review }: ReviewCardProps) {
             </span>
           </div>
 
-          {/* Review Text */}
           <p className="whitespace-pre-wrap text-sm text-foreground">{truncatedContent}</p>
 
-          {/* Stats */}
           <div className="mt-2 flex gap-4 text-xs text-muted-foreground">
             <span className="flex items-center gap-1">
               <ThumbsUp className="size-3 fill-current" aria-hidden="true" />
@@ -222,18 +188,13 @@ function ReviewCard({ review }: ReviewCardProps) {
   );
 }
 
-// ============================================================================
 // ReviewSkeleton Component
-// ============================================================================
-
 function ReviewSkeleton() {
   return (
     <div className="animate-pulse rounded-lg border border-border bg-card p-4">
       <div className="flex gap-4">
-        {/* Cover skeleton */}
         <div className="aspect-[3/4] w-20 shrink-0 rounded-md bg-muted" />
 
-        {/* Content skeleton */}
         <div className="flex-1 space-y-2">
           <div className="h-5 w-2/3 rounded-md bg-muted" />
           <div className="h-4 w-1/3 rounded-md bg-muted" />

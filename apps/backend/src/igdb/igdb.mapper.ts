@@ -3,7 +3,7 @@ import { GameResponseDto, GameBasicDto } from '@/games/dto/game-response.dto';
 import { GameDetailDto } from '@/games/dto/game-detail.dto';
 import { gameStatusFromIgdb, GameStatusName } from '@/games/constants/games.constants';
 
-// IGDB image helper — ponytail: hardcoded sizes, change if design wants higher res
+// IGDB image helper: hardcoded sizes; change if design wants higher res.
 const IGDB_IMAGE_BASE = 'https://images.igdb.com/igdb/image/upload';
 
 export function coverUrl(imageId: string, size = 't_cover_big'): string {
@@ -34,8 +34,7 @@ export function toGameResponseDto(igdb: IgdbGame): GameResponseDto {
     coverImage: coverUrlFor(igdb),
     releaseDate: igdb.first_release_date ? new Date(igdb.first_release_date * 1000) : undefined,
     status: mapIgdbStatus(igdb.status),
-    // Local Glitch aggregate starts empty; GamesService fills it when a DB
-    // anchor with reviews exists. IGDB's score goes to its own labeled field.
+    // Local Glitch aggregate starts empty; GamesService fills it when a DB anchor with reviews exists.
     averageRating: undefined,
     reviewCount: 0,
     igdbRating: igdb.total_rating

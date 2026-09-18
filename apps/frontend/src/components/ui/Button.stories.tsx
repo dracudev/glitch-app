@@ -1,10 +1,3 @@
-/**
- * Button Component Examples
- *
- * This file demonstrates all the different ways to use the Button component.
- * Use these patterns in your components for consistency.
- */
-
 import { Button } from './Button';
 import { Plus, Settings, Trash2, ExternalLink, Download } from 'lucide-react';
 
@@ -13,7 +6,6 @@ export default function ButtonExamples() {
     <div className="p-8 space-y-12 bg-background min-h-screen">
       <h1 className="text-3xl font-bold text-foreground">Button Component Examples</h1>
 
-      {/* Variants */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Variants</h2>
         <div className="flex flex-wrap gap-4">
@@ -26,7 +18,6 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* Sizes */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Sizes</h2>
         <div className="flex flex-wrap items-end gap-4">
@@ -36,7 +27,6 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* Icon Buttons */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Icon Buttons</h2>
         <div className="flex flex-wrap gap-4">
@@ -55,7 +45,6 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* Buttons with Icons */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Buttons with Icons</h2>
         <div className="flex flex-wrap gap-4">
@@ -72,7 +61,6 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* Loading States */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Loading States</h2>
         <div className="flex flex-wrap gap-4">
@@ -86,7 +74,6 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* Disabled States */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Disabled States</h2>
         <div className="flex flex-wrap gap-4">
@@ -100,7 +87,6 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* Full Width */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Full Width</h2>
         <div className="max-w-md space-y-3">
@@ -114,7 +100,6 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* As Link (using asChild with Radix Slot) */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">As Link (asChild)</h2>
         <div className="flex flex-wrap gap-4">
@@ -129,11 +114,9 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* Real-world Examples */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Real-world Examples</h2>
 
-        {/* Form Actions */}
         <div className="max-w-md p-6 bg-secondary rounded-lg space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Form Actions</h3>
           <div className="flex gap-3 justify-end">
@@ -142,7 +125,6 @@ export default function ButtonExamples() {
           </div>
         </div>
 
-        {/* Card Actions */}
         <div className="max-w-md p-6 bg-secondary rounded-lg space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Card Actions</h3>
           <p className="text-foreground-secondary text-sm">This is a card with multiple action buttons</p>
@@ -159,7 +141,6 @@ export default function ButtonExamples() {
           </div>
         </div>
 
-        {/* Dialog Actions */}
         <div className="max-w-md p-6 bg-secondary rounded-lg space-y-4">
           <h3 className="text-lg font-semibold text-foreground">Dialog Actions</h3>
           <p className="text-foreground-secondary text-sm">Are you sure you want to delete this item?</p>
@@ -172,7 +153,6 @@ export default function ButtonExamples() {
         </div>
       </section>
 
-      {/* Code Examples */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-foreground">Code Examples</h2>
         <div className="bg-secondary p-6 rounded-lg space-y-4 font-mono text-sm">

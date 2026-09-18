@@ -1,6 +1,5 @@
 import { ReviewGame, ReviewStats } from '../reviews';
 
-// Social Stats
 export interface SocialStats {
   followersCount: number;
   followingCount: number;
@@ -8,7 +7,6 @@ export interface SocialStats {
   likesReceived: number;
 }
 
-// Activity Feed Types
 export type ActivityType =
   | 'REVIEW_CREATED'
   | 'REVIEW_LIKED'
@@ -68,7 +66,6 @@ export interface ActivityFeedResponse {
   meta: ActivityFeedMeta;
 }
 
-// Social Query Types
 export interface ActivityFeedQuery {
   page?: number;
   limit?: number;
@@ -78,7 +75,6 @@ export interface ActivityFeedQuery {
   until?: Date;
 }
 
-// Follow Types
 export interface FollowResponse {
   isFollowing: boolean;
 }
@@ -87,7 +83,6 @@ export interface MutualFollowsResponse {
   mutualFollows: string[];
 }
 
-// Follow Suggestions
 export interface FollowSuggestion {
   id: string;
   username: string;
@@ -105,7 +100,6 @@ export interface FollowSuggestionsQuery {
   excludeFollowed?: boolean;
 }
 
-// Social Actions
 export interface FollowUserRequest {
   userId: string;
 }
@@ -114,7 +108,6 @@ export interface UnfollowUserRequest {
   userId: string;
 }
 
-// Social Relationships
 export interface SocialRelationship {
   isFollowing: boolean;
   isFollowedBy: boolean;
@@ -122,7 +115,6 @@ export interface SocialRelationship {
   followedAt?: Date;
 }
 
-// Social Profile Data
 export interface SocialProfile {
   userId: string;
   stats: SocialStats;

@@ -15,7 +15,6 @@ export default function GameReviewList({ gameId }: GameReviewListProps) {
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
       if (target.isIntersecting && !isLoading) {
-        // Load next page if available
         const currentPage = reviews?.meta.page ?? 1;
         const totalPages = reviews?.meta.totalPages ?? 1;
         const limit = reviews?.meta.limit ?? 10;
@@ -65,7 +64,6 @@ export default function GameReviewList({ gameId }: GameReviewListProps) {
         <ReviewCard key={review.id} review={review} />
       ))}
 
-      {/* Infinite Scroll Trigger */}
       <div ref={loadMoreRef} className="flex h-20 items-center justify-center">
         {isLoading && (reviews?.meta.page ?? 1) < (reviews?.meta.totalPages ?? 1) && (
           <div className="flex items-center gap-2 text-foreground-secondary">

@@ -7,9 +7,7 @@ import type {
 } from '@glitch/shared-types';
 import { apiClient } from './api';
 
-// ============================================================================
-// Configuration
-// ============================================================================
+// ── Configuration
 
 const REVIEWS_ENDPOINTS = {
   REVIEWS: 'reviews',
@@ -21,42 +19,15 @@ const REVIEWS_ENDPOINTS = {
   LIKE_REVIEW: (id: string) => `reviews/${id}/like`,
 } as const;
 
-// ============================================================================
-// Reviews Service Class
-// ============================================================================
+// ── Reviews Service Class
 
 class ReviewsService {
-  /**
-   * Fetch all reviews with optional filtering, searching, and pagination
-   *
-   * @param query - Query parameters for filtering and pagination
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * // Get all reviews with default pagination
-   * const reviewsResponse = await reviewsService.getAllReviews();
-   *
-   * // Get reviews with filters
-   * const filteredReviews = await reviewsService.getAllReviews({
-   *   page: 1,
-   *   limit: 12,
-   *   search: 'amazing game',
-   *   gameId: 'game-id',
-   *   minRating: 8.0,
-   *   isPublished: true,
-   *   sortBy: 'rating',
-   *   sortOrder: 'desc'
-   * });
-   * ```
-   */
   async getAllReviews(
     query: ReviewsQuery = {},
     ssrHeaders?: HeadersInit,
   ): Promise<PaginatedReviewsResponse> {
     const searchParams = new URLSearchParams();
 
-    // Add query parameters
     Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, value.toString());
@@ -70,17 +41,6 @@ class ReviewsService {
     return apiClient.get<PaginatedReviewsResponse>(endpoint, {}, ssrHeaders);
   }
 
-  /**
-   * Fetch a single review by its ID
-   *
-   * @param reviewId - The review's unique identifier
-   * @returns Promise resolving to review information
-   *
-   * @example
-   * ```typescript
-   * const review = await reviewsService.getReviewById('review-id');
-   * ```
-   */
   async getReviewById(
     reviewId: string,
     ssrHeaders?: HeadersInit,
@@ -96,22 +56,6 @@ class ReviewsService {
     );
   }
 
-  /**
-   * Fetch reviews for a specific game
-   *
-   * @param gameId - The game's unique identifier
-   * @param query - Additional query parameters
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * const gameReviews = await reviewsService.getReviewsByGame('game-id', {
-   *   limit: 20,
-   *   sortBy: 'rating',
-   *   sortOrder: 'desc'
-   * });
-   * ```
-   */
   async getReviewsByGame(
     gameId: string,
     query: Omit<ReviewsQuery, 'gameId'> = {},
@@ -122,7 +66,6 @@ class ReviewsService {
 
     const searchParams = new URLSearchParams();
 
-    // Add query parameters
     Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, value.toString());
@@ -136,22 +79,6 @@ class ReviewsService {
     return apiClient.get<PaginatedReviewsResponse>(endpoint, {});
   }
 
-  /**
-   * Fetch reviews by a specific user
-   *
-   * @param userId - The user's unique identifier
-   * @param query - Additional query parameters
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * const userReviews = await reviewsService.getReviewsByUser('user-id', {
-   *   limit: 10,
-   *   sortBy: 'createdAt',
-   *   sortOrder: 'desc'
-   * });
-   * ```
-   */
   async getReviewsByUser(
     userId: string,
     query: Omit<ReviewsQuery, 'userId'> = {},
@@ -162,7 +89,6 @@ class ReviewsService {
 
     const searchParams = new URLSearchParams();
 
-    // Add query parameters
     Object.entries(query).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, value.toString());
@@ -176,21 +102,7 @@ class ReviewsService {
     return apiClient.get<PaginatedReviewsResponse>(endpoint, {});
   }
 
-  /**
-   * Fetch reviews by a specific user (alias for User Profile feature)
-   *
-   * @param userId - The user's unique identifier
-   * @param query - Query parameters for pagination and filtering
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * const userReviews = await reviewsService.fetchUserReviews('user-id', {
-   *   page: 1,
-   *   limit: 10
-   * });
-   * ```
-   */
+  /** Alias of getReviewsByUser for the User Profile feature. */
   async fetchUserReviews(
     userId: string,
     query: Omit<ReviewsQuery, 'userId'> = {},
@@ -198,18 +110,7 @@ class ReviewsService {
     return this.getReviewsByUser(userId, query);
   }
 
-  /**
-   * Get a specific user's review for a specific game
-   *
-   * @param userId - The user's unique identifier
-   * @param gameId - The game's unique identifier
-   * @returns Promise resolving to review or null if not found
-   *
-   * @example
-   * ```typescript
-   * const userGameReview = await reviewsService.getReviewByUserAndGame('user-id', 'game-id');
-   * ```
-   */
+  /** Get a user's review for a game, or null if not found. */
   async getReviewByUserAndGame(userId: string, gameId: string): Promise<ReviewResponse | null> {
     if (!userId || !gameId) {
       throw new Error('User ID and Game ID are required');
@@ -229,44 +130,12 @@ class ReviewsService {
     }
   }
 
-  /**
-   * Create a new review (requires authentication)
-   *
-   * @param reviewData - The review data
-   * @returns Promise resolving to created review
-   *
-   * @example
-   * ```typescript
-   * const newReview = await reviewsService.createReview({
-   *   title: 'Amazing Game!',
-   *   content: 'This game exceeded all my expectations...',
-   *   rating: 9.5,
-   *   gameId: 'game-id',
-   *   isPublished: true,
-   *   isSpoiler: false
-   * });
-   * ```
-   */
+  /** Create a new review (requires authentication). */
   async createReview(reviewData: CreateReviewRequest): Promise<ReviewResponse> {
     return apiClient.post<ReviewResponse>(REVIEWS_ENDPOINTS.REVIEWS, reviewData);
   }
 
-  /**
-   * Update an existing review (requires authentication and ownership)
-   *
-   * @param reviewId - The review's unique identifier
-   * @param updateData - The review update data
-   * @returns Promise resolving to updated review
-   *
-   * @example
-   * ```typescript
-   * const updatedReview = await reviewsService.updateReview('review-id', {
-   *   title: 'Updated Review Title',
-   *   content: 'Updated review content...',
-   *   rating: 8.5
-   * });
-   * ```
-   */
+  /** Update an existing review (requires authentication and ownership). */
   async updateReview(reviewId: string, updateData: UpdateReviewRequest): Promise<ReviewResponse> {
     if (!reviewId) {
       throw new Error('Review ID is required');
@@ -275,17 +144,7 @@ class ReviewsService {
     return apiClient.patch<ReviewResponse>(REVIEWS_ENDPOINTS.REVIEW_BY_ID(reviewId), updateData);
   }
 
-  /**
-   * Delete a review (requires authentication and ownership)
-   *
-   * @param reviewId - The review's unique identifier
-   * @returns Promise resolving when review is deleted
-   *
-   * @example
-   * ```typescript
-   * await reviewsService.deleteReview('review-id');
-   * ```
-   */
+  /** Delete a review (requires authentication and ownership). */
   async deleteReview(reviewId: string): Promise<void> {
     if (!reviewId) {
       throw new Error('Review ID is required');
@@ -294,17 +153,7 @@ class ReviewsService {
     return apiClient.delete<void>(REVIEWS_ENDPOINTS.REVIEW_BY_ID(reviewId));
   }
 
-  /**
-   * Like a review (requires authentication)
-   *
-   * @param reviewId - The review's unique identifier
-   * @returns Promise resolving when review is liked
-   *
-   * @example
-   * ```typescript
-   * await reviewsService.likeReview('review-id');
-   * ```
-   */
+  /** Like a review (requires authentication). */
   async likeReview(reviewId: string): Promise<void> {
     if (!reviewId) {
       throw new Error('Review ID is required');
@@ -313,17 +162,7 @@ class ReviewsService {
     return apiClient.post<void>(REVIEWS_ENDPOINTS.LIKE_REVIEW(reviewId));
   }
 
-  /**
-   * Unlike a review (requires authentication)
-   *
-   * @param reviewId - The review's unique identifier
-   * @returns Promise resolving when review is unliked
-   *
-   * @example
-   * ```typescript
-   * await reviewsService.unlikeReview('review-id');
-   * ```
-   */
+  /** Unlike a review (requires authentication). */
   async unlikeReview(reviewId: string): Promise<void> {
     if (!reviewId) {
       throw new Error('Review ID is required');
@@ -332,22 +171,6 @@ class ReviewsService {
     return apiClient.delete<void>(REVIEWS_ENDPOINTS.LIKE_REVIEW(reviewId));
   }
 
-  /**
-   * Search reviews by content
-   *
-   * @param searchTerm - The search term to match against review titles and content
-   * @param options - Additional search options
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * const searchResults = await reviewsService.searchReviews('epic adventure', {
-   *   limit: 20,
-   *   sortBy: 'rating',
-   *   sortOrder: 'desc'
-   * });
-   * ```
-   */
   async searchReviews(
     searchTerm: string,
     options: Omit<ReviewsQuery, 'search'> = {},
@@ -362,20 +185,6 @@ class ReviewsService {
     });
   }
 
-  /**
-   * Get top-rated reviews
-   *
-   * @param options - Query options for customizing the results
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * const topReviews = await reviewsService.getTopRatedReviews({
-   *   limit: 50,
-   *   minRating: 8.5
-   * });
-   * ```
-   */
   async getTopRatedReviews(options: ReviewsQuery = {}): Promise<PaginatedReviewsResponse> {
     return this.getAllReviews({
       ...options,
@@ -386,19 +195,6 @@ class ReviewsService {
     });
   }
 
-  /**
-   * Get recent reviews
-   *
-   * @param options - Query options for customizing the results
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * const recentReviews = await reviewsService.getRecentReviews({
-   *   limit: 20
-   * });
-   * ```
-   */
   async getRecentReviews(options: ReviewsQuery = {}): Promise<PaginatedReviewsResponse> {
     return this.getAllReviews({
       ...options,
@@ -408,19 +204,6 @@ class ReviewsService {
     });
   }
 
-  /**
-   * Get most liked reviews
-   *
-   * @param options - Query options for customizing the results
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * const popularReviews = await reviewsService.getPopularReviews({
-   *   limit: 30
-   * });
-   * ```
-   */
   async getPopularReviews(options: ReviewsQuery = {}): Promise<PaginatedReviewsResponse> {
     return this.getAllReviews({
       ...options,
@@ -430,23 +213,6 @@ class ReviewsService {
     });
   }
 
-  /**
-   * Get reviews by rating range
-   *
-   * @param minRating - Minimum rating threshold
-   * @param maxRating - Maximum rating threshold
-   * @param options - Additional query options
-   * @returns Promise resolving to paginated reviews response
-   *
-   * @example
-   * ```typescript
-   * const highRatedReviews = await reviewsService.getReviewsByRatingRange(8.0, 10.0, {
-   *   limit: 25,
-   *   sortBy: 'rating',
-   *   sortOrder: 'desc'
-   * });
-   * ```
-   */
   async getReviewsByRatingRange(
     minRating: number,
     maxRating: number,
@@ -467,25 +233,16 @@ class ReviewsService {
   }
 }
 
-// ============================================================================
-// Singleton Instance
-// ============================================================================
+// ── Singleton Instance
 
-/**
- * Default reviews service instance
- */
 export const reviewsService = new ReviewsService();
 
-/**
- * Create a new reviews service instance (for testing purposes)
- */
+/** Create a new reviews service instance (for testing). */
 export function createReviewsService(): ReviewsService {
   return new ReviewsService();
 }
 
-// ============================================================================
-// Named Exports for Individual Functions
-// ============================================================================
+// ── Named Exports for Individual Functions
 
 export const getAllReviews = reviewsService.getAllReviews.bind(reviewsService);
 export const getReviewById = reviewsService.getReviewById.bind(reviewsService);

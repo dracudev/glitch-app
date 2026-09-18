@@ -2,13 +2,7 @@ import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from './Button';
 
-/**
- * ThemeToggle — a plain icon button, not a sliding sun/moon pill.
- *
- * Dark is the product default, so an absent preference resolves to dark; light
- * is opt-in. The `<html>` class is applied by the inline script in BaseLayout
- * before first paint — this component only reads it back and flips it.
- */
+/** ThemeToggle — dark is the default; BaseLayout's inline script sets the `<html>` class pre-paint and this only reads/flips it. */
 export default function ThemeToggle() {
   const [isLight, setIsLight] = useState(false);
   const [mounted, setMounted] = useState(false);

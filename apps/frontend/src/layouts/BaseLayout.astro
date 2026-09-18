@@ -26,12 +26,7 @@ const fullTitle = title.includes(siteName) ? title : `${title} | ${siteName}`;
 const imageURL = new URL(image, siteURL).toString();
 const canonical = canonicalURL || new URL(Astro.url.pathname, siteURL).toString();
 
-/**
- * The declared OG image size is only correct for the default card. Three pages
- * override `image` with a remote asset of unknown dimensions (a DiceBear avatar
- * on profile, cover art on the review pages), so emitting 1200x630 there would
- * be a false claim. Omit it in that case and let scrapers fetch the real size.
- */
+/** Only the default OG image has known 1200x630 dimensions; overrides omit them. */
 const hasKnownImageSize = image === OG_IMAGE;
 ---
 
@@ -42,7 +37,6 @@ const hasKnownImageSize = image === OG_IMAGE;
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="generator" content={Astro.generator} />
 
-    <!-- Self-hosted-free type stack: display, body, data -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -55,7 +49,6 @@ const hasKnownImageSize = image === OG_IMAGE;
     <meta name="robots" content={noIndex ? 'noindex, nofollow' : 'index, follow'} />
     <link rel="canonical" href={canonical} />
 
-    <!-- Open Graph -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={fullTitle} />
@@ -65,14 +58,12 @@ const hasKnownImageSize = image === OG_IMAGE;
     {hasKnownImageSize && <meta property="og:image:height" content="630" />}
     <meta property="og:site_name" content={siteName} />
 
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content={canonical} />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL} />
 
-    <!-- Icons -->
     <link rel="icon" href="/images/glitch-mark.svg" type="image/svg+xml" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <link rel="icon" href="/favicon/favicon.ico" sizes="48x48" />
@@ -88,7 +79,6 @@ const hasKnownImageSize = image === OG_IMAGE;
 
     <ViewTransitions />
 
-    <!-- PWA -->
     <meta name="application-name" content={siteName} />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -114,11 +104,7 @@ const hasKnownImageSize = image === OG_IMAGE;
     <!-- Per-page head extras -->
     <slot name="head" />
 
-    <!--
-      Theme resolution, before first paint. Dark is the product default; light
-      is opt-in only, so an absent preference resolves to dark rather than to
-      the OS setting.
-    -->
+    <!-- Resolve theme before first paint; dark is the default, light is opt-in. -->
     <script is:inline>
       (function () {
         function apply() {

@@ -40,9 +40,7 @@ import {
 } from '@/stores/users';
 import { updateCurrentUser } from '@/stores/auth';
 
-// ============================================================================
-// Types
-// ============================================================================
+// ── Types
 
 interface UseUsersReturn {
   // State
@@ -109,23 +107,8 @@ interface UseUsernameAvailabilityReturn {
   getCachedAvailability: (username: string) => boolean | null;
 }
 
-// ============================================================================
-// Users List Hook
-// ============================================================================
+// ── Users List Hook
 
-/**
- * Hook for managing users list with pagination and search
- *
- * @example
- * ```typescript
- * const { users, fetchUsers, searchUsers, loadMoreUsers } = useUsers();
- *
- * // Fetch initial users
- * useEffect(() => {
- *   fetchUsers();
- * }, []);
- * ```
- */
 export function useUsers(): UseUsersReturn {
   const users = useStore($usersList);
   const isLoading = useStore($usersLoading);
@@ -144,7 +127,6 @@ export function useUsers(): UseUsersReturn {
           limit: queryParams.limit || 20,
         });
 
-        // Cache individual users
         result.items.forEach((user) => {
           setUser(user.id, user);
         });
@@ -174,7 +156,6 @@ export function useUsers(): UseUsersReturn {
           limit: options.limit || 20,
         });
 
-        // Cache individual users
         result.items.forEach((user) => {
           setUser(user.id, user);
         });
@@ -211,7 +192,6 @@ export function useUsers(): UseUsersReturn {
       appendUsersList(moreUsers);
       setUsersQuery({ ...query, page: nextPage });
 
-      // Cache individual users
       moreUsers.items.forEach((user) => {
         setUser(user.id, user);
       });
@@ -242,29 +222,12 @@ export function useUsers(): UseUsersReturn {
   };
 }
 
-// ============================================================================
-// Individual User Hook
-// ============================================================================
+// ── Individual User Hook
 
-/**
- * Hook for managing individual user data
- *
- * @example
- * ```typescript
- * const { user, fetchUser } = useUser();
- *
- * // Fetch user by ID
- * const handleFetchUser = async () => {
- *   await fetchUser('user-id');
- * };
- * ```
- */
 export function useUser(): UseUserReturn {
   const isLoading = useStore($usersLoading);
   const error = useStore($usersError);
 
-  // Note: This hook manages a single user, but uses the same loading/error state
-  // In a more complex app, you might want separate loading states per user
   const user = null; // This would need to be managed differently for individual users
 
   const fetchUser = useCallback(async (userId: string): Promise<UserResponse> => {
@@ -316,28 +279,12 @@ export function useUser(): UseUserReturn {
   };
 }
 
-// ============================================================================
-// User Profile Hook
-// ============================================================================
+// ── User Profile Hook
 
-/**
- * Hook for managing user profiles
- *
- * @example
- * ```typescript
- * const { profile, fetchProfile } = useUserProfile();
- *
- * // Fetch user profile
- * const handleFetchProfile = async () => {
- *   await fetchProfile('user-id');
- * };
- * ```
- */
 export function useUserProfile(): UseUserProfileReturn {
   const isLoading = useStore($usersLoading);
   const error = useStore($usersError);
 
-  // Note: Similar to useUser, this manages profiles but uses shared loading state
   const profile = null;
 
   const fetchProfile = useCallback(async (userId: string): Promise<UserProfile> => {
@@ -374,23 +321,8 @@ export function useUserProfile(): UseUserProfileReturn {
   };
 }
 
-// ============================================================================
-// Current User Profile Hook
-// ============================================================================
+// ── Current User Profile Hook
 
-/**
- * Hook for managing current user's profile
- *
- * @example
- * ```typescript
- * const { profile, updateProfile, fetchCurrentProfile } = useCurrentUserProfile();
- *
- * // Update profile
- * const handleUpdateProfile = async () => {
- *   await updateProfile({ displayName: 'New Name' });
- * };
- * ```
- */
 export function useCurrentUserProfile(): UseCurrentUserProfileReturn {
   const profile = useStore($currentUserProfile);
   const isLoading = useStore($usersLoading);
@@ -417,8 +349,7 @@ export function useCurrentUserProfile(): UseCurrentUserProfileReturn {
       setProfileUpdateLoading(true);
       const updatedProfile = await usersService.updateProfile(updates);
       setCurrentUserProfile(updatedProfile);
-      // The profile page header reads $viewedProfile / $currentUser, so keep them in sync
-      // instead of leaving the page stale until a reload.
+      // Keep $viewedProfile / $currentUser in sync so the header isn't stale.
       updateViewedProfile(updatedProfile);
       updateCurrentUser({ avatar: updatedProfile.avatar, bio: updatedProfile.bio });
       return updatedProfile;
@@ -450,24 +381,8 @@ export function useCurrentUserProfile(): UseCurrentUserProfileReturn {
   };
 }
 
-// ============================================================================
-// Username Availability Hook
-// ============================================================================
+// ── Username Availability Hook
 
-/**
- * Hook for checking username availability
- *
- * @example
- * ```typescript
- * const { checkAvailability, getCachedAvailability } = useUsernameAvailability();
- *
- * // Check if username is available
- * const handleCheckUsername = async () => {
- *   const isAvailable = await checkAvailability('newusername');
- *   console.log(isAvailable ? 'Available' : 'Taken');
- * };
- * ```
- */
 export function useUsernameAvailability(): UseUsernameAvailabilityReturn {
   const availability = useStore($usernameAvailability);
 
@@ -482,7 +397,6 @@ export function useUsernameAvailability(): UseUsernameAvailabilityReturn {
       setUsernameAvailability(username, isAvailable);
       return isAvailable;
     } catch (err) {
-      // On error, don't cache the result
       throw err;
     }
   }, []);
@@ -498,21 +412,8 @@ export function useUsernameAvailability(): UseUsernameAvailabilityReturn {
   };
 }
 
-// ============================================================================
-// Combined Users Hook
-// ============================================================================
+// ── Combined Users Hook
 
-/**
- * Combined hook that provides access to all users functionality
- *
- * @example
- * ```typescript
- * const users = useUsersModule();
- *
- * // Access all users features
- * const { list, user, profile, currentProfile, usernameCheck } = users;
- * ```
- */
 export function useUsersModule() {
   const list = useUsers();
   const user = useUser();
@@ -520,12 +421,10 @@ export function useUsersModule() {
   const currentProfile = useCurrentUserProfile();
   const usernameCheck = useUsernameAvailability();
 
-  // Clear all users state
   const clearAll = useCallback((): void => {
     clearUsersState();
   }, []);
 
-  // Auto-fetch current user profile on mount (optional)
   useEffect(() => {
     currentProfile.fetchCurrentProfile().catch(console.error);
   }, []);

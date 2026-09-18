@@ -16,9 +16,7 @@ export const GAMES_CONSTANTS = {
   },
 } as const;
 
-// The catalogue is served live from IGDB, so sortable rating fields are the
-// external IGDB ones. Sorting by the local Glitch score needs a DB-sourced
-// surface; add it when one exists.
+// Catalogue is served live from IGDB, so sortable rating fields are the external IGDB ones.
 export const SORT_FIELDS = [
   'title',
   'releaseDate',

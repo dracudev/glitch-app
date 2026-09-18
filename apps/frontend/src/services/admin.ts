@@ -12,13 +12,7 @@ import type {
 } from '@glitch/shared-types';
 import { apiClient } from './api';
 
-/**
- * Admin panel data access.
- *
- * Every endpoint here is guarded by `RolesGuard` on the backend; a non-admin
- * gets a 403. The SSR guard in the pages only hides the shell — this layer is
- * where the real door is.
- */
+/** Admin panel data access. Every endpoint is backend-guarded by RolesGuard; the SSR guard only hides the shell. */
 
 const ADMIN_ENDPOINTS = {
   STATS: 'admin/stats',
@@ -70,11 +64,7 @@ export async function deleteAdminUser(userId: string): Promise<void> {
   return apiClient.delete<void>(ADMIN_ENDPOINTS.USER_BY_ID(userId));
 }
 
-/**
- * Review moderation reuses the public review endpoints: the backend now lets an
- * admin through the ownership check on PATCH/DELETE and past the
- * published-only filter on GET. No admin-specific review routes exist.
- */
+/** Review moderation reuses the public review endpoints; no admin-specific review routes exist. */
 export async function getAdminReviews(
   query: ReviewsQuery = {},
   ssrHeaders?: HeadersInit,

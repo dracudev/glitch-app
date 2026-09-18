@@ -2,13 +2,7 @@ import * as SelectPrimitive from '@radix-ui/react-select';
 import { Check, ChevronDown } from 'lucide-react';
 import { fieldStyles } from '@/components/ui/Input';
 
-/**
- * Select — the single dropdown contract.
- *
- * Trigger, popover and item treatment all live here so every dropdown in the
- * app matches (the review filters set the pattern). Values must be non-empty
- * strings: Radix rejects `''`, so an "all" option uses a sentinel value.
- */
+/** Select — the single dropdown contract; values must be non-empty (Radix rejects `''`, so "all" uses a sentinel). */
 const triggerStyles = [
   fieldStyles,
   'flex cursor-pointer items-center justify-between gap-2 text-left',

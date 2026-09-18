@@ -8,13 +8,10 @@ import { ssrCookieHeader } from '@/services/ssr-auth';
 import { getAvatarUrl } from '@/lib/avatar';
 import type { UserProfile } from '@glitch/shared-types';
 
-// ============================================================================
 // Server-Side Data Fetching
-// ============================================================================
 
 const { username } = Astro.params;
 
-// Validate username parameter
 if (!username) {
   return Astro.redirect('/404');
 }
@@ -22,8 +19,7 @@ if (!username) {
 let profile: UserProfile | null = null;
 
 try {
-  // Fetch user profile from API, forwarding browser cookies so
-  // the backend can determine if the current user is following this profile
+  // Forward cookies so the backend can tell if the viewer follows this profile
   const cookieHeader = await ssrCookieHeader(Astro.request.headers.get('cookie') || undefined);
   profile = await apiClient.get<UserProfile>(
     `users/profile/${username}`,
@@ -31,7 +27,6 @@ try {
     cookieHeader ? { cookie: cookieHeader } : undefined,
   );
 } catch (err: any) {
-  // Handle 404 - User not found
   if (err.status === 404) {
     return new Response(null, {
       status: 404,
@@ -39,11 +34,9 @@ try {
     });
   }
 
-  // Handle other errors
   console.error('Error fetching user profile:', err);
 }
 
-// If profile fetch failed (and not 404), show error page
 if (!profile) {
   return new Response(null, {
     status: 500,
@@ -51,9 +44,7 @@ if (!profile) {
   });
 }
 
-// ============================================================================
 // SEO Meta Tags
-// ============================================================================
 
 const displayName = profile.displayName || profile.username;
 const pageTitle = `${displayName} (@${profile.username}) - Glitch`;
@@ -61,13 +52,10 @@ const pageDescription = profile.bio
   ? `${profile.bio} - View ${displayName}'s gaming profile, reviews, and activity on Glitch.`
   : `View ${displayName}'s gaming profile, reviews, and activity on Glitch. Follow to see their latest game reviews and recommendations.`;
 
-// Profile image for Open Graph
 const profileImage = getAvatarUrl(profile, 512, 'png');
 
-// Canonical URL
 const canonicalURL = new URL(`/profile/${profile.username}`, Astro.site || Astro.url.origin).toString();
 
-// Structured data for rich results
 const structuredData = {
   '@context': 'https://schema.org',
   '@type': 'ProfilePage',
@@ -110,10 +98,8 @@ const structuredData = {
   canonicalURL={canonicalURL}
   noIndex={profile.isPrivate}
 >
-  <!-- Structured Data -->
   <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
 
-  <!-- Profile Page Content -->
   <ProfilePage 
     profile={profile}
     username={username}

@@ -13,7 +13,6 @@ export default function ActivityFeedList({ initialError }: ActivityFeedListProps
   const { feed, isLoading, error, loadMoreFeed } = useActivityFeed();
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Intersection Observer for infinite scroll
   const handleObserver = useCallback(
     (entries: IntersectionObserverEntry[]) => {
       const [target] = entries;
@@ -43,7 +42,6 @@ export default function ActivityFeedList({ initialError }: ActivityFeedListProps
     };
   }, [handleObserver]);
 
-  // Show error state
   if (error || initialError) {
     return (
       <div className="rounded-lg border border-error/30 bg-error/10 p-8 text-center">
@@ -61,7 +59,6 @@ export default function ActivityFeedList({ initialError }: ActivityFeedListProps
     );
   }
 
-  // Show loading skeleton on initial load
   if (isLoading && !feed) {
     return (
       <div className="space-y-4">
@@ -72,7 +69,6 @@ export default function ActivityFeedList({ initialError }: ActivityFeedListProps
     );
   }
 
-  // Show empty state
   if (!feed || feed.items.length === 0) {
     return (
       <div className="rounded-lg border border-border bg-card p-12 text-center">
@@ -103,12 +99,10 @@ export default function ActivityFeedList({ initialError }: ActivityFeedListProps
 
   return (
     <div className="space-y-4">
-      {/* Feed Items */}
       {feed.items.map((activity) => (
         <FeedItem key={activity.id} activity={activity} />
       ))}
 
-      {/* Loading more indicator */}
       {isLoading && feed?.meta?.hasNext && (
         <div className="space-y-4">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -117,10 +111,8 @@ export default function ActivityFeedList({ initialError }: ActivityFeedListProps
         </div>
       )}
 
-      {/* Intersection observer target */}
       <div ref={observerTarget} className="h-4" />
 
-      {/* End of feed indicator */}
       {!feed.meta.hasNext && feed.items.length > 0 && (
         <div className="py-8 text-center">
           <p className="text-sm text-muted-foreground">You've reached the end of your feed</p>
