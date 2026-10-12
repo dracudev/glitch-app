@@ -1,0 +1,56 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import StaticPage from '@/components/ui/StaticPage.astro';
+
+const title = 'About Glitch';
+const description =
+  'Glitch is a social platform for gamers: a catalogue of tens of thousands of games, community reviews, and a feed of what the people you follow are playing.';
+---
+
+<MainLayout title={title} description={description}>
+  <StaticPage
+    title="A social home for people who play games"
+    intro="Glitch pairs a full game catalogue with the one thing store pages never have: what real people think, in public."
+  >
+    <h2>What it is</h2>
+    <p>
+      Glitch is two things in one place. The first is a catalogue: tens of thousands of games,
+      searchable and filterable by genre, platform, and release status. The second is a community.
+      Every game has a page where people leave reviews and scores, and a feed that shows you what
+      the players you follow are playing, reviewing, and rating.
+    </p>
+    <p>
+      We pull game data from <a href="https://www.igdb.com" target="_blank" rel="noopener">IGDB</a>,
+      the open game database, so the catalogue stays current without us copying it by hand. Reviews
+      and scores come from Glitch users only: an external reference rating is shown beside ours so
+      you can tell the two apart.
+    </p>
+
+    <h2>Where it came from</h2>
+    <p>
+      Glitch started as a personal project in August 2025, before the course it now serves as a
+      final project had begun, as a way to learn how a real full-stack application fits together:
+      server rendering, a typed API, a relational database, and a design system that holds up in
+      both light and dark mode.
+    </p>
+    <p>
+      It grew into a monorepo with a NestJS and Prisma backend, an Astro front end with React
+      islands, PostgreSQL, Redis, and Docker images for development and production. The
+      early commits are from that learning period; the architecture since then is the result of
+      rebuilding the same idea properly.
+    </p>
+
+    <h2>What is built in</h2>
+    <ul>
+      <li>A catalogue with search, filters, and per-game detail pages.</li>
+      <li>Reviews with scores, likes, and comments.</li>
+      <li>A social feed, profiles, and a follow graph.</li>
+      <li>An admin panel for moderating reviews and users.</li>
+      <li>Light and dark themes, both designed, not inverted.</li>
+    </ul>
+
+    <p>
+      Questions, bug reports, or feedback? Head to <a href="/support">Support</a>.
+    </p>
+  </StaticPage>
+</MainLayout>

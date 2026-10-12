@@ -1,0 +1,15 @@
+---
+export const prerender = true;
+
+import MainLayout from '@/layouts/MainLayout.astro';
+import SettingsPage from '@/components/settings/SettingsPage';
+
+const pageTitle = 'Settings | Glitch';
+const pageDescription = 'Manage your Glitch account and password.';
+---
+
+<MainLayout title={pageTitle} description={pageDescription}>
+  <meta name="robots" content="noindex, nofollow" slot="head" />
+
+  <SettingsPage client:only="react" />
+</MainLayout>

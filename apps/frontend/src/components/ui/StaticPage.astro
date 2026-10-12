@@ -1,0 +1,21 @@
+---
+interface Props {
+  title: string;
+  intro?: string;
+}
+
+const { title, intro } = Astro.props;
+---
+
+<div class="shell py-16 lg:py-20">
+  <div class="grid gap-10 lg:grid-cols-[16rem_1fr] lg:gap-16">
+    <div class="lg:sticky lg:top-[calc(var(--nav-height)+1.5rem)] lg:self-start">
+      <h1 class="text-3xl tracking-tight sm:text-4xl">{title}</h1>
+      {intro && <p class="mt-4 text-base text-foreground-secondary">{intro}</p>}
+    </div>
+
+    <div class="prose-body max-w-2xl">
+      <slot />
+    </div>
+  </div>
+</div>

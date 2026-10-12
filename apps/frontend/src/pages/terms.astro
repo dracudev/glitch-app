@@ -1,0 +1,56 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import StaticPage from '@/components/ui/StaticPage.astro';
+
+const title = 'Terms of use';
+const description = 'The ground rules for using Glitch.';
+---
+
+<MainLayout title={title} description={description}>
+  <StaticPage
+    title="Terms of use"
+    intro="A few ground rules so Glitch stays a decent place to talk about games."
+  >
+    <h2>Using Glitch</h2>
+    <p>
+      Glitch is provided as-is for personal, non-commercial use. You need an account to write
+      reviews, comment, and follow other players; browsing the catalogue and reading reviews does
+      not require one.
+    </p>
+
+    <h2>Your account</h2>
+    <p>
+      Keep your password to yourself and your account details accurate. You are responsible for what
+      is posted from your account.
+    </p>
+
+    <h2>What you post</h2>
+    <p>Reviews, comments, and ratings are public. When you post, you agree not to:</p>
+    <ul>
+      <li>Harass, threaten, or target other people.</li>
+      <li>Post hate speech, spam, or advertising.</li>
+      <li>Publish content you do not have the right to share.</li>
+      <li>Use the platform to break the law.</li>
+    </ul>
+    <p>
+      We may remove content or suspend accounts that break these rules. An admin panel exists
+      specifically so reviews and users can be moderated.
+    </p>
+
+    <h2>Game data</h2>
+    <p>
+      Game titles, artwork, and metadata belong to their respective owners and are sourced from
+      IGDB. Glitch claims no ownership over them.
+    </p>
+
+    <h2>Changes</h2>
+    <p>
+      These terms may change as the project evolves. Continued use after a change means you accept
+      the updated version.
+    </p>
+
+    <p>
+      Questions? See <a href="/help">Help centre</a> or <a href="/support">Support</a>.
+    </p>
+  </StaticPage>
+</MainLayout>

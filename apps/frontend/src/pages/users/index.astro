@@ -1,0 +1,33 @@
+---
+export const prerender = false;
+
+import MainLayout from '@/layouts/MainLayout.astro';
+import UsersPage from '@/components/users/UsersPage';
+import { getUsers } from '@/services/users';
+import type { UserResponse, PaginatedResponse } from '@glitch/shared-types';
+
+const pageTitle = 'Players | Glitch';
+const pageDescription =
+  'Find gamers on Glitch: browse profiles, see what people are playing, and follow the players whose taste you trust.';
+
+let initialData: PaginatedResponse<UserResponse> | null = null;
+try {
+  initialData = await getUsers({ page: 1, limit: 24 });
+} catch (err) {
+  console.error('Error loading users page:', err);
+}
+
+const canonicalUrl = new URL('/users', Astro.site ?? Astro.request.url);
+---
+
+<MainLayout title={pageTitle} description={pageDescription}>
+  <Fragment slot="head">
+    <link rel="canonical" href={canonicalUrl.toString()} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl.toString()} />
+  </Fragment>
+
+  <UsersPage initialData={initialData} client:load />
+</MainLayout>

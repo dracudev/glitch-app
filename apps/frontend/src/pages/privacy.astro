@@ -1,0 +1,55 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import StaticPage from '@/components/ui/StaticPage.astro';
+
+const title = 'Privacy';
+const description = 'How Glitch handles your data, in plain language.';
+---
+
+<MainLayout title={title} description={description}>
+  <StaticPage
+    title="Privacy"
+    intro="The short version: we store what you give us to run your account, and nothing more."
+  >
+    <p>
+      Glitch is a student project, not a commercial service. This page explains, in plain language,
+      what data the application stores and why.
+    </p>
+
+    <h2>What we store</h2>
+    <ul>
+      <li>
+        <strong>Account details:</strong> your username, email, display name, and a hashed
+        password. Passwords are never stored in readable form.
+      </li>
+      <li>
+        <strong>What you create:</strong> your reviews, ratings, comments, likes, and follows. These
+        are public by design, the same way a review is public on any review site.
+      </li>
+      <li>
+        <strong>Session data:</strong> a token issued when you log in, kept in your browser, so you
+        stay signed in between visits.
+      </li>
+    </ul>
+
+    <h2>What we do not do</h2>
+    <ul>
+      <li>We do not sell your data.</li>
+      <li>We do not run advertising or third-party tracking scripts.</li>
+      <li>We do not read your password, because we cannot: it is hashed.</li>
+    </ul>
+
+    <h2>Third parties</h2>
+    <p>
+      Game metadata and artwork come from <a href="https://www.igdb.com" target="_blank" rel="noopener">IGDB</a>.
+      When a game page loads, images are served directly from IGDB's image servers.
+    </p>
+
+    <h2>Your controls</h2>
+    <p>
+      You can edit your profile, change your password, or delete content you have written at any
+      time from your account. To have your account and its data removed, contact us through
+      <a href="/support">Support</a>.
+    </p>
+  </StaticPage>
+</MainLayout>

@@ -1,0 +1,69 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+
+const title = 'Help centre';
+const description = 'Guides for using Glitch: reviews, the feed, your profile, and account settings.';
+
+const topics = [
+  {
+    title: 'Writing a review',
+    copy: 'Rate a game out of ten, add a title and a body, and publish it to its page.',
+    href: '/games',
+  },
+  {
+    title: 'Your feed',
+    copy: 'Follow players to see their reviews, ratings, and activity in one timeline.',
+    href: '/feed',
+  },
+  {
+    title: 'Your profile',
+    copy: 'Your reviews, followers, and following live on your public profile.',
+    href: '/users',
+  },
+  {
+    title: 'Account settings',
+    copy: 'Change your password and manage your account from Settings.',
+    href: '/settings',
+  },
+  {
+    title: 'Search & filters',
+    copy: 'Filter the catalogue by genre, platform, and release status.',
+    href: '/games',
+  },
+  {
+    title: 'JavaScript required',
+    copy: 'Why some parts of Glitch need JavaScript and what still works without it.',
+    href: '/help/javascript',
+  },
+];
+---
+
+<MainLayout title={title} description={description}>
+  <div class="shell py-16 lg:py-20">
+    <div class="max-w-2xl">
+      <h1 class="text-3xl tracking-tight sm:text-4xl">Help centre</h1>
+      <p class="mt-4 text-lg text-foreground-secondary">
+        Short guides for the parts of Glitch people ask about most. Still stuck?
+        <a href="/support" class="text-foreground underline decoration-border-strong underline-offset-4 hover:decoration-primary">Support</a>.
+      </p>
+    </div>
+
+    <ul class="mt-10 grid gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-2 lg:grid-cols-3">
+      {
+        topics.map((topic) => (
+          <li class="bg-background">
+            <a
+              href={topic.href}
+              class="group flex h-full flex-col p-5 interactive-surface hover:bg-card"
+            >
+              <span class="text-base font-medium text-foreground transition-colors group-hover:text-primary">
+                {topic.title}
+              </span>
+              <span class="mt-1 text-sm text-muted-foreground">{topic.copy}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</MainLayout>

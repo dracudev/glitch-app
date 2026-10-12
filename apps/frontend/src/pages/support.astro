@@ -1,0 +1,40 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import StaticPage from '@/components/ui/StaticPage.astro';
+
+const title = 'Support';
+const description = 'Get help with Glitch: report a bug, ask a question, or send feedback.';
+---
+
+<MainLayout title={title} description={description}>
+  <StaticPage
+    title="Support"
+    intro="Something broken, confusing, or missing? Tell us and we will look at it."
+  >
+    <h2>Report a bug</h2>
+    <p>
+      If a page fails to load, a link goes nowhere, or something behaves oddly, let us know. Include
+      the page you were on and, if you can, what you expected to happen. The community footer links
+      and account flows are the areas most worth a second look, so reports there are especially
+      useful.
+    </p>
+
+    <h2>Ask a question</h2>
+    <p>
+      Not sure how something works? The <a href="/help">Help centre</a> covers the common ones:
+      reviews, the feed, profiles, and account settings.
+    </p>
+
+    <h2>Send feedback</h2>
+    <p>
+      Ideas for the catalogue, the feed, or the design system are welcome. This is an actively
+      developed project, and feedback shapes what gets built next.
+    </p>
+
+    <h2>Contact</h2>
+    <p>
+      Reach the team by email at
+      <a href="mailto:support@glitch.app">support@glitch.app</a>. We aim to reply within a few days.
+    </p>
+  </StaticPage>
+</MainLayout>

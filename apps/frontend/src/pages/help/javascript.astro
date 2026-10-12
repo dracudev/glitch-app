@@ -1,0 +1,43 @@
+---
+import MainLayout from '@/layouts/MainLayout.astro';
+import StaticPage from '@/components/ui/StaticPage.astro';
+
+const title = 'JavaScript required';
+const description = 'Why parts of Glitch need JavaScript, and what still works without it.';
+---
+
+<MainLayout title={title} description={description}>
+  <StaticPage
+    title="This page needs JavaScript"
+    intro="A few parts of Glitch run in the browser, so they need JavaScript enabled."
+  >
+    <p>
+      Glitch renders its pages on the server, so the catalogue, game pages, and reviews load fine
+      without JavaScript. Interactive pieces are delivered as small React islands, and those need
+      JavaScript to work.
+    </p>
+
+    <h2>What needs JavaScript</h2>
+    <ul>
+      <li>The site search and the filter sidebar.</li>
+      <li>Writing and publishing a review.</li>
+      <li>Likes, comments, and following.</li>
+      <li>Your activity feed and account settings.</li>
+      <li>Signing in and signing out.</li>
+    </ul>
+
+    <h2>What works without it</h2>
+    <ul>
+      <li>Browsing the game catalogue and opening game pages.</li>
+      <li>Reading published reviews.</li>
+      <li>Viewing public profiles.</li>
+      <li>Every content page, including this one.</li>
+    </ul>
+
+    <h2>How to enable it</h2>
+    <p>
+      JavaScript is on by default in every modern browser. If it has been disabled, turn it back on
+      in your browser's settings and reload the page.
+    </p>
+  </StaticPage>
+</MainLayout>
