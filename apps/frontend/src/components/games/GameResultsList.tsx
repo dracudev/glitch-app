@@ -58,7 +58,7 @@ export default function GameResultsList() {
     <div>
       <ResultsHeader total={data.total} page={data.page} totalPages={data.totalPages} />
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
         {data.data.map((game: GameResponse) => (
           <GameCard key={game.game.id} game={game} />
         ))}
@@ -140,7 +140,7 @@ function Pagination({ page, totalPages }: { page: number; totalPages: number }) 
 
 function GameGridSkeleton() {
   return (
-    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:gap-5 md:gap-6 lg:grid-cols-3 xl:grid-cols-4">
       {Array.from({ length: 12 }).map((_, i) => (
         <div key={i} className="animate-pulse">
           <div className="mb-3 aspect-[3/4] rounded-lg bg-muted" />

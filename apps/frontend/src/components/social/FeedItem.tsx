@@ -14,6 +14,13 @@ export default function FeedItem({ activity }: FeedItemProps) {
   const createdAtStr =
     typeof createdAt === 'string' ? createdAt : createdAt ? new Date(createdAt).toISOString() : '';
 
+  const activityType = String(type);
+  const activityLabel = ['REVIEW_CREATED', 'REVIEW_UPDATED', 'review'].includes(activityType)
+    ? 'Review'
+    : ['USER_FOLLOWED', 'follow'].includes(activityType)
+      ? 'Follow'
+      : 'Activity';
+
   const formatTimestamp = (date: string) => {
     const now = new Date();
     const past = new Date(date);
@@ -170,7 +177,9 @@ export default function FeedItem({ activity }: FeedItemProps) {
       }
 
       default:
-        return <p className="text-base text-foreground-secondary">Activity type not yet implemented</p>;
+        return (
+          <p className="text-base text-foreground-secondary">Activity type not yet implemented</p>
+        );
     }
   };
 
@@ -191,13 +200,20 @@ export default function FeedItem({ activity }: FeedItemProps) {
         </a>
 
         <div className="min-w-0 flex-1">
-          <a
-            href={`/profile/${user.username}`}
-            className="text-base font-semibold text-foreground hover:underline"
-          >
-            {user.displayName || user.username}
-          </a>
-          <p className="font-mono text-sm text-muted-foreground">{formatTimestamp(createdAtStr)}</p>
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+            <a
+              href={`/profile/${user.username}`}
+              className="text-base font-semibold text-foreground hover:underline"
+            >
+              {user.displayName || user.username}
+            </a>
+            <p className="font-mono text-sm text-muted-foreground">
+              {formatTimestamp(createdAtStr)}
+            </p>
+          </div>
+          <p className="mt-0.5 font-mono text-xs uppercase tracking-widest text-muted-foreground">
+            {activityLabel}
+          </p>
         </div>
       </div>
 

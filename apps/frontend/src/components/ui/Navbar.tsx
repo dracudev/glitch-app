@@ -67,7 +67,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
   };
 
   return (
-    <nav className="sticky top-0 z-nav h-16 border-b border-border bg-background/85 backdrop-blur-md">
+    <nav className="sticky top-0 z-nav h-16 border-b border-border-strong bg-background/85 backdrop-blur-md">
       <div className="shell grid h-16 grid-cols-[1fr_auto_1fr] items-center gap-4">
         <a
           href="/"
@@ -89,8 +89,8 @@ export default function Navbar({ currentPath }: NavbarProps) {
                   aria-current={isActive ? 'page' : undefined}
                   className={`flex h-9 items-center rounded-md px-3 text-sm transition-colors ${
                     isActive
-                      ? 'font-semibold text-primary'
-                      : 'font-medium text-muted-foreground hover:text-foreground'
+                      ? 'bg-secondary font-semibold text-foreground'
+                      : 'font-medium text-muted-foreground hover:bg-secondary hover:text-foreground'
                   }`}
                 >
                   {item.label}
@@ -216,7 +216,7 @@ export default function Navbar({ currentPath }: NavbarProps) {
                             onClick={() => setIsMobileMenuOpen(false)}
                             className={`flex items-center rounded-md px-3 py-2.5 text-base transition-colors ${
                               isActive
-                                ? 'font-semibold text-primary'
+                                ? 'bg-secondary font-semibold text-foreground'
                                 : 'font-medium text-muted-foreground hover:bg-secondary hover:text-foreground'
                             }`}
                           >

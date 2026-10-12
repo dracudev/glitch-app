@@ -15,8 +15,8 @@ const linkGroups = [
     title: 'Company',
     links: [
       { label: 'About', href: '/about' },
-      { label: 'Blog', href: '/blog' },
       { label: 'Support', href: '/support' },
+      { label: 'Community', href: '/users' },
     ],
   },
   {
@@ -86,7 +86,12 @@ export default function Footer({ className = '' }: FooterProps) {
                     aria-label={social.label}
                     className="block text-muted-foreground transition-colors hover:text-foreground"
                   >
-                    <svg className="size-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <svg
+                      className="size-5"
+                      fill="currentColor"
+                      viewBox="0 0 24 24"
+                      aria-hidden="true"
+                    >
                       <path d={social.path} />
                     </svg>
                   </a>
@@ -123,9 +128,7 @@ export default function Footer({ className = '' }: FooterProps) {
           <p className="text-sm text-muted-foreground">
             &copy; {currentYear} Glitch. All rights reserved.
           </p>
-          <p className="font-mono text-xs text-muted-foreground">
-            Built for players, by players.
-          </p>
+          <p className="font-mono text-xs text-muted-foreground">Built for players, by players.</p>
         </div>
       </div>
     </footer>
