@@ -1,0 +1,47 @@
+---
+export const prerender = false;
+
+import MainLayout from '@/layouts/MainLayout.astro';
+import CompanyPage from '@/components/games/CompanyPage';
+import { getCompany, getAllGames } from '@/services/games';
+import type { CompanyDetail, GameResponse } from '@glitch/shared-types';
+
+const { slug } = Astro.params;
+if (!slug) return Astro.redirect('/404');
+
+let company: CompanyDetail | null = null;
+let games: GameResponse[] = [];
+
+try {
+  company = await getCompany(slug);
+  const response = await getAllGames({
+    publisherId: company.id,
+    limit: 24,
+    sortBy: 'igdbRating',
+    sortOrder: 'desc',
+  });
+  games = response.data;
+} catch (err) {
+  console.error('Error loading publisher page:', err);
+}
+
+if (!company) return Astro.redirect('/404');
+
+const pageTitle = `${company.name} | Glitch`;
+const pageDescription =
+  company.description ||
+  `Games published by ${company.name}, with community reviews and scores on Glitch.`;
+const canonicalUrl = new URL(`/publishers/${company.slug}`, Astro.site ?? Astro.request.url);
+---
+
+<MainLayout title={pageTitle} description={pageDescription}>
+  <Fragment slot="head">
+    <link rel="canonical" href={canonicalUrl.toString()} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDescription} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl.toString()} />
+  </Fragment>
+
+  <CompanyPage company={company} games={games} role="publisher" client:load />
+</MainLayout>

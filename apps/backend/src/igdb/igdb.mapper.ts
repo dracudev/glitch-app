@@ -1,5 +1,5 @@
-import { IgdbGame } from './igdb.types';
-import { GameResponseDto, GameBasicDto } from '@/games/dto/game-response.dto';
+import { IgdbGame, IgdbCompanyDetail } from './igdb.types';
+import { GameResponseDto, GameBasicDto, CompanyDetailDto } from '@/games/dto/game-response.dto';
 import { GameDetailDto } from '@/games/dto/game-detail.dto';
 import { gameStatusFromIgdb, GameStatusName } from '@/games/constants/games.constants';
 
@@ -16,6 +16,10 @@ export function coverUrlFor(igdb: IgdbGame): string | null {
 
 function screenshotUrl(imageId: string, size = 't_screenshot_med'): string {
   return `${IGDB_IMAGE_BASE}/${size}/${imageId}.jpg`;
+}
+
+export function logoUrl(imageId: string, size = 't_logo_med'): string {
+  return `${IGDB_IMAGE_BASE}/${size}/${imageId}.png`;
 }
 
 // IGDB omits `status` on a lot of catalogue entries; those are released games.
@@ -73,5 +77,15 @@ export function toGameDetailDto(igdb: IgdbGame): GameDetailDto {
   return {
     ...toGameResponseDto(igdb),
     recentReviews: [],
+  };
+}
+
+export function toCompanyDto(igdb: IgdbCompanyDetail): CompanyDetailDto {
+  return {
+    id: igdb.id,
+    name: igdb.name,
+    slug: igdb.slug,
+    description: igdb.description,
+    logo: igdb.logo?.image_id ? logoUrl(igdb.logo.image_id) : undefined,
   };
 }

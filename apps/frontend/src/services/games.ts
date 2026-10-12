@@ -4,6 +4,7 @@ import type {
   GameFilterOptions,
   PaginatedGamesResponse,
   GamesQuery,
+  CompanyDetail,
 } from '@glitch/shared-types';
 import { apiClient } from './api';
 
@@ -12,6 +13,7 @@ const GAMES_ENDPOINTS = {
   FILTERS: 'games/filters',
   GAME_BY_SLUG: (slug: string) => `games/${slug}`,
   SIMILAR_GAMES: (id: string) => `games/${id}/similar`,
+  COMPANY: (slug: string) => `companies/${slug}`,
 } as const;
 
 class GamesService {
@@ -49,6 +51,16 @@ class GamesService {
     }
 
     return apiClient.get<GameDetail>(GAMES_ENDPOINTS.GAME_BY_SLUG(slug), {
+      skipAuth: true,
+    });
+  }
+
+  async getCompany(slug: string): Promise<CompanyDetail> {
+    if (!slug) {
+      throw new Error('Company slug is required');
+    }
+
+    return apiClient.get<CompanyDetail>(GAMES_ENDPOINTS.COMPANY(slug), {
       skipAuth: true,
     });
   }
@@ -131,6 +143,7 @@ export const {
   getAllGames,
   getFilterOptions,
   getGameBySlug,
+  getCompany,
   getSimilarGames,
   searchGames,
   getGamesByGenre,

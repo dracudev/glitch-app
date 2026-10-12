@@ -37,6 +37,15 @@ export class GameCompanyDto {
   slug: string;
 }
 
+// Served by GET /companies/:slug for the developer and publisher profile pages.
+export class CompanyDetailDto extends GameCompanyDto {
+  @ApiPropertyOptional({ example: 'Polish video game developer...' })
+  description?: string;
+
+  @ApiPropertyOptional({ example: 'https://images.igdb.com/igdb/image/upload/t_logo_med/abc.png' })
+  logo?: string;
+}
+
 export class GameBasicDto {
   @ApiProperty({ example: '1942', description: 'IGDB game id' })
   id: string;

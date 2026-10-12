@@ -33,6 +33,18 @@ export class GamesQueryDto extends PaginationQueryDto {
   @IsNumber({}, { each: true })
   platformIds?: number[];
 
+  @ApiPropertyOptional({ example: 56, description: 'IGDB company id the game was developed by' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  developerId?: number;
+
+  @ApiPropertyOptional({ example: 56, description: 'IGDB company id the game was published by' })
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  publisherId?: number;
+
   @ApiPropertyOptional({ enum: GAME_STATUS_NAMES })
   @IsOptional()
   @IsIn(GAME_STATUS_NAMES)

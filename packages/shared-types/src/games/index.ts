@@ -29,6 +29,15 @@ export interface GameCompany {
   slug: string;
 }
 
+/** An IGDB company (developer or publisher) with its public profile data. */
+export interface CompanyDetail {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  logo?: string;
+}
+
 export interface GameBasic {
   id: string;
   title: string;
@@ -109,6 +118,8 @@ export interface GamesQuery {
   search?: string;
   genreIds?: number[];
   platformIds?: number[];
+  developerId?: number;
+  publisherId?: number;
   status?: GameStatus;
   minRating?: number;
   maxRating?: number;

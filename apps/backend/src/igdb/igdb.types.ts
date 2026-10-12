@@ -22,6 +22,11 @@ export interface IgdbCompany {
   slug: string;
 }
 
+export interface IgdbCompanyDetail extends IgdbCompany {
+  description?: string;
+  logo?: IgdbImage;
+}
+
 export interface IgdbInvolvedCompany {
   id: number;
   company: IgdbCompany;

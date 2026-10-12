@@ -7,6 +7,7 @@ import { coverUrlFor } from '@/igdb/igdb.mapper';
 import {
   toGameResponseDto as mapIgdbToDto,
   toGameDetailDto as mapIgdbToDetail,
+  toCompanyDto,
 } from '@/igdb/igdb.mapper';
 import {
   GameResponseDto,
@@ -14,6 +15,7 @@ import {
   GameFilterOptionsDto,
   PaginatedGamesResponseDto,
   GamesQueryDto,
+  CompanyDetailDto,
 } from './dto';
 import { GAMES_CONSTANTS, GAME_STATUSES } from './constants/games.constants';
 
@@ -50,6 +52,13 @@ export class GamesService {
 
     const withLocalRatings = await this.attachLocalRatings(games.map(mapIgdbToDto));
     return PaginatedGamesResponseDto.from(withLocalRatings, page, limit, count);
+  }
+
+  async getCompany(slug: string): Promise<CompanyDetailDto> {
+    if (!slug) throw new BadRequestException('Slug is required');
+    const company = await this.igdb.getCompanyBySlug(slug);
+    if (!company) throw new NotFoundException('Company not found');
+    return toCompanyDto(company);
   }
 
   async findBySlug(slug: string): Promise<GameDetailDto> {
@@ -215,6 +224,15 @@ export class GamesService {
 
     if (query.genreIds?.length) clauses.push(`genres = (${query.genreIds.join(',')})`);
     if (query.platformIds?.length) clauses.push(`platforms = (${query.platformIds.join(',')})`);
+
+    if (query.developerId)
+      clauses.push(
+        `involved_companies.company = (${query.developerId}) & involved_companies.developer = true`,
+      );
+    if (query.publisherId)
+      clauses.push(
+        `involved_companies.company = (${query.publisherId}) & involved_companies.publisher = true`,
+      );
 
     if (query.status !== undefined) {
       const igdbStatus = GAME_STATUSES[query.status];

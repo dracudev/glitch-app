@@ -1,7 +1,7 @@
 import { Injectable, Logger, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { IgdbAuthService } from './igdb-auth.service';
-import { IgdbGame, IgdbGenre, IgdbPlatform } from './igdb.types';
+import { IgdbGame, IgdbGenre, IgdbPlatform, IgdbCompanyDetail } from './igdb.types';
 
 const IGDB_FIELDS = [
   'id',
@@ -159,6 +159,12 @@ export class IgdbClientService {
       'platforms',
       'fields id,name,slug,abbreviation; sort name asc; limit 500;',
     );
+  }
+
+  async getCompanyBySlug(slug: string): Promise<IgdbCompanyDetail | null> {
+    const query = `fields id,name,slug,description,logo.image_id; where slug = "${slug}"; limit 1;`;
+    const res = await this.request<IgdbCompanyDetail[]>('companies', query);
+    return res[0] || null;
   }
 
   async findBySlug(slug: string): Promise<IgdbGame | null> {
