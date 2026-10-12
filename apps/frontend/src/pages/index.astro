@@ -5,6 +5,7 @@ import MainLayout from '@/layouts/MainLayout.astro';
 import { getAllGames } from '@/services/games';
 import { getAllReviews } from '@/services/reviews';
 import { ssrCookieHeader, hasSession } from '@/services/ssr-auth';
+import { MIN_REVIEWS_FOR_SCORE } from '@/lib/reviews';
 import type { GameResponse, PaginatedReviewsResponse } from '@glitch/shared-types';
 
 // Landing page degrades to the hero and way-in links when the API is unavailable.
@@ -124,7 +125,7 @@ const pageDescription =
                   />
                 </div>
                 <h3 class="mt-3 line-clamp-2 min-h-11 text-sm font-medium text-foreground">{entry.game.title}</h3>
-                {entry.game.reviewCount > 0 && entry.game.averageRating != null ? (
+                {entry.game.reviewCount >= MIN_REVIEWS_FOR_SCORE && entry.game.averageRating != null ? (
                   <p class="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
                     <svg viewBox="0 0 24 24" class="size-3 fill-primary text-primary" aria-hidden="true">
                       <path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z" />
@@ -133,7 +134,9 @@ const pageDescription =
                     <span>Glitch</span>
                   </p>
                 ) : (
-                  <p class="mt-1 text-xs text-muted-foreground">No reviews yet</p>
+                  <p class="mt-1 text-xs text-muted-foreground">
+                    {entry.game.reviewCount === 0 ? 'No reviews yet' : 'Not enough reviews yet'}
+                  </p>
                 )}
                 {entry.game.igdbRating != null && (
                   <p class="mt-0.5 text-xs text-muted-foreground">

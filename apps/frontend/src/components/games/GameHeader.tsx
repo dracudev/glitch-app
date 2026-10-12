@@ -9,6 +9,7 @@ import { $currentUser } from '@/stores/auth';
 import ReviewFormDialog from './ReviewFormDialog';
 import { Button } from '@/components/ui/Button';
 import { notify } from '@/stores/notifications';
+import { MIN_REVIEWS_FOR_SCORE } from '@/lib/reviews';
 
 interface GameHeaderProps {
   /** Server-rendered for the first paint; the store wins after mount. */
@@ -24,6 +25,18 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false);
   // Hooks cannot sit below the early return.
   const myReview = useMyReviewForGame(initialGame?.game.id ?? storeGame?.game.id);
+
+  // Warn before the user writes anything, instead of blocking them after the fact.
+  const handleWriteReview = () => {
+    if (!$currentUser.get()) {
+      notify({
+        title: 'Sign in to write a review',
+        action: { label: 'Sign in', href: '/auth/login' },
+      });
+      return;
+    }
+    setIsReviewDialogOpen(true);
+  };
 
   // Only a genuinely empty store (e.g. client-side navigation) hits this branch.
   if (!game) {
@@ -80,10 +93,7 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
 
         <GameScores game={game} />
 
-        <ActionButtons
-          onWriteReview={() => setIsReviewDialogOpen(true)}
-          hasReview={Boolean(myReview)}
-        />
+        <ActionButtons onWriteReview={handleWriteReview} hasReview={Boolean(myReview)} />
       </div>
 
       {/* Desktop Layout: Horizontal */}
@@ -145,10 +155,7 @@ export default function GameHeader({ game: initialGame }: GameHeaderProps) {
             )}
           </div>
 
-          <ActionButtons
-            onWriteReview={() => setIsReviewDialogOpen(true)}
-            hasReview={Boolean(myReview)}
-          />
+          <ActionButtons onWriteReview={handleWriteReview} hasReview={Boolean(myReview)} />
         </div>
       </div>
 
@@ -223,7 +230,7 @@ function ActionButtons({
 
 function GameScores({ game }: { game: GameDetail }) {
   const { averageRating, reviewCount, igdbRating } = game.game;
-  const hasGlitchScore = reviewCount > 0 && averageRating != null;
+  const hasGlitchScore = reviewCount >= MIN_REVIEWS_FOR_SCORE && averageRating != null;
 
   return (
     <div className="mb-6 flex items-center gap-6">
@@ -239,7 +246,9 @@ function GameScores({ game }: { game: GameDetail }) {
             </span>
           </p>
         ) : (
-          <p className="mt-1 text-sm text-muted-foreground">No reviews yet — be the first</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {reviewCount === 0 ? 'No reviews yet — be the first' : 'Not enough reviews for a score'}
+          </p>
         )}
       </div>
 

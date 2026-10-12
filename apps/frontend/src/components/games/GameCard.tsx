@@ -1,5 +1,6 @@
 import { Star, Calendar } from 'lucide-react';
 import type { GameResponse } from '@glitch/shared-types';
+import { MIN_REVIEWS_FOR_SCORE } from '@/lib/reviews';
 
 interface GameCardProps {
   game: GameResponse;
@@ -36,7 +37,7 @@ export default function GameCard({ game }: GameCardProps) {
         />
 
         {/* Glitch score — belongs to this site. Never IGDB's number. */}
-        {basic.reviewCount > 0 && basic.averageRating != null ? (
+        {basic.reviewCount >= MIN_REVIEWS_FOR_SCORE && basic.averageRating != null ? (
           <div
             className={`${badgeStyles} right-2 top-2 font-medium text-foreground`}
             aria-label={`Glitch rating: ${basic.averageRating.toFixed(1)} out of 10`}
@@ -45,7 +46,9 @@ export default function GameCard({ game }: GameCardProps) {
             <span>{basic.averageRating.toFixed(1)}</span>
           </div>
         ) : (
-          <div className={`${badgeStyles} right-2 top-2 text-muted-foreground`}>No reviews</div>
+          <div className={`${badgeStyles} right-2 top-2 text-muted-foreground`}>
+            {basic.reviewCount === 0 ? 'No reviews' : 'Not enough reviews'}
+          </div>
         )}
 
         {basic.reviewCount > 0 && (
