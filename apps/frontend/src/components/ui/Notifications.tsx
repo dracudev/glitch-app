@@ -26,13 +26,7 @@ const DEFAULT_DURATION = 6000;
 
 // Single notification
 function NotificationItem({ notification }: { notification: NotificationEntry }) {
-  const {
-    id,
-    title,
-    tone = 'info',
-    action,
-    duration = DEFAULT_DURATION,
-  } = notification;
+  const { id, title, tone = 'info', action, duration = DEFAULT_DURATION } = notification;
 
   const [settled, setSettled] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -54,7 +48,7 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
 
   return (
     <li
-      className="pointer-events-auto flex items-start gap-3 rounded-lg border border-border bg-card px-3.5 py-3 shadow-lg transition-transform duration-200 motion-reduce:transition-none"
+      className="pointer-events-auto flex items-center gap-3 rounded-lg border border-border bg-card px-3.5 py-3 shadow-lg transition-transform duration-200 motion-reduce:transition-none"
       style={{ transform: settled ? 'translateY(0)' : 'translateY(-6px)' }}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -64,7 +58,7 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
       <Icon
         size={16}
         strokeWidth={1.75}
-        className={`mt-0.5 shrink-0 ${TONE_COLOR[tone]}`}
+        className={`shrink-0 ${TONE_COLOR[tone]}`}
         aria-hidden="true"
       />
 
@@ -86,7 +80,7 @@ function NotificationItem({ notification }: { notification: NotificationEntry })
         type="button"
         onClick={() => dismissNotification(id)}
         aria-label="Dismiss notification"
-        className="-mr-1 -mt-0.5 flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
+        className="-mr-1 flex size-6 shrink-0 items-center justify-center rounded text-muted-foreground transition-colors duration-200 hover:bg-muted hover:text-foreground"
       >
         <X size={14} strokeWidth={2} aria-hidden="true" />
       </button>
